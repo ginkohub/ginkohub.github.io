@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencarian Kata Bahasa Inggris</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        #status { color: #666; font-style: italic; margin-bottom: 10px; }
+        #results { list-style: none; padding: 0; border-top: 1px solid #eee; }
+        #results li { padding: 8px 0; border-bottom: 1px solid #eee; color: #333; }
+        .highlight { font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+
+    <h2>Cari Kata (English Words)</h2>
+    <div id="status">Mengunduh daftar kata (4.8MB)... Mohon tunggu.</div>
+    
+    <input type="text" id="searchInput" placeholder="Ketik awalan kata (misal: 'pro', 'tri')..." disabled>
+    
+    <div id="count"></div>
+    <ul id="results"></ul>
+
+    <script>
+        const url = "https://github.com/dwyl/english-words/raw/refs/heads/master/words.txt";
+        let words = [];
+
+        const searchInput = document.getElementById('searchInput');
+        const resultsList = document.getElementById('results');
+        const statusDiv = document.getElementById('status');
+        const countDiv = document.getElementById('count');
+
+        // 1. Fungsi Mengunduh Data
+        async function fetchWords() {
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                // Memisahkan teks menjadi array berdasarkan baris baru
+                words = text.split('\n').filter(word => word.length > 0);
+                
+                statusDiv.innerText = "Selesai! Daftar kata siap digunakan.";
+                searchInput.disabled = false;
+                searchInput.focus();
+            } catch (error) {
+                statusDiv.innerText = "Gagal memuat data. Periksa koneksi internet.";
+                console.error(error);
+            }
+        }
+
+        // 2. Fungsi Pencarian
+        searchInput.addEventListener('input', (e) => {
+            const prefix = e.target.value.toLowerCase();
+            resultsList.innerHTML = ''; // Reset list
+
+            if (prefix.length < 1) {
+                countDiv.innerText = '';
+                return;
+            }
+
+            // Filter kata yang diawali dengan prefix
+            const filtered = words.filter(word => 
+                word.toLowerCase().startsWith(prefix)
+            );
+
+            // Tampilkan jumlah hasil
+            countDiv.innerHTML = `Menampilkan <b>${Math.min(filtered.length, 100)}</b> dari ${filtered.length} hasil.`;
+
+            // Tampilkan 100 hasil pertama (agar browser tidak lag)
+            filtered.slice(0, 100).forEach(word => {
+                const li = document.createElement('li');
+                // Beri penekanan pada awalan
+                const boldPart = word.substring(0, prefix.length);
+                const restPart = word.substring(prefix.length);
+                li.innerHTML = `<span class="highlight">${boldPart}</span>${restPart}`;
+                resultsList.appendChild(li);
+            });
+        });
+
+        // Jalankan unduhan saat halaman dibuka
+        fetchWords();
+    </script>
+
+</body>
+</html>
