@@ -3,100 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Finder 3-Column</title>
+    <title>Word Finder Pro - Multi Mode</title>
     <style>
+        /* Variabel Warna */
         :root {
-            --primary-color: #007bff;
-            --bg-color: #f8f9fa;
+            --bg: #f8f9fa;
+            --container-bg: #f8f9fa;
+            --text: #333;
+            --card-bg: #ffffff;
+            --border: #ddd;
+            --primary: #007bff;
+            --status-text: #666;
+        }
+
+        [data-theme="dark"] {
+            --bg: #121212;
+            --container-bg: #121212;
+            --text: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --border: #333;
+            --primary: #3794ff;
+            --status-text: #aaa;
         }
 
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            margin: 0; 
-            padding: 15px; 
-            background-color: var(--bg-color);
+            font-family: system-ui, -apple-system, sans-serif; 
+            margin: 0; padding: 15px; 
+            background: var(--bg); 
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .header {
+            position: sticky; top: 0; background: var(--container-bg);
+            padding-bottom: 15px; z-index: 10; border-bottom: 1px solid var(--border);
         }
 
-        .header-sticky {
-            position: sticky;
-            top: 0;
-            background-color: var(--bg-color);
-            padding: 10px 0 20px 0;
-            z-index: 100;
-            border-bottom: 1px solid #ddd;
+        .header-top {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Tombol Toggle Mode */
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         input { 
-            width: 100%; 
-            padding: 15px; 
-            border: 2px solid #ddd; 
-            border-radius: 12px; 
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
+            width: 100%; padding: 15px; border: 2px solid var(--border); 
+            border-radius: 12px; font-size: 16px; box-sizing: border-box; 
+            outline: none; background: var(--card-bg); color: var(--text);
+            transition: border-color 0.3s;
         }
+        input:focus { border-color: var(--primary); }
 
-        /* --- SISTEM 3 KOLOM --- */
         #results { 
             display: grid;
-            /* Membuat kolom otomatis: minimal 150px, maksimal 1 bagian dari sisa ruang */
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            padding: 0;
-            margin-top: 20px;
-            list-style: none;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 8px; padding: 0; margin-top: 15px; list-style: none;
         }
 
-        /* Untuk layar desktop lebar, kita paksa tepat 3 kolom jika ingin konsisten */
-        @media (min-width: 600px) {
-            #results {
-                grid-template-columns: repeat(3, 1fr);
-            }
+        @media (max-width: 450px) {
+            #results { grid-template-columns: repeat(2, 1fr); }
         }
 
         #results li { 
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            font-size: 0.95rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis; /* Agar kata yang sangat panjang tidak merusak kotak */
-            text-align: center;
+            background: var(--card-bg); padding: 10px; border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2); font-size: 0.9rem;
+            text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            border: 1px solid var(--border);
         }
 
-        .highlight { font-weight: bold; color: var(--primary-color); }
-        #status { font-size: 0.8rem; color: #666; margin-bottom: 5px; }
-        #count { font-size: 0.85rem; margin-top: 10px; color: #444; }
+        .highlight { color: var(--primary); font-weight: bold; }
+        #status { font-size: 0.75rem; color: var(--status-text); margin: 5px 0; }
+        #count { font-size: 0.8rem; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="header-sticky">
-        <h2>Cari Kata</h2>
-        <div id="status">Memeriksa cache...</div>
-        <input type="text" id="searchInput" placeholder="Ketik awalan..." autocomplete="off" inputmode="search" disabled>
+    <div class="header">
+        <div class="header-top">
+            <h3>Pencarian Kata</h3>
+            <button class="theme-toggle" id="themeToggle">🌙 Mode Gelap</button>
+        </div>
+        <div id="status">Memulai sistem...</div>
+        <input type="text" id="searchInput" placeholder="Cari awalan kata..." disabled>
         <div id="count"></div>
     </div>
     
     <ul id="results"></ul>
 
     <script>
-        const url = "./words.txt";
+        const TXT_URL = "./words.txt";
         let words = [];
-        const CACHE_KEY = "cached_words_data";
+        const dbName = "WordCacheDB";
+        const storeName = "wordsStore";
 
-        const searchInput = document.getElementById('searchInput');
-        const resultsList = document.getElementById('results');
-        const statusDiv = document.getElementById('status');
-        const countDiv = document.getElementById('count');
+        // --- FITUR DARK MODE ---
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggle.innerText = "☀️ Mode Terang";
+        }
+
+        themeToggle.addEventListener('click', () => {
+            let theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                themeToggle.innerText = "🌙 Mode Gelap";
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeToggle.innerText = "☀️ Mode Terang";
+            }
+        });
+
+        // --- INDEXEDDB & PENCARIAN ---
+        function openDB() {
+            return new Promise((resolve) => {
+                const request = indexedDB.open(dbName, 1);
+                request.onupgradeneeded = () => request.result.createObjectStore(storeName);
+                request.onsuccess = () => resolve(request.result);
+            });
+        }
 
         async function init() {
-            const cachedData = localStorage.getItem(CACHE_KEY);
-            if (cachedData) {
-                statusDiv.innerText = "Memuat dari cache (Instan)...";
-                words = JSON.parse(cachedData);
+            const db = await openDB();
+            const tx = db.transaction(storeName, "readonly");
+            const cached = await new Promise(r => {
+                const req = tx.objectStore(storeName).get("all_words");
+                req.onsuccess = () => r(req.result);
+            });
+
+            if (cached) {
+                words = cached;
                 ready();
             } else {
                 downloadWords();
@@ -104,48 +153,43 @@
         }
 
         async function downloadWords() {
-            statusDiv.innerText = "Mengunduh file pertama kali...";
+            document.getElementById('status').innerText = "Mengunduh file (4.8MB)...";
             try {
-                const response = await fetch(url);
-                const text = await response.text();
+                const resp = await fetch(TXT_URL);
+                const text = await resp.text();
                 words = text.split(/\r?\n/).filter(w => w.trim().length > 0);
-                localStorage.setItem(CACHE_KEY, JSON.stringify(words));
+                const db = await openDB();
+                const tx = db.transaction(storeName, "readwrite");
+                tx.objectStore(storeName).put(words, "all_words");
                 ready();
-            } catch (e) {
-                statusDiv.innerText = "Error memuat file.";
-            }
+            } catch (e) { document.getElementById('status').innerText = "Gagal memuat file."; }
         }
 
         function ready() {
-            statusDiv.innerText = `✅ ${words.length.toLocaleString()} kata tersedia.`;
-            searchInput.disabled = false;
+            document.getElementById('status').innerText = `✅ ${words.length.toLocaleString()} kata siap.`;
+            const input = document.getElementById('searchInput');
+            input.disabled = false;
+            input.focus();
         }
 
-        let timer;
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(timer);
-            const val = e.target.value.toLowerCase().trim();
-            timer = setTimeout(() => render(val), 100);
-        });
-
-        function render(prefix) {
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const prefix = e.target.value.toLowerCase().trim();
+            const resultsList = document.getElementById('results');
             resultsList.innerHTML = '';
-            if (!prefix) { countDiv.innerText = ''; return; }
+            
+            if (!prefix) { document.getElementById('count').innerText = ''; return; }
 
-            const filtered = words.filter(w => w.toLowerCase().startsWith(prefix));
-            countDiv.innerText = `Ditemukan: ${filtered.length} kata`;
+            const matched = words.filter(w => w.toLowerCase().startsWith(prefix));
+            document.getElementById('count').innerText = `Ditemukan: ${matched.length}`;
 
-            const fragment = document.createDocumentFragment();
-            // Menampilkan 99 hasil (kelipatan 3 agar baris terakhir penuh)
-            filtered.slice(0, 99).forEach(word => {
+            const frag = document.createDocumentFragment();
+            matched.slice(0, 150).forEach(word => {
                 const li = document.createElement('li');
-                const boldPart = word.substring(0, prefix.length);
-                const restPart = word.substring(prefix.length);
-                li.innerHTML = `<span class="highlight">${boldPart}</span>${restPart}`;
-                fragment.appendChild(li);
+                li.innerHTML = `<span class="highlight">${word.substring(0, prefix.length)}</span>${word.substring(prefix.length)}`;
+                frag.appendChild(li);
             });
-            resultsList.appendChild(fragment);
-        }
+            resultsList.appendChild(frag);
+        });
 
         init();
     </script>
