@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Finder Extreme</title>
+    <title>Word Finder Limit Pro</title>
     <style>
         :root { --bg: #f2f2f2; --h-bg: #fff; --txt: #333; --card: #fff; --brd: #e0e0e0; --pri: #007bff; }
         [data-theme="dark"] { --bg: #121212; --h-bg: #1e1e1e; --txt: #d1d1d1; --card: #252525; --brd: #333; --pri: #3794ff; }
@@ -23,7 +23,7 @@
             display: none; position: absolute; top: 100%; right: 8px; 
             background: var(--card); border: 1px solid var(--brd); 
             padding: 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-            z-index: 101; min-width: 180px;
+            z-index: 101; min-width: 200px;
         }
         .settings-panel.show { display: block; }
         
@@ -31,10 +31,10 @@
         .opt-group:last-child { border: none; margin: 0; padding: 0; }
         .opt-title { font-size: 0.7rem; font-weight: bold; color: var(--pri); text-transform: uppercase; margin-bottom: 5px; display: block; }
         
-        .opt-row { display: flex; gap: 8px; font-size: 0.8rem; align-items: center; }
+        .opt-row { display: flex; gap: 8px; font-size: 0.8rem; align-items: center; justify-content: space-between; margin-bottom: 5px; }
         .opt-row label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
         
-        select { background: var(--card); color: var(--txt); border: 1px solid var(--brd); font-size: 0.8rem; padding: 2px; border-radius: 4px; width: 100%; }
+        select { background: var(--card); color: var(--txt); border: 1px solid var(--brd); font-size: 0.8rem; padding: 4px; border-radius: 4px; width: 100px; }
 
         /* Grid Results */
         #res { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 0; margin: 10px 0; list-style: none; }
@@ -62,27 +62,42 @@
             
             <div class="settings-panel" id="setPanel">
                 <div class="opt-group">
-                    <span class="opt-title">Mode</span>
-                    <div class="opt-row">
+                    <span class="opt-title">Mode Pencarian</span>
+                    <div class="opt-row" style="justify-content: flex-start;">
                         <label><input type="radio" name="m" value="prefix" checked> Start</label>
                         <label><input type="radio" name="m" value="soundex"> Soundex</label>
                     </div>
                 </div>
                 <div class="opt-group">
-                    <span class="opt-title">Case</span>
-                    <div class="opt-row">
+                    <span class="opt-title">Format Huruf (Case)</span>
+                    <div class="opt-row" style="justify-content: flex-start;">
                         <label><input type="radio" name="c" value="lower" checked> abc</label>
                         <label><input type="radio" name="c" value="upper"> ABC</label>
                         <label><input type="radio" name="c" value="title"> Abc</label>
                     </div>
                 </div>
                 <div class="opt-group">
-                    <span class="opt-title">Font Size</span>
-                    <select id="fs">
-                        <option value="small">Small</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="large">Large</option>
-                    </select>
+                    <div class="opt-row">
+                        <span>Font Size:</span>
+                        <select id="fs">
+                            <option value="small">Small</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="opt-group">
+                    <div class="opt-row">
+                        <span>Limit Hasil:</span>
+                        <select id="lim">
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                            <option value="500">500</option>
+                            <option value="1000">1000</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,12 +112,10 @@
         const inp = document.getElementById('inp');
         const st = document.getElementById('st');
         const setPanel = document.getElementById('setPanel');
+        const limSelect = document.getElementById('lim');
 
-        // --- 1. TOGGLE DROPDOWN & THEME ---
-        document.getElementById('setBtn').onclick = (e) => {
-            e.stopPropagation();
-            setPanel.classList.toggle('show');
-        };
+        // Dropdown & Theme Toggle
+        document.getElementById('setBtn').onclick = (e) => { e.stopPropagation(); setPanel.classList.toggle('show'); };
         document.onclick = () => setPanel.classList.remove('show');
         setPanel.onclick = (e) => e.stopPropagation();
 
@@ -114,7 +127,7 @@
             tgl.innerText = d === 'dark' ? "☀️" : "🌙";
         };
 
-        // --- 2. SOUNDEX ALGO ---
+        // Soundex Algorithm
         function getSoundex(s) {
             let a = s.toUpperCase().split(''), f = a.shift(), r = '', m = {BFPV:1, CGJKQSXZ:2, DT:3, L:4, MN:5, R:6};
             r = f + a.map(v => { for (let k in m) if (k.indexOf(v) !== -1) return m[k]; return 0; })
@@ -122,9 +135,7 @@
             return (r + '000').slice(0, 4);
         }
 
-        // --- 3. DATABASE & INIT ---
         async function init() {
-            // Load Settings
             const sTh = localStorage.getItem('th') || 'light';
             document.documentElement.setAttribute('data-theme', sTh);
             tgl.innerText = sTh === 'dark' ? "☀️" : "🌙";
@@ -161,32 +172,46 @@
                 res.innerHTML = ''; if (!val) return;
 
                 const mode = document.querySelector('input[name="m"]:checked').value;
+                const limit = parseInt(limSelect.value);
                 res.className = 'case-' + document.querySelector('input[name="c"]:checked').value;
 
                 let f = [];
                 if (mode === 'prefix') {
-                    f = words.filter(w => w.toLowerCase().startsWith(val)).slice(0, 200);
+                    f = words.filter(w => w.toLowerCase().startsWith(val)).slice(0, limit);
                 } else {
                     const sdx = getSoundex(val);
-                    f = words.filter(w => getSoundex(w) === sdx).slice(0, 200);
+                    f = words.filter(w => getSoundex(w) === sdx).slice(0, limit);
                 }
 
                 const g = document.createDocumentFragment();
                 f.forEach(w => {
                     const l = document.createElement('li');
                     l.innerHTML = mode === 'prefix' ? `<span class="hi">${w.slice(0, val.length)}</span>${w.slice(val.length)}` : w;
-                    l.onclick = () => { navigator.clipboard.writeText(w); st.innerText = "Copied!"; };
+                    l.onclick = () => { 
+                        navigator.clipboard.writeText(w); 
+                        const oldSt = st.innerText;
+                        st.innerText = "Copied: " + w;
+                        setTimeout(() => st.innerText = oldSt, 1000);
+                    };
                     g.appendChild(l);
                 });
                 res.appendChild(g);
+                st.innerText = `Ditemukan: ${f.length} kata (Limit: ${limit})`;
             };
 
             inp.oninput = search;
+            // Triger search otomatis saat opsi di dalam dropdown berubah
             document.querySelectorAll('input, select').forEach(el => el.onchange = search);
+            
             document.getElementById('fs').onchange = (e) => {
                 document.body.classList.remove('font-small','font-medium','font-large');
                 document.body.classList.add('font-' + e.target.value);
+                localStorage.setItem('fs', e.target.value);
             };
+            
+            const savedFs = localStorage.getItem('fs') || 'medium';
+            document.getElementById('fs').value = savedFs;
+            document.body.classList.add('font-' + savedFs);
         }
         init();
     </script>
