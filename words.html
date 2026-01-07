@@ -3,84 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pencarian Kata Bahasa Inggris</title>
+    <title>Word Finder 3-Column</title>
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
-        #status { color: #666; font-style: italic; margin-bottom: 10px; }
-        #results { list-style: none; padding: 0; border-top: 1px solid #eee; }
-        #results li { padding: 8px 0; border-bottom: 1px solid #eee; color: #333; }
-        .highlight { font-weight: bold; color: #007bff; }
+        :root {
+            --primary-color: #007bff;
+            --bg-color: #f8f9fa;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; 
+            padding: 15px; 
+            background-color: var(--bg-color);
+        }
+
+        .header-sticky {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            padding: 10px 0 20px 0;
+            z-index: 100;
+            border-bottom: 1px solid #ddd;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 15px; 
+            border: 2px solid #ddd; 
+            border-radius: 12px; 
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        /* --- SISTEM 3 KOLOM --- */
+        #results { 
+            display: grid;
+            /* Membuat kolom otomatis: minimal 150px, maksimal 1 bagian dari sisa ruang */
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            padding: 0;
+            margin-top: 20px;
+            list-style: none;
+        }
+
+        /* Untuk layar desktop lebar, kita paksa tepat 3 kolom jika ingin konsisten */
+        @media (min-width: 600px) {
+            #results {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        #results li { 
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Agar kata yang sangat panjang tidak merusak kotak */
+            text-align: center;
+        }
+
+        .highlight { font-weight: bold; color: var(--primary-color); }
+        #status { font-size: 0.8rem; color: #666; margin-bottom: 5px; }
+        #count { font-size: 0.85rem; margin-top: 10px; color: #444; }
     </style>
 </head>
 <body>
 
-    <h2>Cari Kata (English Words)</h2>
-    <div id="status">Mengunduh daftar kata (4.8MB)... Mohon tunggu.</div>
+    <div class="header-sticky">
+        <h2>Cari Kata</h2>
+        <div id="status">Memeriksa cache...</div>
+        <input type="text" id="searchInput" placeholder="Ketik awalan..." autocomplete="off" inputmode="search" disabled>
+        <div id="count"></div>
+    </div>
     
-    <input type="text" id="searchInput" placeholder="Ketik awalan kata (misal: 'pro', 'tri')..." disabled>
-    
-    <div id="count"></div>
     <ul id="results"></ul>
 
     <script>
         const url = "./words.txt";
         let words = [];
+        const CACHE_KEY = "cached_words_data";
 
         const searchInput = document.getElementById('searchInput');
         const resultsList = document.getElementById('results');
         const statusDiv = document.getElementById('status');
         const countDiv = document.getElementById('count');
 
-        // 1. Fungsi Mengunduh Data
-        async function fetchWords() {
-            try {
-                const response = await fetch(url);
-                const text = await response.text();
-                // Memisahkan teks menjadi array berdasarkan baris baru
-                words = text.split('\n').filter(word => word.length > 0);
-                
-                statusDiv.innerText = "Selesai! Daftar kata siap digunakan.";
-                searchInput.disabled = false;
-                searchInput.focus();
-            } catch (error) {
-                statusDiv.innerText = "Gagal memuat data. Periksa koneksi internet.";
-                console.error(error);
+        async function init() {
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            if (cachedData) {
+                statusDiv.innerText = "Memuat dari cache (Instan)...";
+                words = JSON.parse(cachedData);
+                ready();
+            } else {
+                downloadWords();
             }
         }
 
-        // 2. Fungsi Pencarian
-        searchInput.addEventListener('input', (e) => {
-            const prefix = e.target.value.toLowerCase();
-            resultsList.innerHTML = ''; // Reset list
-
-            if (prefix.length < 1) {
-                countDiv.innerText = '';
-                return;
+        async function downloadWords() {
+            statusDiv.innerText = "Mengunduh file pertama kali...";
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                words = text.split(/\r?\n/).filter(w => w.trim().length > 0);
+                localStorage.setItem(CACHE_KEY, JSON.stringify(words));
+                ready();
+            } catch (e) {
+                statusDiv.innerText = "Error memuat file.";
             }
+        }
 
-            // Filter kata yang diawali dengan prefix
-            const filtered = words.filter(word => 
-                word.toLowerCase().startsWith(prefix)
-            );
+        function ready() {
+            statusDiv.innerText = `✅ ${words.length.toLocaleString()} kata tersedia.`;
+            searchInput.disabled = false;
+        }
 
-            // Tampilkan jumlah hasil
-            countDiv.innerHTML = `Menampilkan <b>${Math.min(filtered.length, 100)}</b> dari ${filtered.length} hasil.`;
+        let timer;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(timer);
+            const val = e.target.value.toLowerCase().trim();
+            timer = setTimeout(() => render(val), 100);
+        });
 
-            // Tampilkan 100 hasil pertama (agar browser tidak lag)
-            filtered.slice(0, 100).forEach(word => {
+        function render(prefix) {
+            resultsList.innerHTML = '';
+            if (!prefix) { countDiv.innerText = ''; return; }
+
+            const filtered = words.filter(w => w.toLowerCase().startsWith(prefix));
+            countDiv.innerText = `Ditemukan: ${filtered.length} kata`;
+
+            const fragment = document.createDocumentFragment();
+            // Menampilkan 99 hasil (kelipatan 3 agar baris terakhir penuh)
+            filtered.slice(0, 99).forEach(word => {
                 const li = document.createElement('li');
-                // Beri penekanan pada awalan
                 const boldPart = word.substring(0, prefix.length);
                 const restPart = word.substring(prefix.length);
                 li.innerHTML = `<span class="highlight">${boldPart}</span>${restPart}`;
-                resultsList.appendChild(li);
+                fragment.appendChild(li);
             });
-        });
+            resultsList.appendChild(fragment);
+        }
 
-        // Jalankan unduhan saat halaman dibuka
-        fetchWords();
+        init();
     </script>
-
 </body>
 </html>
