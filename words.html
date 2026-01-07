@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Finder Pro - Multi Mode</title>
     <style>
-        /* Variabel Warna */
         :root {
             --bg: #f8f9fa;
             --container-bg: #f8f9fa;
             --text: #333;
             --card-bg: #ffffff;
-            --border: #ddd;
+            --border: #e0e0e0; /* Lebih tipis */
             --primary: #007bff;
             --status-text: #666;
         }
@@ -19,70 +18,62 @@
         [data-theme="dark"] {
             --bg: #121212;
             --container-bg: #121212;
-            --text: #e0e0e0;
+            --text: #d1d1d1;
             --card-bg: #1e1e1e;
-            --border: #333;
+            --border: #2d2d2d;
             --primary: #3794ff;
-            --status-text: #aaa;
         }
 
         body { 
             font-family: system-ui, -apple-system, sans-serif; 
-            margin: 0; padding: 15px; 
-            background: var(--bg); 
-            color: var(--text);
-            transition: background 0.3s, color 0.3s;
+            margin: 0; padding: 10px; /* Padding body diperkecil */
+            background: var(--bg); color: var(--text);
         }
         
         .header {
             position: sticky; top: 0; background: var(--container-bg);
-            padding-bottom: 15px; z-index: 10; border-bottom: 1px solid var(--border);
+            padding-bottom: 10px; z-index: 10; border-bottom: 1px solid var(--border);
         }
 
-        .header-top {
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        /* Tombol Toggle Mode */
-        .theme-toggle {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        h3 { margin: 5px 0; font-size: 1.1rem; }
 
         input { 
-            width: 100%; padding: 15px; border: 2px solid var(--border); 
-            border-radius: 12px; font-size: 16px; box-sizing: border-box; 
-            outline: none; background: var(--card-bg); color: var(--text);
-            transition: border-color 0.3s;
+            width: 100%; padding: 10px 12px; /* Input lebih ramping */
+            border: 1px solid var(--border); 
+            border-radius: 8px; font-size: 14px; box-sizing: border-box; 
+            background: var(--card-bg); color: var(--text);
         }
-        input:focus { border-color: var(--primary); }
 
+        /* --- GRID SUPER COMPACT --- */
         #results { 
             display: grid;
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 8px; padding: 0; margin-top: 15px; list-style: none;
+            /* Desktop: 4 kolom, Tablet: 3 kolom, Mobile: 3 kolom kecil */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 4px; /* Jarak antar kotak dipersempit */
+            padding: 0; margin-top: 10px; list-style: none;
         }
 
-        @media (max-width: 450px) {
-            #results { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 768px) {
+            #results { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 400px) {
+            #results { grid-template-columns: repeat(3, 1fr); gap: 3px; }
         }
 
         #results li { 
-            background: var(--card-bg); padding: 10px; border-radius: 6px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2); font-size: 0.9rem;
-            text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            background: var(--card-bg); 
+            padding: 4px 6px; /* Padding sangat minim */
+            border-radius: 4px;
+            font-size: 0.8rem; /* Font diperkecil */
+            text-align: left; /* Rata kiri lebih hemat ruang daripada rata tengah */
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
             border: 1px solid var(--border);
         }
 
-        .highlight { color: var(--primary); font-weight: bold; }
-        #status { font-size: 0.75rem; color: var(--status-text); margin: 5px 0; }
-        #count { font-size: 0.8rem; font-weight: bold; margin-top: 10px; }
+        .highlight { color: var(--primary); font-weight: 600; }
+        #status { font-size: 0.7rem; color: var(--status-text); margin: 2px 0; }
+        #count { font-size: 0.75rem; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
