@@ -3,185 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Finder Pro - Multi Mode</title>
+    <title>Word Finder Extreme</title>
     <style>
-        :root {
-            --bg: #f8f9fa;
-            --container-bg: #f8f9fa;
-            --text: #333;
-            --card-bg: #ffffff;
-            --border: #e0e0e0; /* Lebih tipis */
-            --primary: #007bff;
-            --status-text: #666;
-        }
-
-        [data-theme="dark"] {
-            --bg: #121212;
-            --container-bg: #121212;
-            --text: #d1d1d1;
-            --card-bg: #1e1e1e;
-            --border: #2d2d2d;
-            --primary: #3794ff;
-        }
-
-        body { 
-            font-family: system-ui, -apple-system, sans-serif; 
-            margin: 0; padding: 10px; /* Padding body diperkecil */
-            background: var(--bg); color: var(--text);
-        }
+        :root { --bg: #f2f2f2; --h-bg: #fff; --txt: #333; --card: #fff; --brd: #e0e0e0; --pri: #007bff; }
+        [data-theme="dark"] { --bg: #121212; --h-bg: #1e1e1e; --txt: #d1d1d1; --card: #252525; --brd: #333; --pri: #3794ff; }
+        body { font-family: system-ui, sans-serif; margin: 0; padding: 0 8px; background: var(--bg); color: var(--txt); }
+        .header { position: sticky; top: 0; background: var(--h-bg); padding: 8px; z-index: 10; border-bottom: 1px solid var(--brd); margin: 0 -8px 8px -8px; }
+        .sw { display: flex; gap: 6px; align-items: center; }
+        input[type="text"] { flex: 1; padding: 8px; border: 1px solid var(--brd); border-radius: 6px; font-size: 14px; background: var(--card); color: var(--txt); outline: none; }
+        .theme-tgl { background: var(--card); border: 1px solid var(--brd); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 1.1rem; }
+        .options { display: flex; gap: 10px; margin-top: 8px; font-size: 0.75rem; color: gray; align-items: center; }
+        .options label { display: flex; align-items: center; gap: 3px; cursor: pointer; }
+        select { background: var(--card); color: var(--txt); border: 1px solid var(--brd); border-radius: 4px; font-size: 0.7rem; }
         
-        .header {
-            position: sticky; top: 0; background: var(--container-bg);
-            padding-bottom: 10px; z-index: 10; border-bottom: 1px solid var(--border);
-        }
-
-        h3 { margin: 5px 0; font-size: 1.1rem; }
-
-        input { 
-            width: 100%; padding: 10px 12px; /* Input lebih ramping */
-            border: 1px solid var(--border); 
-            border-radius: 8px; font-size: 14px; box-sizing: border-box; 
-            background: var(--card-bg); color: var(--text);
-        }
-
-        /* --- GRID SUPER COMPACT --- */
-        #results { 
-            display: grid;
-            /* Desktop: 4 kolom, Tablet: 3 kolom, Mobile: 3 kolom kecil */
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 4px; /* Jarak antar kotak dipersempit */
-            padding: 0; margin-top: 10px; list-style: none;
-        }
-
-        @media (max-width: 768px) {
-            #results { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        @media (max-width: 400px) {
-            #results { grid-template-columns: repeat(3, 1fr); gap: 3px; }
-        }
-
-        #results li { 
-            background: var(--card-bg); 
-            padding: 4px 6px; /* Padding sangat minim */
-            border-radius: 4px;
-            font-size: 0.8rem; /* Font diperkecil */
-            text-align: left; /* Rata kiri lebih hemat ruang daripada rata tengah */
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-            border: 1px solid var(--border);
-        }
-
-        .highlight { color: var(--primary); font-weight: 600; }
-        #status { font-size: 0.7rem; color: var(--status-text); margin: 2px 0; }
-        #count { font-size: 0.75rem; font-weight: bold; margin-top: 5px; }
+        #res { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 0; margin: 0; list-style: none; }
+        @media (max-width: 600px) { #res { grid-template-columns: repeat(3, 1fr); } }
+        #res li { background: var(--card); border-radius: 3px; border: 1px solid var(--brd); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* Case & Font Settings */
+        .case-lower { text-transform: lowercase; } .case-upper { text-transform: uppercase; } .case-title { text-transform: capitalize; }
+        .font-small #res li { font-size: 0.65rem; padding: 2px 4px; }
+        .font-medium #res li { font-size: 0.8rem; padding: 4px 6px; }
+        .font-large #res li { font-size: 1rem; padding: 6px 8px; }
+        
+        .hi { color: var(--pri); font-weight: bold; }
+        #st { font-size: 0.65rem; color: gray; margin-bottom: 4px; }
     </style>
 </head>
-<body>
+<body class="font-medium">
 
     <div class="header">
-        <div class="header-top">
-            <h3>Pencarian Kata</h3>
-            <button class="theme-toggle" id="themeToggle">🌙 Mode Gelap</button>
+        <div id="st">Memuat...</div>
+        <div class="sw">
+            <input type="text" id="inp" placeholder="Cari..." disabled>
+            <button class="theme-tgl" id="tgl">🌙</button>
         </div>
-        <div id="status">Memulai sistem...</div>
-        <input type="text" id="searchInput" placeholder="Cari awalan kata..." disabled>
-        <div id="count"></div>
+        <div class="options">
+            <label><input type="radio" name="c" value="lower" checked> abc</label>
+            <label><input type="radio" name="c" value="upper"> ABC</label>
+            <label><input type="radio" name="c" value="title"> Abc</label>
+            <span style="border-left:1px solid var(--brd); height:12px; margin-left:5px"></span>
+            <span>Size:</span>
+            <select id="fs">
+                <option value="small">S</option>
+                <option value="medium" selected>M</option>
+                <option value="large">L</option>
+            </select>
+        </div>
     </div>
     
-    <ul id="results"></ul>
+    <ul id="res" class="case-lower"></ul>
 
     <script>
-        const TXT_URL = "./words.txt";
-        let words = [];
-        const dbName = "WordCacheDB";
-        const storeName = "wordsStore";
+        const url = "./words.txt"; let words = [];
+        const dbN = "WordDB"; const stN = "ws";
 
-        // --- FITUR DARK MODE ---
-        const themeToggle = document.getElementById('themeToggle');
-        const currentTheme = localStorage.getItem('theme') || 'light';
+        // UI Logic
+        const res = document.getElementById('res');
+        const tgl = document.getElementById('tgl');
+        const fs = document.getElementById('fs');
 
-        if (currentTheme === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            themeToggle.innerText = "☀️ Mode Terang";
-        }
+        tgl.onclick = () => {
+            const d = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', d);
+            localStorage.setItem('th', d);
+            tgl.innerText = d === 'dark' ? "☀️" : "🌙";
+        };
+        const sTh = localStorage.getItem('th') || 'light';
+        document.documentElement.setAttribute('data-theme', sTh);
+        tgl.innerText = sTh === 'dark' ? "☀️" : "🌙";
 
-        themeToggle.addEventListener('click', () => {
-            let theme = document.documentElement.getAttribute('data-theme');
-            if (theme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-                themeToggle.innerText = "🌙 Mode Gelap";
-            } else {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                themeToggle.innerText = "☀️ Mode Terang";
-            }
+        document.querySelectorAll('input[name="c"]').forEach(o => {
+            o.onchange = (e) => res.className = 'case-' + e.target.value;
         });
 
-        // --- INDEXEDDB & PENCARIAN ---
-        function openDB() {
-            return new Promise((resolve) => {
-                const request = indexedDB.open(dbName, 1);
-                request.onupgradeneeded = () => request.result.createObjectStore(storeName);
-                request.onsuccess = () => resolve(request.result);
-            });
-        }
+        fs.onchange = (e) => {
+            document.body.classList.remove('font-small','font-medium','font-large');
+            document.body.classList.add('font-' + e.target.value);
+            localStorage.setItem('fs', e.target.value);
+        };
+        const sFs = localStorage.getItem('fs') || 'medium';
+        fs.value = sFs; document.body.classList.add('font-' + sFs);
 
+        // Data Logic
         async function init() {
-            const db = await openDB();
-            const tx = db.transaction(storeName, "readonly");
-            const cached = await new Promise(r => {
-                const req = tx.objectStore(storeName).get("all_words");
-                req.onsuccess = () => r(req.result);
+            const db = await new Promise(r => {
+                const q = indexedDB.open(dbN, 1);
+                q.onupgradeneeded = () => q.result.createObjectStore(stN);
+                q.onsuccess = () => r(q.result);
             });
-
-            if (cached) {
-                words = cached;
-                ready();
-            } else {
-                downloadWords();
-            }
+            const c = await new Promise(r => {
+                const q = db.transaction(stN).objectStore(stN).get("a");
+                q.onsuccess = () => r(q.result);
+            });
+            if (c) { words = c; ready(); } else { download(db); }
         }
 
-        async function downloadWords() {
-            document.getElementById('status').innerText = "Mengunduh file (4.8MB)...";
+        async function download(db) {
+            document.getElementById('st').innerText = "Downloading...";
             try {
-                const resp = await fetch(TXT_URL);
-                const text = await resp.text();
-                words = text.split(/\r?\n/).filter(w => w.trim().length > 0);
-                const db = await openDB();
-                const tx = db.transaction(storeName, "readwrite");
-                tx.objectStore(storeName).put(words, "all_words");
+                const r = await fetch(url);
+                const t = await r.text();
+                words = t.split(/\r?\n/).filter(w => w.trim());
+                db.transaction(stN, "readwrite").objectStore(stN).put(words, "a");
                 ready();
-            } catch (e) { document.getElementById('status').innerText = "Gagal memuat file."; }
+            } catch(e) { document.getElementById('st').innerText = "Error!"; }
         }
 
         function ready() {
-            document.getElementById('status').innerText = `✅ ${words.length.toLocaleString()} kata siap.`;
-            const input = document.getElementById('searchInput');
-            input.disabled = false;
-            input.focus();
+            document.getElementById('st').innerText = `Ready: ${words.length.toLocaleString()} words`;
+            const i = document.getElementById('inp'); i.disabled = false; i.focus();
+            i.oninput = (e) => {
+                const v = e.target.value.toLowerCase().trim();
+                res.innerHTML = ''; if(!v) return;
+                const f = words.filter(w => w.toLowerCase().startsWith(v)).slice(0, 200);
+                const g = document.createDocumentFragment();
+                f.forEach(w => {
+                    const l = document.createElement('li');
+                    l.innerHTML = `<span class="hi">${w.slice(0, v.length)}</span>${w.slice(v.length)}`;
+                    g.appendChild(l);
+                });
+                res.appendChild(g);
+            };
         }
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const prefix = e.target.value.toLowerCase().trim();
-            const resultsList = document.getElementById('results');
-            resultsList.innerHTML = '';
-            
-            if (!prefix) { document.getElementById('count').innerText = ''; return; }
-
-            const matched = words.filter(w => w.toLowerCase().startsWith(prefix));
-            document.getElementById('count').innerText = `Ditemukan: ${matched.length}`;
-
-            const frag = document.createDocumentFragment();
-            matched.slice(0, 150).forEach(word => {
-                const li = document.createElement('li');
-                li.innerHTML = `<span class="highlight">${word.substring(0, prefix.length)}</span>${word.substring(prefix.length)}`;
-                frag.appendChild(li);
-            });
-            resultsList.appendChild(frag);
-        });
-
         init();
     </script>
 </body>
