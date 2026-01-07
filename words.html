@@ -3,29 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Finder Extreme</title>
+    <title>Word Finder Extreme Compact</title>
     <style>
-        :root { --bg: #f2f2f2; --h-bg: #fff; --txt: #333; --card: #fff; --brd: #e0e0e0; --pri: #007bff; }
-        [data-theme="dark"] { --bg: #121212; --h-bg: #1e1e1e; --txt: #d1d1d1; --card: #252525; --brd: #333; --pri: #3794ff; }
-        body { font-family: system-ui, sans-serif; margin: 0; padding: 0 8px; background: var(--bg); color: var(--txt); }
-        .header { position: sticky; top: 0; background: var(--h-bg); padding: 8px; z-index: 10; border-bottom: 1px solid var(--brd); margin: 0 -8px 8px -8px; }
-        .sw { display: flex; gap: 6px; align-items: center; }
-        input[type="text"] { flex: 1; padding: 8px; border: 1px solid var(--brd); border-radius: 6px; font-size: 14px; background: var(--card); color: var(--txt); outline: none; }
-        .theme-tgl { background: var(--card); border: 1px solid var(--brd); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 1.1rem; }
-        .options { display: flex; gap: 10px; margin-top: 8px; font-size: 0.75rem; color: gray; align-items: center; }
+        :root { 
+            --bg: #f2f2f2; --h-bg: #ffffff; --txt: #333; 
+            --card: #ffffff; --brd: #e0e0e0; --pri: #007bff; 
+        }
+        [data-theme="dark"] { 
+            --bg: #121212; --h-bg: #1e1e1e; --txt: #d1d1d1; 
+            --card: #252525; --brd: #333; --pri: #3794ff; 
+        }
+
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            margin: 0; padding: 0 8px; 
+            background: var(--bg); color: var(--txt); 
+            transition: background 0.2s;
+        }
+
+        .header { 
+            position: sticky; top: 0; background: var(--h-bg); 
+            padding: 8px; z-index: 10; border-bottom: 1px solid var(--brd); 
+            margin: 0 -8px 8px -8px; 
+        }
+
+        .search-wrapper { display: flex; gap: 6px; align-items: center; }
+
+        input[type="text"] { 
+            flex: 1; padding: 8px 12px; border: 1px solid var(--brd); 
+            border-radius: 6px; font-size: 14px; background: var(--card); 
+            color: var(--txt); outline: none; 
+        }
+        input[type="text"]:focus { border-color: var(--pri); }
+
+        .theme-tgl { 
+            background: var(--card); border: 1px solid var(--brd); 
+            border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 1.1rem; 
+        }
+
+        .options { 
+            display: flex; gap: 10px; margin-top: 8px; 
+            font-size: 0.75rem; color: gray; align-items: center; 
+        }
         .options label { display: flex; align-items: center; gap: 3px; cursor: pointer; }
-        select { background: var(--card); color: var(--txt); border: 1px solid var(--brd); border-radius: 4px; font-size: 0.7rem; }
+        .divider { border-left: 1px solid var(--brd); height: 12px; margin: 0 2px; }
         
-        #res { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 0; margin: 0; list-style: none; }
+        select { 
+            background: var(--card); color: var(--txt); 
+            border: 1px solid var(--brd); border-radius: 4px; font-size: 0.7rem; 
+        }
+
+        #res { 
+            display: grid; grid-template-columns: repeat(4, 1fr); 
+            gap: 3px; padding: 0; margin: 0; list-style: none; 
+        }
         @media (max-width: 600px) { #res { grid-template-columns: repeat(3, 1fr); } }
-        #res li { background: var(--card); border-radius: 3px; border: 1px solid var(--brd); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        /* Case & Font Settings */
-        .case-lower { text-transform: lowercase; } .case-upper { text-transform: uppercase; } .case-title { text-transform: capitalize; }
+
+        #res li { 
+            background: var(--card); border-radius: 3px; border: 1px solid var(--brd); 
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            cursor: pointer; transition: transform 0.1s;
+        }
+        #res li:active { transform: scale(0.95); background: var(--pri); color: white; }
+
+        .case-lower { text-transform: lowercase; }
+        .case-upper { text-transform: uppercase; }
+        .case-title { text-transform: capitalize; }
+
         .font-small #res li { font-size: 0.65rem; padding: 2px 4px; }
         .font-medium #res li { font-size: 0.8rem; padding: 4px 6px; }
         .font-large #res li { font-size: 1rem; padding: 6px 8px; }
-        
+
         .hi { color: var(--pri); font-weight: bold; }
         #st { font-size: 0.65rem; color: gray; margin-bottom: 4px; }
     </style>
@@ -33,16 +81,16 @@
 <body class="font-medium">
 
     <div class="header">
-        <div id="st">Memuat...</div>
-        <div class="sw">
-            <input type="text" id="inp" placeholder="Cari..." disabled>
+        <div id="st">Inisialisasi...</div>
+        <div class="search-wrapper">
+            <input type="text" id="inp" placeholder="Ketik awalan kata..." disabled>
             <button class="theme-tgl" id="tgl">🌙</button>
         </div>
         <div class="options">
             <label><input type="radio" name="c" value="lower" checked> abc</label>
             <label><input type="radio" name="c" value="upper"> ABC</label>
             <label><input type="radio" name="c" value="title"> Abc</label>
-            <span style="border-left:1px solid var(--brd); height:12px; margin-left:5px"></span>
+            <span class="divider"></span>
             <span>Size:</span>
             <select id="fs">
                 <option value="small">S</option>
@@ -55,13 +103,16 @@
     <ul id="res" class="case-lower"></ul>
 
     <script>
-        const url = "./words.txt"; let words = [];
-        const dbN = "WordDB"; const stN = "ws";
+        const url = "./words.txt"; 
+        let words = [];
+        const dbN = "WordDB"; 
+        const stN = "ws";
 
-        // UI Logic
         const res = document.getElementById('res');
         const tgl = document.getElementById('tgl');
         const fs = document.getElementById('fs');
+        const inp = document.getElementById('inp');
+        const st = document.getElementById('st');
 
         tgl.onclick = () => {
             const d = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -73,10 +124,6 @@
         document.documentElement.setAttribute('data-theme', sTh);
         tgl.innerText = sTh === 'dark' ? "☀️" : "🌙";
 
-        document.querySelectorAll('input[name="c"]').forEach(o => {
-            o.onchange = (e) => res.className = 'case-' + e.target.value;
-        });
-
         fs.onchange = (e) => {
             document.body.classList.remove('font-small','font-medium','font-large');
             document.body.classList.add('font-' + e.target.value);
@@ -85,7 +132,12 @@
         const sFs = localStorage.getItem('fs') || 'medium';
         fs.value = sFs; document.body.classList.add('font-' + sFs);
 
-        // Data Logic
+        document.querySelectorAll('input[name="c"]').forEach(o => {
+            o.onchange = (e) => {
+                res.className = 'case-' + e.target.value;
+            };
+        });
+
         async function init() {
             const db = await new Promise(r => {
                 const q = indexedDB.open(dbN, 1);
@@ -96,36 +148,64 @@
                 const q = db.transaction(stN).objectStore(stN).get("a");
                 q.onsuccess = () => r(q.result);
             });
-            if (c) { words = c; ready(); } else { download(db); }
+            if (c) { 
+                words = c; 
+                ready(); 
+            } else { 
+                download(db); 
+            }
         }
 
         async function download(db) {
-            document.getElementById('st').innerText = "Downloading...";
+            st.innerText = "Mengunduh database (4.8MB)...";
             try {
                 const r = await fetch(url);
                 const t = await r.text();
                 words = t.split(/\r?\n/).filter(w => w.trim());
                 db.transaction(stN, "readwrite").objectStore(stN).put(words, "a");
                 ready();
-            } catch(e) { document.getElementById('st').innerText = "Error!"; }
+            } catch(e) { st.innerText = "Error: File words.txt tidak ditemukan!"; }
         }
 
         function ready() {
-            document.getElementById('st').innerText = `Ready: ${words.length.toLocaleString()} words`;
-            const i = document.getElementById('inp'); i.disabled = false; i.focus();
-            i.oninput = (e) => {
+            st.innerText = `Siap: ${words.length.toLocaleString()} kata`;
+            inp.disabled = false; 
+            inp.focus();
+
+            inp.oninput = (e) => {
                 const v = e.target.value.toLowerCase().trim();
-                res.innerHTML = ''; if(!v) return;
+                res.innerHTML = ''; 
+                
+                if(!v) {
+                    st.innerText = `Siap: ${words.length.toLocaleString()} kata`;
+                    return;
+                }
+
+                const curCase = document.querySelector('input[name="c"]:checked').value;
+                res.className = 'case-' + curCase;
+
                 const f = words.filter(w => w.toLowerCase().startsWith(v)).slice(0, 200);
+                st.innerText = `Ditemukan: ${f.length} kata`;
+
                 const g = document.createDocumentFragment();
                 f.forEach(w => {
                     const l = document.createElement('li');
                     l.innerHTML = `<span class="hi">${w.slice(0, v.length)}</span>${w.slice(v.length)}`;
+                    
+                    l.onclick = () => {
+                        const txt = l.innerText;
+                        navigator.clipboard.writeText(txt);
+                        const oldSt = st.innerText;
+                        st.innerText = `Disalin: ${txt}`;
+                        setTimeout(() => st.innerText = oldSt, 1000);
+                    };
+                    
                     g.appendChild(l);
                 });
                 res.appendChild(g);
             };
         }
+
         init();
     </script>
 </body>
