@@ -176,6 +176,7 @@
 	<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
 		{#if selectedBg}
 			<img 
+				id="main-bg-image"
 				src={selectedBg} 
 				alt="" 
 				class="w-full h-full object-cover grayscale transition-opacity duration-1000 opacity-[0.35]"

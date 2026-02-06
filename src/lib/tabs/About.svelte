@@ -31,33 +31,21 @@
 		canvas.width = 1080;
 		canvas.height = 1080;
 
-		// 1. Draw Background Base
+		// 1. Draw Background Base (Using pre-loaded image from DOM)
 		if (selectedStyle === 'impact') {
 			ctx.fillStyle = accentColor;
 			ctx.fillRect(0, 0, 1080, 1080);
 		} else {
-			if (bgImage) {
-				try {
-					const img = new Image();
-					img.crossOrigin = "anonymous";
-					img.src = bgImage;
-					await new Promise((resolve, reject) => {
-						img.onload = resolve;
-						img.onerror = reject;
-					});
-					
-					const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-					const x = (canvas.width / 2) - (img.width / 2) * scale;
-					const y = (canvas.height / 2) - (img.height / 2) * scale;
-					
-					ctx.save();
-					ctx.filter = selectedStyle === 'poetic' ? 'grayscale(100%) brightness(50%)' : 'grayscale(100%) brightness(35%)';
-					ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-					ctx.restore();
-				} catch (e) {
-					ctx.fillStyle = '#000000';
-					ctx.fillRect(0, 0, 1080, 1080);
-				}
+			const existingImg = document.getElementById('main-bg-image');
+			if (existingImg && existingImg.complete) {
+				const scale = Math.max(canvas.width / existingImg.naturalWidth, canvas.height / existingImg.naturalHeight);
+				const x = (canvas.width / 2) - (existingImg.naturalWidth / 2) * scale;
+				const y = (canvas.height / 2) - (existingImg.naturalHeight / 2) * scale;
+				
+				ctx.save();
+				ctx.filter = selectedStyle === 'poetic' ? 'grayscale(100%) brightness(50%)' : 'grayscale(100%) brightness(35%)';
+				ctx.drawImage(existingImg, x, y, existingImg.naturalWidth * scale, existingImg.naturalHeight * scale);
+				ctx.restore();
 			} else {
 				ctx.fillStyle = '#000000';
 				ctx.fillRect(0, 0, 1080, 1080);
