@@ -1,18 +1,20 @@
 <script>
 	import SnakeGame from './SnakeGame.svelte';
 	import FallingBlocks from './FallingBlocks.svelte';
+	import Tetris from './Tetris.svelte';
 	
 	let selectedGame = $state('snake');
 	
 	const games = [
 		{ id: 'snake', name: 'Snake.exe', icon: '🐍' },
-		{ id: 'evasion', name: 'Evasion.sys', icon: '🛡️' }
+		{ id: 'evasion', name: 'Evasion.sys', icon: '🛡️' },
+		{ id: 'tetris', name: 'Tetris.sys', icon: '🧱' }
 	];
 </script>
 
 <div class="w-full space-y-10">
 	<!-- Game Selector -->
-	<div class="flex justify-center gap-4 border-b border-slate-800/50 pb-6">
+	<div class="flex flex-wrap justify-center gap-4 border-b border-slate-800/50 pb-6">
 		{#each games as game}
 			<button 
 				onclick={() => selectedGame = game.id}
@@ -33,6 +35,8 @@
 			<SnakeGame />
 		{:else if selectedGame === 'evasion'}
 			<FallingBlocks />
+		{:else if selectedGame === 'tetris'}
+			<Tetris />
 		{/if}
 	</div>
 </div>
