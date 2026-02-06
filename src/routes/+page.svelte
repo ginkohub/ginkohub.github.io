@@ -25,10 +25,16 @@
 	let joke = $state({ setup: '', punchline: '', loading: false });
 	let showAura = $state(false);
 	
+	// Combo Strike State
+	let comboCount = $state(0);
+	let comboScale = $state(1);
+	let showCombo = $state(false);
+	let comboTimeout;
+	let isShaking = $state(false);
+
 	// Persistent Session State
 	let sessionStartTime = $state(Date.now());
 	
-	// Expanded Background Library
 	const backgrounds = [
 		'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80',
 		'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1920&q=80',
@@ -81,26 +87,11 @@
 	});
 
 	const personas = [
-		'Cyber Flâneur',
-		'Digital Observer',
-		'Web Tinkerer',
-		'Logic Voyager',
-		'Information Gatherer',
-		'Internet Surfer',
-		'System Architect',
-		'Data Mystic',
-		'Code Alchemist',
-		'Pixel Dreamer',
-		'Virtual Nomad',
-		'Syntax Weaver',
-		'Binary Poet',
-		'Neural Navigator',
-		'Reality Glitcher',
-		'Ghost in the Shell',
-		'Protocol Phantom',
-		'Void Walker',
-		'Silicon Sage',
-		'Bit Explorer'
+		'Cyber Flâneur', 'Digital Observer', 'Web Tinkerer', 'Logic Voyager',
+		'Information Gatherer', 'Internet Surfer', 'System Architect', 'Data Mystic',
+		'Code Alchemist', 'Pixel Dreamer', 'Virtual Nomad', 'Syntax Weaver',
+		'Binary Poet', 'Neural Navigator', 'Reality Glitcher', 'Ghost in the Shell',
+		'Protocol Phantom', 'Void Walker', 'Silicon Sage', 'Bit Explorer'
 	];
 
 	function shufflePersona() {
@@ -116,18 +107,31 @@
 
 	function triggerAura() {
 		showAura = false;
-		setTimeout(() => {
-			showAura = true;
-		}, 10);
-		setTimeout(() => {
-			showAura = false;
-		}, 2500);
+		setTimeout(() => { showAura = true; }, 10);
+		setTimeout(() => { showAura = false; }, 2500);
 	}
 
-	function handleLogoClick() {
+	function handleLogoClick(e) {
 		triggerAura();
 		shufflePersona();
 		shuffleAccent();
+		
+		// Combo Strike Logic
+		comboCount++;
+		showCombo = true;
+		comboScale = 1 + Math.min(comboCount * 0.02, 0.3);
+		isShaking = true;
+		
+		// Reset shake effect
+		setTimeout(() => { isShaking = false; }, 80);
+
+		// Handle Reset Timer
+		clearTimeout(comboTimeout);
+		comboTimeout = setTimeout(() => {
+			comboCount = 0;
+			showCombo = false;
+			comboScale = 1;
+		}, 1500);
 	}
 
 	function nextQuote() {
@@ -187,10 +191,10 @@
 	];
 </script>
 
-<div class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-hidden transition-colors duration-500" 
+<div class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500" 
 	style="--accent-color: {currentAccent.hex}">
 	
-	<!-- Random Single-Load Background -->
+	<!-- Stable Background: Outside the shaking container -->
 	<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
 		{#if selectedBg}
 			<img 
@@ -202,95 +206,107 @@
 				in:fade={{ duration: 1000 }}
 			/>
 		{/if}
-		<!-- Subtle Background Pattern Overlay -->
 		<div class="absolute inset-0 z-0 opacity-[0.05] pointer-events-none transition-all duration-1000" 
 			style="background-image: radial-gradient({showAura ? 'var(--accent-color)' : '#fff'} 1px, transparent 1px); background-size: 24px 24px;">   
 		</div>
-		<!-- Subtle Gradient Overlay -->
 		<div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40"></div>
 	</div>
 
-	<div class="max-w-xl mx-auto flex flex-col items-center relative z-10 px-6">
-		<!-- Profile Image -->
-		<div class="group perspective mt-12 mb-2 relative select-none">
-			{#if showAura}
-				<div class="absolute inset-0 rounded-full blur-2xl animate-glow-expand pointer-events-none" style="background-color: var(--accent-color); opacity: 0.3;"></div>
-				<div class="absolute inset-0 rounded-full border-2 animate-ripple pointer-events-none" style="border-color: var(--accent-color); opacity: 0.2;"></div>
-			{/if}
-			
-			<button 
-				onclick={handleLogoClick}
-				class="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full overflow-hidden transition-all duration-700 ease-out group-hover:scale-105 active:scale-95 z-10 block"
-			>
-				<img 
-					src="https://github.com/ginkohub.png" 
-					alt="GinkoHub Profile" 
-					class="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 active:grayscale-0 scale-125 {showAura ? 'grayscale-0' : ''}"
-					onerror={(e) => e.currentTarget.style.display='none'}
-				/>
-			</button>
-		</div>
-
-		<!-- Identity -->
-		<header class="mb-8 text-center">
-			<h1 class="text-2xl font-bold tracking-tight text-white mb-1 font-space active:scale-95 transition-transform">GinkoHub</h1>
-			<button 
-				onclick={() => { if (!showAura) { triggerAura(); shufflePersona(); shuffleAccent(); } }}
-				class="text-[9px] font-bold text-slate-300 uppercase tracking-widest hover:text-white active:text-white transition-colors cursor-pointer select-none"
-				title="Click to shuffle"
-			>
-				{persona} ↻
-			</button>
-		</header>
-
-		<!-- Modular Navigation (Fixed with Scroll Support) -->
-		<nav class="flex w-full border-b border-slate-800 mb-10 overflow-x-auto no-scrollbar scroll-smooth">
-			<div class="flex min-w-full">
-				{#each tabs as tab}
-					<button
-						onclick={() => (activeTabLabel = tab.label)}
-						class="flex-1 min-w-[80px] py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
-						{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+	<!-- Shaking Wrapper: Target only the content -->
+	<div class="relative z-10 w-full min-h-screen {isShaking ? 'animate-shake' : ''}" style="will-change: transform;">
+		<div class="max-w-xl mx-auto flex flex-col items-center px-6">
+			<!-- Profile Image & Combo Strike -->
+			<div class="group perspective mt-12 mb-2 relative select-none">
+				{#if showAura}
+					<div class="absolute inset-0 rounded-full blur-2xl animate-glow-expand pointer-events-none" style="background-color: var(--accent-color); opacity: 0.3;"></div>
+					<div class="absolute inset-0 rounded-full border-2 animate-ripple pointer-events-none" style="border-color: var(--accent-color); opacity: 0.2;"></div>
+				{/if}
+				
+				{#if showCombo && comboCount > 1}
+					<div 
+						class="absolute top-[-20%] left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:-right-12 md:top-0 z-20 pointer-events-none font-black italic tracking-tighter whitespace-nowrap"
+						style="color: var(--accent-color); font-size: {Math.min(14 + comboCount, 32)}px; filter: drop-shadow(0 0 10px var(--accent-color));"
+						in:fly={{ y: 10, duration: 150 }}
 					>
-						{tab.label}
-						{#if activeTabLabel === tab.label}
-							<div class="absolute bottom-0 left-0 w-full h-[2px]" style="background-color: var(--accent-color)" in:fade={{ duration: 200 }}></div>
-						{/if}
-					</button>
-				{/each}
-			</div>
-		</nav>
+						x{comboCount} STRIKE
+					</div>
+				{/if}
 
-		<!-- Dynamic Content -->
-		<div class="w-full min-h-[250px] pb-24">
-			{#if ActiveTabComponent}
-				<ActiveTabComponent 
-					{data} 
-					bind:meme 
-					bind:joke 
-					{fetchMeme} 
-					{fetchJoke} 
-					{scrapedQuotes} 
-					bind:currentQuoteIndex 
-					{quote} 
-					{prevQuote} 
-					{nextQuote} 
-					{contacts} 
-					accentColor={currentAccent.hex}
-					bgImage={selectedBg}
-					{sessionStartTime}
-				/>
-			{/if}
+				<button 
+					onclick={handleLogoClick}
+					class="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full overflow-hidden transition-all duration-75 ease-out group-hover:scale-105 active:scale-90 z-10 block touch-manipulation"
+					style="transform: scale({comboScale})"
+				>
+					<img 
+						src="https://github.com/ginkohub.png" 
+						alt="GinkoHub Profile" 
+						class="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 active:grayscale-0 scale-125 {showAura ? 'grayscale-0' : ''}"
+						onerror={(e) => e.currentTarget.style.display='none'}
+					/>
+				</button>
+			</div>
+
+			<!-- Identity -->
+			<header class="mb-8 text-center">
+				<h1 class="text-2xl font-bold tracking-tight text-white mb-1 font-space active:scale-95 transition-transform">GinkoHub</h1>
+				<button 
+					onclick={() => { if (!showAura) { triggerAura(); shufflePersona(); shuffleAccent(); } }}
+					class="text-[9px] font-bold text-slate-300 uppercase tracking-widest hover:text-white active:text-white transition-colors cursor-pointer select-none"
+					title="Click to shuffle"
+				>
+					{persona} ↻
+				</button>
+			</header>
+
+			<!-- Modular Navigation -->
+			<nav class="flex w-full border-b border-slate-800 mb-10 overflow-x-auto no-scrollbar scroll-smooth">
+				<div class="flex min-w-full">
+					{#each tabs as tab}
+						<button
+							onclick={() => (activeTabLabel = tab.label)}
+							class="flex-1 min-w-[80px] py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
+							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+						>
+							{tab.label}
+							{#if activeTabLabel === tab.label}
+								<div class="absolute bottom-0 left-0 w-full h-[2px]" style="background-color: var(--accent-color)" in:fade={{ duration: 200 }}></div>
+							{/if}
+						</button>
+					{/each}
+				</div>
+			</nav>
+
+			<!-- Dynamic Content -->
+			<div class="w-full min-h-[250px] pb-24">
+				{#if ActiveTabComponent}
+					<ActiveTabComponent 
+						{data} 
+						bind:meme 
+						bind:joke 
+						{fetchMeme} 
+						{fetchJoke} 
+						{scrapedQuotes} 
+						bind:currentQuoteIndex 
+						{quote} 
+						{prevQuote} 
+						{nextQuote} 
+						{contacts} 
+						accentColor={currentAccent.hex}
+						bgImage={selectedBg}
+						{sessionStartTime}
+					/>
+				{/if}
+			</div>
+
+			<!-- Footer -->
+			<footer class="mt-auto w-full py-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-3 text-[8px] font-bold uppercase tracking-widest text-slate-400">
+				<div class="flex gap-3">
+					<span>&copy; {new Date().getFullYear()} GINKOHUB</span>
+					<span>SvelteKit 5.0</span>
+				</div>
+				<span class="font-medium normal-case">Made with ❤️ by Google Gemini 3 Pro</span>
+			</footer>
 		</div>
-
-		<!-- Footer -->
-		<footer class="mt-auto w-full py-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-3 text-[8px] font-bold uppercase tracking-widest text-slate-400">
-			<div class="flex gap-3">
-				<span>&copy; {new Date().getFullYear()} GINKOHUB</span>
-				<span>SvelteKit 5.0</span>
-			</div>
-			<span class="font-medium normal-case">Made with ❤️ by Google Gemini 3 Pro</span>
-		</footer>
 	</div>
 </div>
 
@@ -299,21 +315,25 @@
 		background-color: #000000;
 		font-family: 'Inter', sans-serif;
 		transition: background-color 0.5s ease;
+		-webkit-tap-highlight-color: transparent;
 	}
 
-	.font-space {
-		font-family: 'Space Grotesk', sans-serif;
+	.font-space { font-family: 'Space Grotesk', sans-serif; }
+	.no-scrollbar::-webkit-scrollbar { display: none; }
+	.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+	.touch-manipulation { touch-action: manipulation; }
+
+	@keyframes shake {
+		0% { transform: translate(1px, 1px); }
+		20% { transform: translate(-1px, 0px); }
+		40% { transform: translate(1px, -1px); }
+		60% { transform: translate(-1px, 1px); }
+		80% { transform: translate(1px, 1px); }
+		100% { transform: translate(0, 0); }
 	}
 
-	/* Hide scrollbar for Chrome, Safari and Opera */
-	.no-scrollbar::-webkit-scrollbar {
-		display: none;
-	}
-
-	/* Hide scrollbar for IE, Edge and Firefox */
-	.no-scrollbar {
-		-ms-overflow-style: none;  /* IE and Edge */
-		scrollbar-width: none;  /* Firefox */
+	.animate-shake {
+		animation: shake 0.1s linear;
 	}
 
 	@keyframes glow-expand {
@@ -327,11 +347,6 @@
 		100% { transform: scale(2.2); opacity: 0; border-width: 1px; }
 	}
 
-	.animate-glow-expand {
-		animation: glow-expand 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-	}
-
-	.animate-ripple {
-		animation: ripple 2s cubic-bezier(0, 0, 0.2, 1) forwards;
-	}
+	.animate-glow-expand { animation: glow-expand 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+	.animate-ripple { animation: ripple 2s cubic-bezier(0, 0, 0.2, 1) forwards; }
 </style>

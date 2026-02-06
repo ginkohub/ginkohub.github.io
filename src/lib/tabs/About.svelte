@@ -1,5 +1,5 @@
 <script>
-	let { data, currentQuoteIndex = $bindable(), quote, prevQuote, nextQuote, scrapedQuotes, contacts, accentColor, bgImage } = $props();
+	let { data, currentQuoteIndex = $bindable(), quote, prevQuote, nextQuote, scrapedQuotes, contacts, accentColor, bgImage, sessionStartTime } = $props();
 
 	// Automatically scan features for this tab
 	const featureModules = import.meta.glob('../features/about/*.svelte', { eager: true });
@@ -26,6 +26,7 @@
 			{contacts} 
 			{accentColor} 
 			{bgImage} 
+			{sessionStartTime}
 		/>
 	{/each}
 </div>

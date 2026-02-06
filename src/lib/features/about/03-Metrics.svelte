@@ -19,8 +19,19 @@
 	});
 </script>
 
-<div class="flex flex-col items-center justify-center pt-6 border-t border-slate-800">
-	<div class="flex flex-col items-center space-y-1">
+<div class="grid grid-cols-2 gap-4 pt-6 border-t border-slate-800">
+	<div class="flex flex-col space-y-1">
+		<span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">System Traffic</span>
+		<div class="flex items-center">
+			<img 
+				src="https://hits.dwyl.com/ginkohub/ginkohub.github.io.svg?style=flat-square&show=count" 
+				alt="Visits"
+				class="h-[18px] opacity-80"
+			/>
+		</div>
+	</div>
+
+	<div class="flex flex-col space-y-1 items-end">
 		<span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">Session Duration</span>
 		<span class="text-xs font-mono font-bold tabular-nums" style="color: {accentColor}">{uptime}</span>
 	</div>
