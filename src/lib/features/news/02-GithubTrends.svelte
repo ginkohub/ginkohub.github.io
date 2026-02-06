@@ -15,11 +15,11 @@
 		repos = [];
 
 		try {
-			// Using GitHub's RSS feed via rss2json for maximum stability
+			// Using stable GitHubTrendingRSS hosted on GitHub Pages
 
-			const langParam = selectedLang === 'all' ? '' : selectedLang;
+			const langParam = selectedLang === 'all' ? 'all' : selectedLang;
 
-			const rssUrl = `https://github.com/trending/${langParam}?since=daily`;
+			const rssUrl = `https://mshibanami.github.io/GitHubTrendingRSS/daily/${langParam}.xml`;
 
 			const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
@@ -29,20 +29,21 @@
 
 			if (result.status === 'ok') {
 				repos = result.items.slice(0, 10).map((item) => {
-					// GitHub RSS titles are usually "author / repo"
+					const title = item.title || 'Unknown / Unknown';
 
-					const parts = item.title.split(' / ');
+					const parts = title.split(' / ');
 
 					return {
 						author: parts[0]?.trim() || 'GitHub',
 
-						name: parts[1]?.trim() || item.title,
+						name: parts[1]?.trim() || title,
 
-						url: item.link,
+						url: item.link || '#',
 
-						description: item.description?.replace(/<[^>]*>?/gm, '').trim() || 'No description.',
+						description:
+							item.description?.replace(/<[^>]*>?/gm, '').trim() || 'No description provided.',
 
-						stars: 0, // RSS doesn't provide star count directly
+						stars: 0,
 
 						currentPeriodStars: 0
 					};
