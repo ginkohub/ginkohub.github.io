@@ -13,10 +13,14 @@
 		repos = [];
 
 		try {
-			const url = `https://api.gtrending.vercel.app/repositories?language=${selectedLang === 'all' ? '' : selectedLang}&since=daily`;
-			const response = await fetch(url);
+			const targetUrl = `https://api.gtrending.vercel.app/repositories?language=${selectedLang === 'all' ? '' : selectedLang}&since=daily`;
+			// Using AllOrigins proxy to bypass CORS
+			const response = await fetch(
+				`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
+			);
 			if (!response.ok) throw new Error('Network response was not ok');
-			const data = await response.json();
+			const result = await response.json();
+			const data = JSON.parse(result.contents);
 
 			if (Array.isArray(data)) {
 				repos = data.slice(0, 10);
@@ -30,7 +34,6 @@
 			loading = false;
 		}
 	}
-
 	$effect(() => {
 		selectedLang;
 		fetchTrends();
