@@ -65,7 +65,6 @@
 			ctx.fillStyle = accentColor;
 			ctx.fillRect(0, 0, 1080, 1080);
 		} else {
-			const existingImg = document.getElementById('main-bg-image');
 			if (currentBg) {
 				try {
 					const img = new Image();
@@ -209,6 +208,13 @@
 	}
 
 	$effect(() => {
+		// TRACK DEPENDENCIES MANUALLY
+		selectedStyle; 
+		selectedFont; 
+		customBg; 
+		accentColor;
+		quote;
+
 		if (showPreview) generateImage(false);
 		if (typeof navigator !== 'undefined') {
 			canShare = !!navigator.share;
