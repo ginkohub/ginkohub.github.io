@@ -22,12 +22,30 @@
 
 	const PIECES = [
 		[[1, 1, 1, 1]], // I
-		[[1, 1], [1, 1]], // O
-		[[0, 1, 0], [1, 1, 1]], // T
-		[[1, 0, 0], [1, 1, 1]], // L
-		[[0, 0, 1], [1, 1, 1]], // J
-		[[0, 1, 1], [1, 1, 0]], // S
-		[[1, 1, 0], [0, 1, 1]]  // Z
+		[
+			[1, 1],
+			[1, 1]
+		], // O
+		[
+			[0, 1, 0],
+			[1, 1, 1]
+		], // T
+		[
+			[1, 0, 0],
+			[1, 1, 1]
+		], // L
+		[
+			[0, 0, 1],
+			[1, 1, 1]
+		], // J
+		[
+			[0, 1, 1],
+			[1, 1, 0]
+		], // S
+		[
+			[1, 1, 0],
+			[0, 1, 1]
+		] // Z
 	];
 
 	function createPiece() {
@@ -46,7 +64,12 @@
 					const boardY = y + p.y;
 					const boardX = x + p.x;
 					// Wall, Floor, or Occupied Cell check
-					if (boardX < 0 || boardX >= cols || boardY >= ROWS || (arena[boardY] && arena[boardY][boardX] !== 0)) {
+					if (
+						boardX < 0 ||
+						boardX >= cols ||
+						boardY >= ROWS ||
+						(arena[boardY] && arena[boardY][boardX] !== 0)
+					) {
 						return true;
 					}
 				}
@@ -70,7 +93,7 @@
 	}
 
 	function rotate(matrix) {
-		return matrix[0].map((_, i) => matrix.map(row => row[i]).reverse());
+		return matrix[0].map((_, i) => matrix.map((row) => row[i]).reverse());
 	}
 
 	function playerRotate() {
@@ -158,7 +181,8 @@
 	function draw() {
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent-color') || '#10b981';
+		const accent =
+			getComputedStyle(document.documentElement).getPropertyValue('--accent-color') || '#10b981';
 
 		// Draw arena
 		grid.forEach((row, y) => {
@@ -176,7 +200,12 @@
 			currentPiece.shape.forEach((row, y) => {
 				row.forEach((value, x) => {
 					if (value !== 0) {
-						ctx.fillRect((x + currentPiece.pos.x) * blockSize + 1, (y + currentPiece.pos.y) * blockSize + 1, blockSize - 2, blockSize - 2);
+						ctx.fillRect(
+							(x + currentPiece.pos.x) * blockSize + 1,
+							(y + currentPiece.pos.y) * blockSize + 1,
+							blockSize - 2,
+							blockSize - 2
+						);
 					}
 				});
 			});
@@ -221,7 +250,8 @@
 	});
 
 	$effect(() => {
-		blockSize; cols;
+		blockSize;
+		cols;
 		untrack(() => updateCanvas());
 	});
 </script>
@@ -233,8 +263,8 @@
 			<span class="text-xl font-bold font-space text-white">{score}</span>
 		</div>
 		<div class="flex items-center gap-4">
-			<button 
-				onclick={() => showSettings = !showSettings}
+			<button
+				onclick={() => (showSettings = !showSettings)}
 				class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all"
 			>
 				Config
@@ -250,16 +280,27 @@
 		<canvas bind:this={canvas} class="block shadow-2xl"></canvas>
 
 		{#if showSettings}
-			<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-6 z-20">
-				<h3 class="text-[10px] font-black text-white uppercase tracking-[0.3em] mb-6">Matrix Config</h3>
-				
+			<div
+				class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-6 z-20"
+			>
+				<h3 class="text-[10px] font-black text-white uppercase tracking-[0.3em] mb-6">
+					Matrix Config
+				</h3>
+
 				<div class="w-full space-y-4 mb-8">
 					<div class="space-y-1">
 						<div class="flex justify-between text-[7px] font-bold uppercase text-slate-500">
 							<span>Block Size</span>
 							<span class="text-white">{blockSize}px</span>
 						</div>
-						<input type="range" min="15" max="35" step="1" bind:value={blockSize} class="w-full accent-white" />
+						<input
+							type="range"
+							min="15"
+							max="35"
+							step="1"
+							bind:value={blockSize}
+							class="w-full accent-white"
+						/>
 					</div>
 
 					<div class="space-y-1">
@@ -267,15 +308,23 @@
 							<span>Columns</span>
 							<span class="text-white">{cols}</span>
 						</div>
-						<input type="range" min="8" max="16" step="1" bind:value={cols} class="w-full accent-white" disabled={gameStarted} />
+						<input
+							type="range"
+							min="8"
+							max="16"
+							step="1"
+							bind:value={cols}
+							class="w-full accent-white"
+							disabled={gameStarted}
+						/>
 						{#if gameStarted}
 							<p class="text-[6px] text-rose-500 uppercase">End game to change width</p>
 						{/if}
 					</div>
 				</div>
 
-				<button 
-					onclick={() => showSettings = false}
+				<button
+					onclick={() => (showSettings = false)}
 					class="w-full py-3 text-[10px] font-black uppercase tracking-widest bg-white text-black active:scale-95 transition-all"
 				>
 					Save & Close
@@ -284,16 +333,22 @@
 		{/if}
 
 		{#if !gameStarted && !showSettings}
-			<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+			<div
+				class="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm"
+			>
 				{#if gameOver}
-					<span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-2">Matrix Overflow</span>
+					<span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-2"
+						>Matrix Overflow</span
+					>
 					<span class="text-2xl font-bold text-white mb-6 font-space">STACK FULL</span>
 				{:else}
-					<span class="text-[10px] font-black text-violet-500 uppercase tracking-[0.3em] mb-2">Protocol: Tetris</span>
+					<span class="text-[10px] font-black text-violet-500 uppercase tracking-[0.3em] mb-2"
+						>Protocol: Tetris</span
+					>
 					<span class="text-2xl font-bold text-white mb-6 font-space">READY?</span>
 				{/if}
-				
-				<button 
+
+				<button
 					onclick={initGame}
 					class="px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
 					style="background-color: var(--accent-color); color: #000;"
@@ -306,10 +361,26 @@
 
 	<!-- Mobile Controls -->
 	<div class="grid grid-cols-3 gap-2 w-full max-w-[240px] md:hidden pt-4">
-		<button onclick={() => playerRotate()} class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800 col-span-3">ROTATE</button>
-		<button onclick={() => playerMove(-1)} class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800">←</button>
-		<button onclick={() => playerDrop()} class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800">↓</button>
-		<button onclick={() => playerMove(1)} class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800">→</button>
+		<button
+			onclick={() => playerRotate()}
+			class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800 col-span-3"
+			>ROTATE</button
+		>
+		<button
+			onclick={() => playerMove(-1)}
+			class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800"
+			>←</button
+		>
+		<button
+			onclick={() => playerDrop()}
+			class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800"
+			>↓</button
+		>
+		<button
+			onclick={() => playerMove(1)}
+			class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800"
+			>→</button
+		>
 	</div>
 </div>
 

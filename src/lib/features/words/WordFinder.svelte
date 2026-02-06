@@ -1,15 +1,15 @@
 <script>
 	import { onMount } from 'svelte';
-	
+
 	// -- State (Runes) --
 	let words = $state([]);
 	let status = $state('Connecting...');
 	let searchTerm = $state('');
 	let filteredWords = $state([]);
 	let searching = $state(false);
-	
+
 	let showSettings = $state(false);
-	
+
 	// Settings
 	let language = $state('english');
 	let mode = $state('prefix');
@@ -27,15 +27,17 @@
 			first = a.shift(),
 			result = '',
 			map = { BFPV: 1, CGJKQSXZ: 2, DT: 3, L: 4, MN: 5, R: 6 };
-		
-		result = first + a
-			.map((v) => {
-				for (let k in map) if (k.indexOf(v) !== -1) return map[k];
-				return 0;
-			})
-			.filter((v, i, t) => (i === 0 ? v !== map[first] : v !== t[i - 1]) && v !== 0)
-			.join('');
-			
+
+		result =
+			first +
+			a
+				.map((v) => {
+					for (let k in map) if (k.indexOf(v) !== -1) return map[k];
+					return 0;
+				})
+				.filter((v, i, t) => (i === 0 ? v !== map[first] : v !== t[i - 1]) && v !== 0)
+				.join('');
+
 		return (result + '000').slice(0, 4);
 	}
 
@@ -52,7 +54,10 @@
 		try {
 			const res = await fetch(`/${lang}.txt`);
 			const text = await res.text();
-			const list = text.split(/\r?\n/).filter((x) => x.trim()).map(w => w.toLowerCase());
+			const list = text
+				.split(/\r?\n/)
+				.filter((x) => x.trim())
+				.map((w) => w.toLowerCase());
 			const tx = db.transaction(STORE_NAME, 'readwrite');
 			tx.objectStore(STORE_NAME).put(list, lang);
 			return list;
@@ -69,7 +74,7 @@
 		const db = await initDB();
 		const tx = db.transaction(STORE_NAME, 'readwrite');
 		tx.objectStore(STORE_NAME).delete(language);
-		
+
 		words = await fetchWords(db, language);
 		status = `Reloaded: ${words.length.toLocaleString()} words`;
 	}
@@ -104,7 +109,7 @@
 	$effect(() => {
 		const term = searchTerm.trim().toLowerCase();
 		clearTimeout(timeout);
-		
+
 		if (!term || term.length < 2) {
 			filteredWords = [];
 			searching = false;
@@ -120,7 +125,7 @@
 	function performSearch(term) {
 		const results = [];
 		const max = limit;
-		
+
 		if (mode === 'prefix') {
 			for (let i = 0; i < words.length; i++) {
 				if (words[i].startsWith(term)) {
@@ -137,7 +142,7 @@
 				}
 			}
 		}
-		
+
 		filteredWords = results;
 		searching = false;
 	}
@@ -152,25 +157,36 @@
 	}
 
 	let displayStatus = $derived(
-		searching ? 'Searching...' : (searchTerm.length >= 2 ? `${filteredWords.length} words found` : status)
+		searching
+			? 'Searching...'
+			: searchTerm.length >= 2
+				? `${filteredWords.length} words found`
+				: status
 	);
 </script>
 
 <div class="word-container font-inter">
 	<div class="search-section">
 		<div class="status-indicator">{displayStatus}</div>
-		
+
 		<div class="input-wrapper">
-			<input 
-				type="text" 
-				bind:value={searchTerm} 
-				placeholder="Type to search..." 
-				disabled={words.length === 0} 
+			<input
+				type="text"
+				bind:value={searchTerm}
+				placeholder="Type to search..."
+				disabled={words.length === 0}
 				class="main-input font-space"
 			/>
-			
+
 			<div class="action-buttons">
-				<button class="action-btn text-base active:bg-white active:text-black" onclick={(e) => { e.stopPropagation(); showSettings = !showSettings; }} title="Settings">
+				<button
+					class="action-btn text-base active:bg-white active:text-black"
+					onclick={(e) => {
+						e.stopPropagation();
+						showSettings = !showSettings;
+					}}
+					title="Settings"
+				>
 					⚙️
 				</button>
 			</div>
@@ -179,13 +195,21 @@
 				<!-- Modal Overlay -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="modal-overlay" onclick={() => showSettings = false}>
-					<div class="settings-modal" onclick={(e) => e.stopPropagation()} style="border-color: var(--accent-color)">
+				<div class="modal-overlay" onclick={() => (showSettings = false)}>
+					<div
+						class="settings-modal"
+						onclick={(e) => e.stopPropagation()}
+						style="border-color: var(--accent-color)"
+					>
 						<div class="modal-header font-space">
 							<span>Configuration</span>
-							<button class="close-btn" style="border-color: var(--accent-color)" onclick={() => showSettings = false}>CLOSE</button>
+							<button
+								class="close-btn"
+								style="border-color: var(--accent-color)"
+								onclick={() => (showSettings = false)}>CLOSE</button
+							>
 						</div>
-						
+
 						<div class="setting-item">
 							<span class="setting-label">Language</span>
 							<select bind:value={language}>
@@ -232,7 +256,7 @@
 						</div>
 
 						<div class="setting-footer pt-4 border-t border-slate-800 mt-4">
-							<button 
+							<button
 								class="w-full py-2 text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 active:brightness-90 transition-all"
 								style="background-color: var(--accent-color)"
 								onclick={reloadDatabase}
@@ -250,9 +274,16 @@
 		{#if filteredWords.length > 0}
 			<div class="word-grid">
 				{#each filteredWords as word}
-					<button class="word-card active:brightness-95 transition-all" onclick={() => handleCopy(word)}>
+					<button
+						class="word-card active:brightness-95 transition-all"
+						onclick={() => handleCopy(word)}
+					>
 						{#if mode === 'prefix'}
-							<span class="match" style="color: var(--accent-color); text-decoration-color: var(--accent-color)">{word.slice(0, searchTerm.trim().length)}</span>{word.slice(searchTerm.trim().length)}
+							<span
+								class="match"
+								style="color: var(--accent-color); text-decoration-color: var(--accent-color)"
+								>{word.slice(0, searchTerm.trim().length)}</span
+							>{word.slice(searchTerm.trim().length)}
 						{:else}
 							{word}
 						{/if}
@@ -273,7 +304,7 @@
 		--bg: #000000;
 		--hover: #0f172a;
 		--text: #f1f5f9;
-		
+
 		width: 100%;
 	}
 
@@ -473,13 +504,27 @@
 		letter-spacing: 0.05em;
 	}
 
-	.case-lower { text-transform: lowercase; }
-	.case-upper { text-transform: uppercase; }
-	.case-title { text-transform: capitalize; }
+	.case-lower {
+		text-transform: lowercase;
+	}
+	.case-upper {
+		text-transform: uppercase;
+	}
+	.case-title {
+		text-transform: capitalize;
+	}
 
-	.font-small { font-size: 12px; }
-	.font-medium { font-size: 14px; }
-	.font-large { font-size: 18px; }
+	.font-small {
+		font-size: 12px;
+	}
+	.font-medium {
+		font-size: 14px;
+	}
+	.font-large {
+		font-size: 18px;
+	}
 
-	.flex-1 { flex: 1; }
+	.flex-1 {
+		flex: 1;
+	}
 </style>

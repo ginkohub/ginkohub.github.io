@@ -13,6 +13,7 @@ The core architectural principle is **Auto-Scanning Modularity**, allowing featu
 The application relies heavily on Vite's `import.meta.glob` feature to dynamically import components at build time. This creates a highly decoupled architecture.
 
 #### Level 1: Tabs (`src/routes/+page.svelte`)
+
 The main layout scans the `src/lib/tabs/` directory:
 
 ```javascript
@@ -25,6 +26,7 @@ const tabModules = import.meta.glob('$lib/tabs/*.svelte', { eager: true });
 - **State Passing**: The main page manages global state (Persona, Theme, Data) and passes it down to the active tab via props.
 
 #### Level 2: Features (e.g., `src/lib/tabs/Game.svelte`)
+
 Individual tabs can implement the same pattern to scan for their own sub-features. For example, the Game tab scans `src/lib/features/game/`:
 
 ```javascript
@@ -50,22 +52,22 @@ The project uses Svelte 5's fine-grained reactivity system (Runes).
 The project uses a **Hybrid Data Fetching** strategy.
 
 1.  **Scraping (Build Time)**: `scripts/scrape-quotes.js` runs (via `bun run scrape`).
-    -   Fetches HTML from Goodreads.
-    -   Parses with Regex.
-    -   Writes to `static/data/quotes.json`.
+    - Fetches HTML from Goodreads.
+    - Parses with Regex.
+    - Writes to `static/data/quotes.json`.
 2.  **Loading (Server Side)**: `src/routes/+page.server.js` reads the JSON file from the filesystem.
-    -   It uses `fs.readFileSync` to load the generated JSON.
-    -   Includes a hardcoded fallback if the file is missing.
-    -   Passes data to the frontend via the `data` prop.
+    - It uses `fs.readFileSync` to load the generated JSON.
+    - Includes a hardcoded fallback if the file is missing.
+    - Passes data to the frontend via the `data` prop.
 
 ### 4. Styling System
 
 - **Tailwind CSS 4**: Used for utility-first styling.
 - **Dynamic Themes**:
-    -   The `style="--accent-color: {currentAccent.hex}"` inline style on the root wrapper allows Tailwind utilities to use CSS variables for dynamic coloring.
--   **Animations**:
-    -   Svelte Transitions (`fade`, `fly`) are used for mounting/unmounting components.
-    -   CSS Keyframes (`shake`, `glow-expand`) are used for interactive feedback.
+  - The `style="--accent-color: {currentAccent.hex}"` inline style on the root wrapper allows Tailwind utilities to use CSS variables for dynamic coloring.
+- **Animations**:
+  - Svelte Transitions (`fade`, `fly`) are used for mounting/unmounting components.
+  - CSS Keyframes (`shake`, `glow-expand`) are used for interactive feedback.
 
 ## Directory Structure Logic
 

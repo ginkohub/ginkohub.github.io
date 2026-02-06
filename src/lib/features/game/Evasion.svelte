@@ -42,7 +42,7 @@
 
 	function animate(time = performance.now()) {
 		if (!gameStarted) return;
-		
+
 		const dt = time - lastTime;
 		lastTime = time;
 
@@ -63,7 +63,8 @@
 		ctx.fillRect(player.x, player.y, player.size, player.size);
 
 		// Update & Draw Obstacles
-		ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-color') || '#10b981';
+		ctx.fillStyle =
+			getComputedStyle(document.documentElement).getPropertyValue('--accent-color') || '#10b981';
 		for (let i = obstacles.length - 1; i >= 0; i--) {
 			const o = obstacles[i];
 			o.y += o.speed;
@@ -138,35 +139,40 @@
 		</div>
 	</div>
 
-	<div 
+	<div
 		class="relative group border border-slate-800 bg-slate-900/50 touch-none"
 		onmousemove={handleMove}
 		ontouchmove={handleMove}
 	>
-		<canvas 
-			bind:this={canvas} 
-			class="block cursor-none shadow-2xl"
-		></canvas>
+		<canvas bind:this={canvas} class="block cursor-none shadow-2xl"></canvas>
 
 		{#if !gameStarted}
-			<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
+			<div
+				class="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm transition-all"
+			>
 				{#if gameOver}
-					<span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-2">Structural Collapse</span>
+					<span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-2"
+						>Structural Collapse</span
+					>
 					<span class="text-2xl font-bold text-white mb-6 font-space">EVADED {score}</span>
 				{:else}
-					<span class="text-[10px] font-black text-sky-500 uppercase tracking-[0.3em] mb-2">Protocol: Evasion</span>
+					<span class="text-[10px] font-black text-sky-500 uppercase tracking-[0.3em] mb-2"
+						>Protocol: Evasion</span
+					>
 					<span class="text-2xl font-bold text-white mb-6 font-space">READY?</span>
 				{/if}
-				
-				<button 
+
+				<button
 					onclick={initGame}
 					class="px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
 					style="background-color: var(--accent-color); color: #000;"
 				>
 					{gameOver ? 'Repair & Retry' : 'Launch'}
 				</button>
-				
-				<p class="mt-8 text-[8px] text-slate-500 font-bold uppercase tracking-tighter">Slide or use arrows to dodge</p>
+
+				<p class="mt-8 text-[8px] text-slate-500 font-bold uppercase tracking-tighter">
+					Slide or use arrows to dodge
+				</p>
 			</div>
 		{/if}
 	</div>

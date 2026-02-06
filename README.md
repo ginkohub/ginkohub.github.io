@@ -7,6 +7,7 @@
 GinkoHub is a modern, performance-optimized developer portfolio built with **SvelteKit 5** and **Tailwind CSS 4.0**. It follows a "Cyber Flâneur" aesthetic—minimalist, pure black dark theme, and immersive nature backgrounds—blending tech-focused experiments with poetic wisdom.
 
 ## 🚀 Live Demo
+
 Visit the live site: [https://ginkohub.github.io/](https://ginkohub.github.io/)
 
 ---
@@ -14,13 +15,17 @@ Visit the live site: [https://ginkohub.github.io/](https://ginkohub.github.io/)
 ## ✨ Key Features
 
 ### 🧩 Fully Modular Architecture
+
 The project uses an advanced **Auto-Scanning Component System**. Adding new content is as simple as dropping a `.svelte` file into the right folder:
+
 - **Modular Tabs**: Automatically builds navigation from `src/lib/tabs/`.
 - **Feature Sections**: Each tab automatically scans its own `src/lib/features/<tab_name>/` directory.
 - **Arcade Hub**: Games are automatically detected and added to the "Game" tab from `src/lib/features/game/`.
 
 ### 🖋️ Advanced Quote Image Generator
+
 A professional-grade tool to generate and share wisdom:
+
 - **Multiple Styles**: Choose from Minimal, Impact, Poetic, Cyber, or Glass themes.
 - **Typography Engine**: Integrated font loading for Inter, Space Grotesk, Serif, and Monospace.
 - **Creative Controls**: Real-time X/Y text positioning, font size scaling, and background brightness sliders.
@@ -28,12 +33,15 @@ A professional-grade tool to generate and share wisdom:
 - **Mobile Friendly**: Integrated **Web Share API** for one-tap sharing to social apps.
 
 ### 🎮 Retro Arcade Hub
+
 A collection of sharp, minimalist digital experiments:
+
 - **Snake.exe**: Classic survival.
 - **Evasion.sys**: High-speed obstacle dodging.
 - **Tetris.sys**: Modular block stacking.
 
 ### 🛠️ Developer Tools
+
 - **Word Finder**: High-performance dictionary search (English/Indonesian) with Soundex and prefix matching.
 - **Link Previewer**: Real-time social metadata visualization for any URL (X, Facebook, Discord, WhatsApp, LinkedIn).
 - **Automated Scraping**: Build-time scraper that gathers fresh Rumi quotes from Goodreads without manual updates.
@@ -53,9 +61,11 @@ A collection of sharp, minimalist digital experiments:
 ## 💻 Getting Started
 
 ### Prerequisites
+
 - [Bun](https://bun.sh/) installed on your machine.
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/ginkohub/ginkohub.github.io.git
@@ -65,6 +75,7 @@ bun install
 ```
 
 ### Development
+
 ```bash
 # Start dev server
 bun run dev
@@ -74,6 +85,7 @@ bun run scrape
 ```
 
 ### Build
+
 ```bash
 # Build for production (static generation)
 bun run build

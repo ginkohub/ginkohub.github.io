@@ -5,9 +5,11 @@
 		const text = `${joke.setup}\n\n${joke.punchline}`;
 		navigator.clipboard.writeText(text);
 		const btn = document.getElementById('copy-joke-btn');
-		const originalText = btn.innerText;
-		btn.innerText = 'COPIED!';
-		setTimeout(() => btn.innerText = originalText, 2000);
+		if (btn) {
+			const originalText = btn.innerText;
+			btn.innerText = 'COPIED!';
+			setTimeout(() => (btn.innerText = originalText), 2000);
+		}
 	}
 
 	async function shareJoke() {
@@ -29,7 +31,7 @@
 	<div class="flex justify-between items-center mb-4">
 		<h2 class="text-[9px] font-bold uppercase tracking-widest text-slate-400">Random Logic</h2>
 		<div class="flex gap-3">
-			<button 
+			<button
 				id="copy-joke-btn"
 				onclick={copyJoke}
 				class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-500"
@@ -37,15 +39,15 @@
 				Copy
 			</button>
 			{#if typeof navigator !== 'undefined' && navigator.share}
-				<button 
+				<button
 					onclick={shareJoke}
 					class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-500"
 				>
 					Share
 				</button>
 			{/if}
-			<button 
-				onclick={fetchJoke} 
+			<button
+				onclick={fetchJoke}
 				class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
 				style="border-color: {accentColor}; color: {accentColor};"
 				disabled={joke.loading}

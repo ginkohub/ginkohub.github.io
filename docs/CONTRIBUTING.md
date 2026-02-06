@@ -12,7 +12,7 @@ To add a new section to the main navigation (e.g., "Gallery"):
 2.  Add your content. It will automatically receive the following props if defined:
     ```svelte
     <script>
-        let { data, accentColor, bgImage } = $props();
+    	let { data, accentColor, bgImage } = $props();
     </script>
     ```
 3.  **Optional**: To control the tab order, update the `order` object in `src/routes/+page.svelte`:
@@ -42,6 +42,6 @@ The "About" tab is also modular. To add a new slide/card:
 
 ## Code Style
 
--   **Svelte**: Use Svelte 5 Runes syntax (`$state`, `$derived`, `$props`).
--   **CSS**: Tailwind CSS 4.0 utility classes.
--   **Formatting**: Run `bun run format` before committing.
+- **Svelte**: Use Svelte 5 Runes syntax (`$state`, `$derived`, `$props`).
+- **CSS**: Tailwind CSS 4.0 utility classes.
+- **Formatting**: Run `bun run format` before committing.
