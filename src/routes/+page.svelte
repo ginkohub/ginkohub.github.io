@@ -109,6 +109,9 @@
 			newPersona = personas[Math.floor(Math.random() * personas.length)];
 		} while (newPersona === persona);
 		persona = newPersona;
+		if (typeof document !== 'undefined') {
+			document.title = `GinkoHub • ${persona}`;
+		}
 	}
 
 	function triggerAura() {
@@ -168,6 +171,7 @@
 	}
 
 	onMount(() => {
+		shufflePersona();
 		selectedBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
 		shuffleAccent();
 		if (scrapedQuotes.length > 0) {

@@ -5,6 +5,7 @@
 	let previewUrl = $state('');
 	let showPreview = $state(false);
 	let isGenerating = $state(false);
+	let canShare = $state(false);
 	let customBg = $state(null);
 	
 	let selectedStyle = $state('minimalist');
@@ -49,7 +50,6 @@
 		isGenerating = true;
 		
 		const font = fonts.find(f => f.id === selectedFont);
-		// Pre-load font
 		try {
 			await document.fonts.load(`bold italic 64px ${font.css}`);
 		} catch(e) {}
@@ -61,7 +61,6 @@
 
 		const currentBg = customBg || bgImage;
 
-		// 1. Draw Background
 		if (selectedStyle === 'impact') {
 			ctx.fillStyle = accentColor;
 			ctx.fillRect(0, 0, 1080, 1080);
@@ -96,7 +95,6 @@
 			}
 		}
 
-		// 2. Overlays
 		if (selectedStyle === 'glass') {
 			ctx.fillStyle = 'rgba(255,255,255,0.1)';
 			ctx.fillRect(100, 100, 880, 880);
@@ -112,7 +110,6 @@
 			ctx.fillRect(0, 0, 1080, 1080);
 		}
 
-		// 3. Style Elements
 		if (selectedStyle === 'minimalist') {
 			ctx.strokeStyle = accentColor;
 			ctx.lineWidth = 40;
@@ -128,14 +125,12 @@
 			ctx.fillRect(940, 1030, 100, 10); ctx.fillRect(1030, 940, 10, 100);
 		}
 
-		// Branding
 		ctx.textAlign = 'center';
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
 		ctx.font = '900 24px Inter, sans-serif';
 		ctx.letterSpacing = '8px';
 		ctx.fillText('GINKOHUB.GITHUB.IO', 540, 1000);
 
-		// 4. Quote Text
 		ctx.textAlign = 'center';
 		ctx.fillStyle = selectedStyle === 'impact' ? '#000000' : '#ffffff';
 		
@@ -176,7 +171,6 @@
 			ctx.fillText(line.trim(), 540, startY + (i * lineHeight));
 		});
 
-		// 5. Author
 		const authorY = Math.min(startY + (lines.length * lineHeight) + 80, 940);
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.6)' : accentColor;
 		ctx.font = `bold 32px ${font.css}, sans-serif`;
@@ -184,6 +178,7 @@
 
 		const dataUrl = canvas.toDataURL('image/png');
 		isGenerating = false;
+		
 		if (download) {
 			const link = document.createElement('a');
 			link.download = `ginkohub-quote-${Date.now()}.png`;
@@ -195,17 +190,28 @@
 		}
 	}
 
-	// Fix: Ensure all reactive variables are tracked by accessing them synchronously
+	async function shareImage() {
+		try {
+			const response = await fetch(previewUrl);
+			const blob = await response.blob();
+			const file = new File([blob], 'ginkohub-wisdom.png', { type: 'image/png' });
+			
+			if (navigator.share) {
+				await navigator.share({
+					files: [file],
+					title: 'GinkoHub Wisdom',
+					text: `"${quote.text}" — ${quote.author}`
+				});
+			}
+		} catch (err) {
+			console.error("Sharing failed", err);
+		}
+	}
+
 	$effect(() => {
-		// Access dependencies to track them
-		const dep1 = selectedStyle;
-		const dep2 = selectedFont;
-		const dep3 = customBg;
-		const dep4 = quote;
-		const dep5 = accentColor;
-		
-		if (showPreview) {
-			generateImage(false);
+		if (showPreview) generateImage(false);
+		if (typeof navigator !== 'undefined') {
+			canShare = !!navigator.share;
 		}
 	});
 </script>
@@ -231,14 +237,14 @@
 {#if showPreview}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 overflow-y-auto" onclick={() => showPreview = false} in:fade={{ duration: 250 }}>
-		<div class="w-full max-w-4xl flex flex-col md:flex-row gap-10 items-center justify-center" onclick={(e) => e.stopPropagation()}>
+	<div class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-start md:justify-center p-4 md:p-6 overflow-y-auto" onclick={() => showPreview = false} in:fade={{ duration: 250 }}>
+		<div class="w-full max-w-4xl flex flex-col md:flex-row gap-6 md:gap-10 items-center justify-center pt-10 md:pt-0" onclick={(e) => e.stopPropagation()}>
 			
 			<!-- Controls Column -->
-			<div class="flex flex-col gap-8 w-full md:w-64 order-2 md:order-1">
+			<div class="flex flex-col gap-6 w-full md:w-64 order-2 md:order-1">
 				<div>
-					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Visual Style</h3>
-					<div class="grid grid-cols-2 gap-2">
+					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-3 text-center md:text-left">Visual Style</h3>
+					<div class="grid grid-cols-3 md:grid-cols-2 gap-2">
 						{#each styles as style}
 							<button onclick={() => selectedStyle = style.id} class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedStyle === style.id ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/30'}">{style.name}</button>
 						{/each}
@@ -246,7 +252,7 @@
 				</div>
 
 				<div>
-					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Typography</h3>
+					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-3 text-center md:text-left">Typography</h3>
 					<div class="grid grid-cols-2 gap-2">
 						{#each fonts as font}
 							<button onclick={() => selectedFont = font.id} class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedFont === font.id ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/30'}">{font.name}</button>
@@ -254,8 +260,8 @@
 					</div>
 				</div>
 
-				<div>
-					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Background</h3>
+				<div class="flex flex-col gap-3">
+					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1 text-center md:text-left">Background</h3>
 					<label class="block w-full py-2 text-center text-[8px] font-black uppercase border border-white/10 text-white/40 hover:bg-white/5 cursor-pointer transition-all">
 						Upload Image
 						<input type="file" accept="image/*" class="hidden" onchange={handleFileUpload} />
@@ -264,12 +270,18 @@
 			</div>
 
 			<!-- Preview Image -->
-			<div class="relative w-full max-w-[500px] aspect-square shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/5 order-1 md:order-2">
+			<div class="relative w-full max-w-[400px] md:max-w-[500px] aspect-square shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/5 order-1 md:order-2">
 				<img src={previewUrl} alt="Quote Preview" class="w-full h-full object-contain" />
+				<div class="absolute bottom-2 right-2 md:hidden">
+					<span class="text-[7px] font-bold text-white/30 uppercase tracking-widest bg-black/40 px-2 py-1 backdrop-blur-md">Long press image to save</span>
+				</div>
 			</div>
 
 			<!-- Action Column -->
-			<div class="flex flex-col gap-4 w-full md:w-48 order-3">
+			<div class="flex flex-col gap-3 w-full md:w-48 order-3 pb-10 md:pb-0">
+				{#if canShare}
+					<button onclick={shareImage} class="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] bg-emerald-500 text-black hover:bg-emerald-400 transition-all active:scale-95">Share Card</button>
+				{/if}
 				<button onclick={() => generateImage(true)} class="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] bg-white text-black hover:bg-slate-200 transition-all active:scale-95">Download PNG</button>
 				<button onclick={() => showPreview = false} class="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] border border-white/20 text-white hover:bg-white/10 transition-all">Close</button>
 			</div>
