@@ -323,6 +323,11 @@
 		outline: none;
 	}
 
+	.main-input::placeholder {
+		color: var(--secondary);
+		opacity: 0.6;
+	}
+
 	.action-buttons {
 		display: flex;
 		gap: 0.5rem;
