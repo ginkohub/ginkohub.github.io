@@ -31,7 +31,7 @@
 		canvas.width = 1080;
 		canvas.height = 1080;
 
-		// 1. Draw Background Base (Using pre-loaded image from DOM)
+		// 1. Draw Background Base
 		if (selectedStyle === 'impact') {
 			ctx.fillStyle = accentColor;
 			ctx.fillRect(0, 0, 1080, 1080);
@@ -62,7 +62,7 @@
 			ctx.fillRect(0, 0, 1080, 1080);
 		}
 
-		// 3. Style Specific Elements
+		// 3. Style Elements
 		if (selectedStyle === 'minimalist') {
 			ctx.strokeStyle = accentColor;
 			ctx.lineWidth = 40;
@@ -150,40 +150,34 @@
 			showPreview = true;
 		}
 	}
+
+	// Instant re-generation when style changes in preview
+	$effect(() => {
+		if (showPreview) {
+			generateImage(false);
+		}
+	});
 </script>
 
 <div class="space-y-10 animate-in fade-in duration-500" in:fly={{ y: 10, duration: 400, delay: 100 }}>
 	<!-- Rumi Section -->
 	<div class="pb-10 relative group/quote text-center md:text-left">
-		<div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
-			<div class="flex flex-col gap-4">
-				<div class="flex gap-2">
-					{#each styles as style}
-						<button 
-							onclick={() => selectedStyle = style.id}
-							class="text-[7px] font-black uppercase border px-2 py-1 transition-all
-							{selectedStyle === style.id ? 'bg-white text-black border-white' : 'border-slate-800 text-slate-500'}"
-						>
-							{style.name}
-						</button>
-					{/each}
-				</div>
-				<div class="flex gap-3">
-					<button 
-						id="copy-btn"
-						onclick={copyQuote}
-						class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300"
-					>
-						Copy Text
-					</button>
-					<button 
-						onclick={() => generateImage(false)}
-						class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300 disabled:opacity-50"
-						disabled={isGenerating}
-					>
-						{isGenerating ? 'GEN...' : 'Generate Image'}
-					</button>
-				</div>
+		<div class="flex justify-between items-center mb-6">
+			<div class="flex gap-3">
+				<button 
+					id="copy-btn"
+					onclick={copyQuote}
+					class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300"
+				>
+					Copy Text
+				</button>
+				<button 
+					onclick={() => generateImage(false)}
+					class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300 disabled:opacity-50"
+					disabled={isGenerating}
+				>
+					{isGenerating ? 'GEN...' : 'Generate Image'}
+				</button>
 			</div>
 			<div class="flex gap-2 items-center">
 				<button 
@@ -241,6 +235,19 @@
 		onclick={() => showPreview = false}
 		in:fade={{ duration: 250 }}
 	>
+		<!-- Style Switcher inside Preview -->
+		<div class="mb-8 flex gap-2">
+			{#each styles as style}
+				<button 
+					onclick={(e) => { e.stopPropagation(); selectedStyle = style.id; }}
+					class="px-4 py-2 text-[10px] font-black uppercase tracking-widest border transition-all
+					{selectedStyle === style.id ? 'bg-white text-black border-white' : 'border-white/20 text-white/50 hover:border-white/40'}"
+				>
+					{style.name}
+				</button>
+			{/each}
+		</div>
+
 		<div 
 			class="relative w-full max-w-[500px] aspect-square shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden"
 			onclick={(e) => e.stopPropagation()}
@@ -262,7 +269,5 @@
 				Close
 			</button>
 		</div>
-		
-		<p class="mt-8 text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] animate-pulse">Design: {styles.find(s => s.id === selectedStyle)?.name} Card</p>
 	</div>
 {/if}
