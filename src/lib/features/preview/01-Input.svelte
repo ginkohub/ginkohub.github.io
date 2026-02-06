@@ -1,5 +1,5 @@
 <script>
-	import { previewState, fetchMetadata } from './previewState.svelte.js';
+	import { previewState } from './previewState.svelte.js';
 	let { accentColor } = $props();
 </script>
 
@@ -10,10 +10,10 @@
 		<input 
 			bind:value={previewState.inputUrl} 
 			placeholder="Enter any URL (e.g. https://google.com)"
-			class="flex-1 bg-black border border-slate-800 p-3 text-sm focus:border-white transition-colors outline-none font-space"
+			class="flex-1 bg-black border border-slate-800 p-3 text-sm focus:border-white transition-colors outline-none font-space text-white"
 		/>
 		<button 
-			onclick={fetchMetadata}
+			onclick={() => previewState.fetch()}
 			disabled={previewState.isLoading}
 			class="px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
 			style="background-color: {accentColor}; color: #000;"
@@ -21,5 +21,10 @@
 			{previewState.isLoading ? 'Fetching...' : 'Preview Link'}
 		</button>
 	</div>
-	<p class="text-[8px] text-slate-600 font-bold uppercase tracking-tighter">Enter a URL to see how it appears across different platforms</p>
+	
+	{#if previewState.error}
+		<p class="text-[9px] font-bold text-rose-500 uppercase tracking-widest">{previewState.error}</p>
+	{:else}
+		<p class="text-[8px] text-slate-600 font-bold uppercase tracking-tighter">Enter a URL to see how it appears across different platforms</p>
+	{/if}
 </div>
