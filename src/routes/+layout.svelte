@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>GINKOHUB</title>
+	<title>GinkoHub • Cyber Flâneur</title>
 	<meta name="description" content="Ginkohub - Developer Portfolio" />
 	<link rel="icon" href="https://github.com/ginkohub.png" />
 </svelte:head>
