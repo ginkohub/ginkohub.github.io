@@ -10,6 +10,7 @@
 	
 	let selectedStyle = $state('minimalist');
 	let selectedFont = $state('sans');
+	let bgOpacity = $state(35); // Default 35%
 	
 	const styles = [
 		{ id: 'minimalist', name: 'Minimal' },
@@ -81,8 +82,9 @@
 					const y = (canvas.height / 2) - (img.height / 2) * scale;
 					
 					ctx.save();
-					ctx.filter = 'grayscale(100%) brightness(35%)';
-					if (selectedStyle === 'glass') ctx.filter = 'grayscale(100%) brightness(50%) blur(10px)';
+					const brightness = bgOpacity;
+					ctx.filter = `grayscale(100%) brightness(${brightness}%)`;
+					if (selectedStyle === 'glass') ctx.filter = `grayscale(100%) brightness(${brightness + 15}%) blur(10px)`;
 					ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
 					ctx.restore();
 				} catch (e) {
@@ -95,7 +97,6 @@
 			}
 		}
 
-		// 2. Overlays
 		if (selectedStyle === 'glass') {
 			ctx.fillStyle = 'rgba(255,255,255,0.1)';
 			ctx.fillRect(100, 100, 880, 880);
@@ -111,7 +112,6 @@
 			ctx.fillRect(0, 0, 1080, 1080);
 		}
 
-		// 3. Style Elements
 		if (selectedStyle === 'minimalist') {
 			ctx.strokeStyle = accentColor;
 			ctx.lineWidth = 40;
@@ -215,12 +215,12 @@
 	}
 
 	$effect(() => {
-		// TRACK DEPENDENCIES MANUALLY
 		selectedStyle; 
 		selectedFont; 
 		customBg; 
 		accentColor;
 		quote;
+		bgOpacity;
 
 		if (showPreview) generateImage(false);
 		if (typeof navigator !== 'undefined') {
@@ -275,6 +275,21 @@
 
 				<div class="flex flex-col gap-3">
 					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1 text-center md:text-left">Background</h3>
+					
+					{#if selectedStyle !== 'impact'}
+						<div class="space-y-2 mb-2">
+							<div class="flex justify-between text-[7px] font-black uppercase tracking-widest text-slate-500">
+								<span>Brightness</span>
+								<span>{bgOpacity}%</span>
+							</div>
+							<input 
+								type="range" min="5" max="80" step="5" 
+								bind:value={bgOpacity}
+								class="w-full accent-white opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+							/>
+						</div>
+					{/if}
+
 					<label class="block w-full py-2 text-center text-[8px] font-black uppercase border border-white/10 text-white/40 hover:bg-white/5 cursor-pointer transition-all">
 						Upload Image
 						<input type="file" accept="image/*" class="hidden" onchange={handleFileUpload} />
