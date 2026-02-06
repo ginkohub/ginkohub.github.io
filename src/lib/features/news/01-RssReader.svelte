@@ -5,7 +5,11 @@
 		{ name: 'Hacker News', url: 'https://news.ycombinator.com/rss' },
 		{ name: 'TechCrunch', url: 'https://techcrunch.com/feed/' },
 		{ name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml' },
-		{ name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' }
+		{ name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' },
+		{ name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index' },
+		{ name: 'Smashing Mag', url: 'https://www.smashingmagazine.com/feed/' },
+		{ name: 'FreeCodeCamp', url: 'https://www.freecodecamp.org/news/rss/' },
+		{ name: 'GitHub Blog', url: 'https://github.blog/feed/' }
 	];
 
 	let selectedFeed = $state(feeds[0].url);
