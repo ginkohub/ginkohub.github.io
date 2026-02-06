@@ -241,6 +241,7 @@
 					{prevQuote} 
 					{nextQuote} 
 					{contacts} 
+					accentColor={currentAccent.hex}
 				/>
 			{/if}
 		</div>
