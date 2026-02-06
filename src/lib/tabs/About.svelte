@@ -79,13 +79,13 @@
 				<button 
 					id="copy-btn"
 					onclick={copyQuote}
-					class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all"
+					class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300"
 				>
 					Copy Text
 				</button>
 				<button 
 					onclick={downloadAsImage}
-					class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all"
+					class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300"
 				>
 					Save Image
 				</button>
@@ -98,7 +98,7 @@
 				>
 					← Prev
 				</button>
-				<span class="text-[7px] text-slate-500 font-bold uppercase tracking-widest px-2">
+				<span class="text-[7px] text-slate-300 font-bold uppercase tracking-widest px-2">
 					{currentQuoteIndex + 1} / {scrapedQuotes.length}
 				</span>
 				<button 
@@ -114,16 +114,16 @@
 			<p class="text-lg md:text-xl font-bold leading-snug text-slate-200 font-space italic">
 				"{quote.text}"
 			</p>
-			<p class="text-[9px] font-black uppercase tracking-widest text-slate-500/70">— {quote.author}</p>
+			<p class="text-[9px] font-black uppercase tracking-widest text-slate-400">— {quote.author}</p>
 		</div>
 	</div>
 
 	<div class="space-y-6 pt-6 border-t border-slate-800">
-		<h2 class="text-[9px] font-bold uppercase tracking-widest text-slate-500">Connect</h2>
+		<h2 class="text-[9px] font-bold uppercase tracking-widest text-slate-400">Connect</h2>
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
 			{#each contacts as contact}
 				<div class="flex flex-col group/item">
-					<span class="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5 group-hover/item:text-slate-300 transition-colors">{contact.label}</span>
+					<span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5 group-hover/item:text-slate-200 transition-colors">{contact.label}</span>
 					{#if contact.link}
 						<a href={contact.link} target="_blank" class="text-sm font-bold text-white hover:text-slate-300 active:text-slate-300 transition-colors w-fit break-all font-space">
 							{contact.value}

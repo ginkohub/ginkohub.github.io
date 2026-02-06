@@ -203,7 +203,7 @@
 			<h1 class="text-2xl font-bold tracking-tight text-white mb-1 font-space active:scale-95 transition-transform">GinkoHub</h1>
 			<button 
 				onclick={() => { if (!showAura) { triggerAura(); shufflePersona(); shuffleAccent(); } }}
-				class="text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:text-white active:text-white transition-colors cursor-pointer select-none"
+				class="text-[9px] font-bold text-slate-300 uppercase tracking-widest hover:text-white active:text-white transition-colors cursor-pointer select-none"
 				title="Click to shuffle"
 			>
 				{persona} ↻
@@ -216,7 +216,7 @@
 				<button
 					onclick={() => (activeTabLabel = tab.label)}
 					class="flex-1 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
-                    {activeTabLabel === tab.label ? 'text-white' : 'text-slate-500 hover:text-slate-300'}"
+                    {activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
 				>
 					{tab.label}
 					{#if activeTabLabel === tab.label}
@@ -247,7 +247,7 @@
 		</div>
 
 		<!-- Footer -->
-		<footer class="mt-auto w-full py-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-3 text-[8px] font-bold uppercase tracking-widest text-slate-500">
+		<footer class="mt-auto w-full py-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-3 text-[8px] font-bold uppercase tracking-widest text-slate-400">
 			<div class="flex gap-3">
 				<span>&copy; {new Date().getFullYear()} GINKOHUB</span>
 				<span>SvelteKit 5.0</span>

@@ -170,7 +170,7 @@
 			/>
 			
 			<div class="action-buttons">
-				<button class="action-btn text-base active:bg-slate-900 active:text-white" onclick={(e) => { e.stopPropagation(); showSettings = !showSettings; }} title="Settings">
+				<button class="action-btn text-base active:bg-white active:text-black" onclick={(e) => { e.stopPropagation(); showSettings = !showSettings; }} title="Settings">
 					⚙️
 				</button>
 			</div>
@@ -183,7 +183,7 @@
 					<div class="settings-modal" onclick={(e) => e.stopPropagation()} style="border-color: var(--accent-color)">
 						<div class="modal-header font-space">
 							<span>Configuration</span>
-							<button class="close-btn" onclick={() => showSettings = false}>CLOSE</button>
+							<button class="close-btn" style="border-color: var(--accent-color)" onclick={() => showSettings = false}>CLOSE</button>
 						</div>
 						
 						<div class="setting-item">
@@ -231,7 +231,7 @@
 							</div>
 						</div>
 
-						<div class="setting-footer pt-4 border-t border-slate-100 mt-4">
+						<div class="setting-footer pt-4 border-t border-slate-800 mt-4">
 							<button 
 								class="w-full py-2 text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 active:brightness-90 transition-all"
 								style="background-color: var(--accent-color)"
@@ -267,21 +267,14 @@
 
 <style>
 	.word-container {
-		--primary: #0f172a;
-		--secondary: #64748b;
-		--border: #e2e8f0;
-		--bg: #ffffff;
-		--hover: #f8fafc;
-		
-		width: 100%;
-	}
-
-	:global([data-theme='dark']) .word-container {
-		--primary: #f8fafc;
+		--primary: #f1f5f9;
 		--secondary: #94a3b8;
 		--border: #1e293b;
 		--bg: #000000;
 		--hover: #0f172a;
+		--text: #f1f5f9;
+		
+		width: 100%;
 	}
 
 	.search-section {
@@ -325,7 +318,7 @@
 
 	.main-input::placeholder {
 		color: var(--secondary);
-		opacity: 0.6;
+		opacity: 0.5;
 	}
 
 	.action-buttons {
@@ -393,10 +386,12 @@
 		font-weight: 900;
 		border-bottom: 1px solid var(--primary);
 		cursor: pointer;
+		color: var(--primary);
 	}
 
 	.setting-item {
 		margin-bottom: 1.25rem;
+		color: var(--primary);
 	}
 
 	.setting-label {
