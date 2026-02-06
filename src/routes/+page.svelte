@@ -260,12 +260,12 @@
 			{#if ActiveTabComponent}
 				<ActiveTabComponent 
 					{data} 
-					{meme} 
-					{joke} 
+					bind:meme 
+					bind:joke 
 					{fetchMeme} 
 					{fetchJoke} 
 					{scrapedQuotes} 
-					{currentQuoteIndex} 
+					bind:currentQuoteIndex 
 					{quote} 
 					{prevQuote} 
 					{nextQuote} 
