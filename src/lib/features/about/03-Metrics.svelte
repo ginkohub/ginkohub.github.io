@@ -23,9 +23,8 @@
 	<div class="flex flex-col space-y-1">
 		<span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">Global Connectivity</span>
 		<div class="flex items-center gap-3">
-			<!-- Invisible pixel to trigger count, visible badge for display -->
 			<img 
-				src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fginkohub.github.io&count_bg=%23000000&title_bg=%23000000&icon=&icon_color=%23E7E7E7&title=VISITS&edge_flat=true" 
+				src="https://hits.dwyl.com/ginkohub/ginkohub.github.io.svg" 
 				alt="Visit Counter"
 				class="h-4 opacity-80 grayscale hover:grayscale-0 transition-all cursor-crosshair"
 			/>
