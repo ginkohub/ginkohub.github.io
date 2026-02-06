@@ -42,46 +42,68 @@
 		developers = [];
 
 		try {
-			const langParam = selectedLang === 'all' ? 'all' : selectedLang;
-			const typePath = mode === 'repositories' ? 'daily' : 'developers/daily';
-			const rssUrl = `https://mshibanami.github.io/GitHubTrendingRSS/${typePath}/${langParam}.xml`;
+			const langParam = selectedLang === 'all' ? '' : selectedLang;
+			const typePath = mode === 'repositories' ? 'trending' : 'trending/developers';
+			const targetUrl = `https://github.com/${typePath}/${langParam}?since=daily`;
 
-			// Using centralized Microlink fetcher with data extraction
-			const result = await microlinkFetch(rssUrl, { data: 'items' });
+			// Use Microlink to scrape the page directly using CSS selectors
+			const options =
+				mode === 'repositories'
+					? {
+							data: {
+								items: {
+									selector: 'article.Box-row',
+									type: 'list',
+									attr: {
+										name: { selector: 'h2 a', text: true },
+										url: { selector: 'h2 a', attr: 'href' },
+										description: { selector: 'p', text: true }
+									}
+								}
+							}
+						}
+					: {
+							data: {
+								items: {
+									selector: 'article.Box-row',
+									type: 'list',
+									attr: {
+										name: { selector: 'h1 a', text: true },
+										url: { selector: 'h1 a', attr: 'href' },
+										description: { selector: '.f4', text: true }
+									}
+								}
+							}
+						};
 
-			if (result.success) {
-				const items = result.data?.items || result.data || [];
-				if (Array.isArray(items)) {
-					if (mode === 'repositories') {
-						repos = items.slice(0, 10).map((item) => {
-							const title = item.title || 'Unknown / Unknown';
-							const parts = title.split(' / ');
-							return {
-								author: parts[0]?.trim() || 'GitHub',
-								name: parts[1]?.trim() || title,
-								url: item.link || item.url || '#',
-								description:
-									item.description?.replace(/<[^>]*>?/gm, '').trim() || 'No description provided.'
-							};
-						});
-					} else {
-						developers = items.slice(0, 10).map((item) => {
-							return {
-								name: item.title || 'Unknown User',
-								url: item.link || item.url || '#',
-								description: item.description?.replace(/<[^>]*>?/gm, '').trim() || ''
-							};
-						});
-					}
+			const result = await microlinkFetch(targetUrl, options);
+
+			if (result.success && result.data.items) {
+				const items = result.data.items;
+				if (mode === 'repositories') {
+					repos = items.slice(0, 10).map((item) => {
+						const title = item.name || 'Unknown / Unknown';
+						const parts = title.split('/');
+						return {
+							author: parts[0]?.trim() || 'GitHub',
+							name: parts[1]?.trim() || title,
+							url: item.url.startsWith('http') ? item.url : `https://github.com${item.url}`,
+							description: item.description || 'No description provided.'
+						};
+					});
 				} else {
-					error = 'Protocol mismatch in trend stream.';
+					developers = items.slice(0, 10).map((item) => ({
+						name: item.name?.trim() || 'Unknown',
+						url: item.url.startsWith('http') ? item.url : `https://github.com${item.url}`,
+						description: item.description || ''
+					}));
 				}
 			} else {
-				error = 'Failed to load GitHub protocol.';
+				throw new Error('Scraping protocol failed');
 			}
 		} catch (e) {
-			error = `Failed to fetch ${mode} stream.`;
-			console.error('Microlink trends error:', e);
+			error = `Failed to extract ${mode} protocol.`;
+			console.error('Microlink Scraping error:', e);
 		} finally {
 			loading = false;
 		}

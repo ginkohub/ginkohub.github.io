@@ -5,26 +5,26 @@
 	let { accentColor } = $props();
 
 	let feeds = [
-		{ name: 'Hacker News', url: 'https://news.ycombinator.com/rss' },
-		{ name: 'TechCrunch', url: 'https://techcrunch.com/feed/' },
-		{ name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml' },
-		{ name: 'Engadget', url: 'https://www.engadget.com/rss.xml' },
-		{ name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index' },
-		{ name: 'Wired', url: 'https://www.wired.com/feed/rss' },
-		{ name: 'ZDNet', url: 'https://www.zdnet.com/news/rss.xml' },
-		{ name: 'VentureBeat', url: 'https://venturebeat.com/feed/' },
-		{ name: 'GitHub Blog', url: 'https://github.blog/feed/' },
-		{ name: 'Mozilla Hacks', url: 'https://hacks.mozilla.org/feed/' },
-		{ name: 'Web.dev', url: 'https://web.dev/feed.xml' },
-		{ name: 'React Blog', url: 'https://react.dev/feed.xml' },
-		{ name: 'Svelte Blog', url: 'https://svelte.dev/blog/rss.xml' },
-		{ name: 'Dev.to', url: 'https://dev.to/feed' },
-		{ name: 'FreeCodeCamp', url: 'https://www.freecodecamp.org/news/rss/' },
-		{ name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' },
-		{ name: 'Smashing Mag', url: 'https://www.smashingmagazine.com/feed/' },
-		{ name: 'SitePoint', url: 'https://www.sitepoint.com/feed/' },
-		{ name: 'A List Apart', url: 'https://alistapart.com/main/feed/' },
-		{ name: 'Daring Fireball', url: 'https://daringfireball.net/feeds/main' }
+		{ name: 'Hacker News', url: 'https://news.ycombinator.com/' },
+		{ name: 'TechCrunch', url: 'https://techcrunch.com/' },
+		{ name: 'The Verge', url: 'https://www.theverge.com/' },
+		{ name: 'Engadget', url: 'https://www.engadget.com/' },
+		{ name: 'Ars Technica', url: 'https://arstechnica.com/' },
+		{ name: 'Wired', url: 'https://www.wired.com/' },
+		{ name: 'ZDNet', url: 'https://www.zdnet.com/' },
+		{ name: 'VentureBeat', url: 'https://venturebeat.com/' },
+		{ name: 'GitHub Blog', url: 'https://github.blog/' },
+		{ name: 'Mozilla Hacks', url: 'https://hacks.mozilla.org/' },
+		{ name: 'Web.dev', url: 'https://web.dev/blog' },
+		{ name: 'React Blog', url: 'https://react.dev/blog' },
+		{ name: 'Svelte Blog', url: 'https://svelte.dev/blog' },
+		{ name: 'Dev.to', url: 'https://dev.to/' },
+		{ name: 'FreeCodeCamp', url: 'https://www.freecodecamp.org/news/' },
+		{ name: 'CSS-Tricks', url: 'https://css-tricks.com/' },
+		{ name: 'Smashing Mag', url: 'https://www.smashingmagazine.com/articles/' },
+		{ name: 'SitePoint', url: 'https://www.sitepoint.com/' },
+		{ name: 'A List Apart', url: 'https://alistapart.com/articles/' },
+		{ name: 'Daring Fireball', url: 'https://daringfireball.net/' }
 	];
 
 	let selectedFeed = $state(feeds[0].url);
@@ -48,33 +48,45 @@
 		articles = [];
 
 		try {
-			// Using centralized Microlink fetcher with data extraction
-			const result = await microlinkFetch(selectedFeed, { data: 'items' });
+			// Using Microlink to scrape the homepage directly
+			// This is more robust than RSS which often has CORS issues
+			const result = await microlinkFetch(selectedFeed, {
+				data: {
+					items: {
+						selector: 'h2, h3, .post-title, .entry-title',
+						type: 'list',
+						attr: {
+							title: { text: true },
+							link: { selector: 'a', attr: 'href' }
+						}
+					}
+				}
+			});
 
-			if (result.success) {
-				const items = result.data?.items || result.data || [];
-				if (Array.isArray(items)) {
-					articles = items.slice(0, 10).map((item) => {
+			if (result.success && result.data.items) {
+				// Filter out items without links or titles and clean URLs
+				articles = result.data.items
+					.filter((item) => item.title && item.link)
+					.slice(0, 10)
+					.map((item) => {
+						let link = item.link;
+						if (link.startsWith('/')) {
+							const urlObj = new URL(selectedFeed);
+							link = `${urlObj.origin}${link}`;
+						}
 						return {
-							title: item.title || 'Untitled',
-							link: item.link || item.url || '#',
-							date: item.pubDate || item.date || 'LATEST',
-							snippet:
-								item.description
-									?.replace(/<[^>]*>?/gm, '')
-									.trim()
-									.slice(0, 120) + '...' || 'No preview available.'
+							title: item.title.trim(),
+							link: link,
+							date: 'LATEST',
+							snippet: 'Access protocol for full content extraction...'
 						};
 					});
-				} else {
-					error = 'Protocol mismatch in feed stream.';
-				}
 			} else {
-				error = 'Failed to load transmission.';
+				throw new Error('Feed extraction failed');
 			}
 		} catch (e) {
-			error = 'Network congestion. Transmission failed.';
-			console.error('Microlink RSS error:', e);
+			error = 'Failed to sync with data stream.';
+			console.error('Microlink Feed error:', e);
 		} finally {
 			loading = false;
 		}
