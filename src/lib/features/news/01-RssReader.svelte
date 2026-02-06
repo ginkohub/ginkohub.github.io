@@ -1,5 +1,4 @@
 <script>
-	import { microlinkFetch } from '$lib/fetcher.js';
 	import ReaderModal from './ReaderModal.svelte';
 
 	let { accentColor } = $props();
@@ -48,33 +47,43 @@
 		articles = [];
 
 		try {
-			// Using centralized Microlink fetcher
-			const result = await microlinkFetch(selectedFeed, { data: 'items' });
+			// Using manual XML parsing via CORS proxy
+			const response = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(selectedFeed)}`);
+			if (!response.ok) throw new Error('CORS proxy failure');
 
-			if (result.success) {
-				const items = result.data?.items || result.data || [];
-				if (Array.isArray(items)) {
-					articles = items.slice(0, 10).map((item) => {
+			const xmlText = await response.text();
+			const parser = new DOMParser();
+			const xml = parser.parseFromString(xmlText, 'text/xml');
+
+			const items = xml.querySelectorAll('item');
+			const entries = xml.querySelectorAll('entry');
+			const nodes = items.length > 0 ? items : entries;
+
+			if (nodes.length > 0) {
+				articles = Array.from(nodes)
+					.slice(0, 10)
+					.map((node) => {
 						return {
-							title: item.title || 'Untitled',
-							link: item.link || item.url || '#',
-							date: item.pubDate || item.date || 'LATEST',
+							title: node.querySelector('title')?.textContent || 'Untitled',
+							link:
+								node.querySelector('link')?.textContent ||
+								node.querySelector('link')?.getAttribute('href') ||
+								'#',
+							date: node.querySelector('pubDate, published, updated')?.textContent || 'RECENT',
 							snippet:
-								item.description
-									?.replace(/<[^>]*>?/gm, '')
+								node
+									.querySelector('description, summary, content')
+									?.textContent?.replace(/<[^>]*>?/gm, '')
 									.trim()
 									.slice(0, 120) + '...' || 'No preview available.'
 						};
 					});
-				} else {
-					error = 'Protocol mismatch in feed stream.';
-				}
 			} else {
-				error = 'Failed to load transmission.';
+				throw new Error('No articles found');
 			}
 		} catch (e) {
-			error = 'Network congestion. Transmission failed.';
-			console.error('Microlink parse error:', e);
+			error = 'Failed to parse transmission stream.';
+			console.error('Manual parse error:', e);
 		} finally {
 			loading = false;
 		}
