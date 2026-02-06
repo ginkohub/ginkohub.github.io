@@ -15,7 +15,7 @@
 			};
 		})
 		.sort((a, b) => {
-			const order = { about: 0, humor: 1, words: 2, preview: 3, game: 4 };
+			const order = { about: 0, tools: 1, news: 2, humor: 3, words: 4, preview: 5, game: 6 };
 			return (order[a.label] ?? 99) - (order[b.label] ?? 99);
 		});
 
