@@ -50,28 +50,40 @@
 	// Persistent Session State
 	let sessionStartTime = $state(Date.now());
 
-	const backgrounds = [
-		'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1433086966358-54859d0ed716?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1200&q=60&fm=webp',
-		'https://images.unsplash.com/photo-1475113548554-5a36f1f523d6?auto=format&fit=crop&w=1200&q=60&fm=webp'
-	];
+	const backgrounds = {
+		morning: [
+			'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=60&fm=webp'
+		],
+		day: [
+			'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1200&q=60&fm=webp'
+		],
+		evening: [
+			'https://images.unsplash.com/photo-1475113548554-5a36f1f523d6?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=60&fm=webp'
+		],
+		night: [
+			'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=60&fm=webp',
+			'https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1200&q=60&fm=webp'
+		]
+	};
+
+	function getBackgroundByTime() {
+		const hour = new Date().getHours();
+		let set = backgrounds.day;
+		if (hour >= 5 && hour < 10) set = backgrounds.morning;
+		else if (hour >= 10 && hour < 17) set = backgrounds.day;
+		else if (hour >= 17 && hour < 21) set = backgrounds.evening;
+		else set = backgrounds.night;
+		return set[Math.floor(Math.random() * set.length)];
+	}
+
 	let selectedBg = $state('');
 
 	// Accent Color State
@@ -144,9 +156,11 @@
 
 	function triggerAura() {
 		showAura = false;
+
 		setTimeout(() => {
 			showAura = true;
 		}, 10);
+
 		setTimeout(() => {
 			showAura = false;
 		}, 2500);
@@ -173,14 +187,6 @@
 
 		if (comboCount >= 50 && !isOverloaded) {
 			isOverloaded = true;
-
-			if (typeof window !== 'undefined') {
-				const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
-
-				audio.volume = 0.2;
-
-				audio.play().catch(() => {});
-			}
 		}
 
 		// Reset shake effect
@@ -232,23 +238,30 @@
 
 	function nextQuote() {
 		if (scrapedQuotes.length === 0) return;
+
 		currentQuoteIndex = (currentQuoteIndex + 1) % scrapedQuotes.length;
 	}
 
 	function prevQuote() {
 		if (scrapedQuotes.length === 0) return;
+
 		currentQuoteIndex = (currentQuoteIndex - 1 + scrapedQuotes.length) % scrapedQuotes.length;
 	}
 
 	async function fetchMeme() {
 		meme.loading = true;
+
 		try {
 			const res = await fetch('https://meme-api.com/gimme');
+
 			const data = await res.json();
+
 			meme.url = data.url;
+
 			meme.title = data.title;
 		} catch (e) {
 			meme.title = 'Failed to load artifact.';
+
 			meme.url = '';
 		} finally {
 			meme.loading = false;
@@ -257,13 +270,18 @@
 
 	async function fetchJoke() {
 		joke.loading = true;
+
 		try {
 			const res = await fetch('https://official-joke-api.appspot.com/random_joke');
+
 			const data = await res.json();
+
 			joke.setup = data.setup;
+
 			joke.punchline = data.punchline;
 		} catch (e) {
 			joke.setup = 'Why did the developer go broke?';
+
 			joke.punchline = 'Because he used up all his cache.';
 		} finally {
 			joke.loading = false;
@@ -272,11 +290,15 @@
 
 	onMount(() => {
 		shufflePersona();
-		selectedBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+
+		selectedBg = getBackgroundByTime();
+
 		shuffleAccent();
+
 		if (scrapedQuotes.length > 0) {
 			currentQuoteIndex = Math.floor(Math.random() * scrapedQuotes.length);
 		}
+
 		window.addEventListener('keydown', handleGlobalKeydown);
 	});
 
@@ -400,7 +422,9 @@
 				<div class="flex min-w-full">
 					{#each tabs as tab}
 						<button
-							onclick={() => (activeTabLabel = tab.label)}
+							onclick={() => {
+								activeTabLabel = tab.label;
+							}}
 							class="flex-1 min-w-[80px] py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
 							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
 						>
