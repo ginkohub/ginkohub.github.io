@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 
 	let canvas;
 	let ctx;
@@ -13,7 +13,7 @@
 	const ROWS = 20;
 	let blockSize = $state(20);
 
-	let grid = Array.from({ length: ROWS }, () => Array(cols).fill(0));
+	let grid = $state(Array.from({ length: ROWS }, () => Array(10).fill(0)));
 	let currentPiece = $state(null);
 	let dropCounter = 0;
 	let dropInterval = 1000;
@@ -38,24 +38,32 @@
 		};
 	}
 
-	function collide(grid, piece) {
+	function collide(arena, piece) {
 		const [s, p] = [piece.shape, piece.pos];
 		for (let y = 0; y < s.length; ++y) {
 			for (let x = 0; x < s[y].length; ++x) {
-				if (s[y][x] !== 0 &&
-					(grid[y + p.y] && grid[y + p.y][x + p.x]) !== 0) {
-					return true;
+				if (s[y][x] !== 0) {
+					const boardY = y + p.y;
+					const boardX = x + p.x;
+					// Wall, Floor, or Occupied Cell check
+					if (boardX < 0 || boardX >= cols || boardY >= ROWS || (arena[boardY] && arena[boardY][boardX] !== 0)) {
+						return true;
+					}
 				}
 			}
 		}
 		return false;
 	}
 
-	function merge(grid, piece) {
+	function merge(arena, piece) {
 		piece.shape.forEach((row, y) => {
 			row.forEach((value, x) => {
 				if (value !== 0) {
-					grid[y + piece.pos.y][x + piece.pos.x] = 1;
+					const boardY = y + piece.pos.y;
+					const boardX = x + piece.pos.x;
+					if (arena[boardY]) {
+						arena[boardY][boardX] = 1;
+					}
 				}
 			});
 		});
@@ -107,7 +115,7 @@
 
 	function arenaSweep() {
 		let rowCount = 1;
-		outer: for (let y = grid.length - 1; y > 0; --y) {
+		outer: for (let y = grid.length - 1; y >= 0; --y) {
 			for (let x = 0; x < grid[y].length; ++x) {
 				if (grid[y][x] === 0) {
 					continue outer;
@@ -183,7 +191,7 @@
 	}
 
 	function handleKey(e) {
-		if (!gameStarted && !showSettings) return;
+		if (!gameStarted || showSettings) return;
 		if (e.key === 'ArrowLeft') playerMove(-1);
 		if (e.key === 'ArrowRight') playerMove(1);
 		if (e.key === 'ArrowDown') playerDrop();
@@ -194,7 +202,10 @@
 		if (!canvas) return;
 		canvas.width = cols * blockSize;
 		canvas.height = ROWS * blockSize;
-		grid = Array.from({ length: ROWS }, () => Array(cols).fill(0));
+		// Only reset grid if game is NOT running
+		if (!gameStarted) {
+			grid = Array.from({ length: ROWS }, () => Array(cols).fill(0));
+		}
 		draw();
 	}
 
@@ -211,7 +222,7 @@
 
 	$effect(() => {
 		blockSize; cols;
-		updateCanvas();
+		untrack(() => updateCanvas());
 	});
 </script>
 
@@ -256,7 +267,10 @@
 							<span>Columns</span>
 							<span class="text-white">{cols}</span>
 						</div>
-						<input type="range" min="8" max="16" step="1" bind:value={cols} class="w-full accent-white" />
+						<input type="range" min="8" max="16" step="1" bind:value={cols} class="w-full accent-white" disabled={gameStarted} />
+						{#if gameStarted}
+							<p class="text-[6px] text-rose-500 uppercase">End game to change width</p>
+						{/if}
 					</div>
 				</div>
 
