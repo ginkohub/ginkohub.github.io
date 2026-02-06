@@ -19,8 +19,8 @@
 	];
 
 	const fonts = [
-		{ id: 'sans', name: 'Inter', css: 'Inter, sans-serif' },
-		{ id: 'display', name: 'Grotesk', css: '"Space Grotesk", sans-serif' },
+		{ id: 'sans', name: 'Inter', css: 'Inter' },
+		{ id: 'display', name: 'Grotesk', css: '"Space Grotesk"' },
 		{ id: 'serif', name: 'Serif', css: 'serif' },
 		{ id: 'mono', name: 'Mono', css: 'monospace' }
 	];
@@ -48,6 +48,16 @@
 
 	async function generateImage(download = false) {
 		isGenerating = true;
+		
+		const font = fonts.find(f => f.id === selectedFont);
+		// Ensure fonts are loaded before drawing
+		try {
+			await document.fonts.load(`bold italic 64px ${font.css}`);
+			await document.fonts.load(`bold 32px ${font.css}`);
+		} catch(e) {
+			console.warn("Font loading failed, falling back to system fonts.");
+		}
+
 		const canvas = document.createElement('canvas');
 		const ctx = canvas.getContext('2d');
 		canvas.width = 1080;
@@ -60,10 +70,13 @@
 			ctx.fillStyle = accentColor;
 			ctx.fillRect(0, 0, 1080, 1080);
 		} else {
-			if (currentBg) {
+			const existingImg = document.getElementById('main-bg-image');
+			const bgSource = customBg ? null : existingImg;
+			
+			if (customBg || (bgSource && bgSource.complete)) {
 				try {
 					const img = new Image();
-					img.crossOrigin = "anonymous";
+					if (!customBg) img.crossOrigin = "anonymous";
 					img.src = currentBg;
 					await new Promise((resolve, reject) => {
 						img.onload = resolve;
@@ -89,7 +102,7 @@
 			}
 		}
 
-		// 2. Overlays & Glass effect
+		// 2. Overlays
 		if (selectedStyle === 'glass') {
 			ctx.fillStyle = 'rgba(255,255,255,0.1)';
 			ctx.fillRect(100, 100, 880, 880);
@@ -114,12 +127,11 @@
 			ctx.strokeStyle = accentColor;
 			ctx.lineWidth = 4;
 			ctx.strokeRect(60, 60, 960, 960);
-			// Corners
 			ctx.fillStyle = accentColor;
-			ctx.fillRect(40, 40, 100, 10); ctx.fillRect(40, 40, 10, 100); // TL
-			ctx.fillRect(940, 40, 100, 10); ctx.fillRect(1030, 40, 10, 100); // TR
-			ctx.fillRect(40, 1030, 100, 10); ctx.fillRect(40, 940, 10, 100); // BL
-			ctx.fillRect(940, 1030, 100, 10); ctx.fillRect(1030, 940, 10, 100); // BR
+			ctx.fillRect(40, 40, 100, 10); ctx.fillRect(40, 40, 10, 100);
+			ctx.fillRect(940, 40, 100, 10); ctx.fillRect(1030, 40, 10, 100);
+			ctx.fillRect(40, 1030, 100, 10); ctx.fillRect(40, 940, 10, 100);
+			ctx.fillRect(940, 1030, 100, 10); ctx.fillRect(1030, 940, 10, 100);
 		}
 
 		// Branding
@@ -133,15 +145,15 @@
 		ctx.textAlign = 'center';
 		ctx.fillStyle = selectedStyle === 'impact' ? '#000000' : '#ffffff';
 		
-		const font = fonts.find(f => f.id === selectedFont);
 		let fontSize = selectedStyle === 'impact' ? 84 : 64;
+		const fontConfig = `${selectedStyle === 'poetic' ? 'italic' : 'bold italic'}`;
 		
 		const fullText = `"${quote.text}"`;
 		const maxWidth = 800;
 		const maxLines = 10;
 		
 		function getLines(fs) {
-			ctx.font = `bold italic ${fs}px ${font.css}`;
+			ctx.font = `${fontConfig} ${fs}px ${font.css}, sans-serif`;
 			const words = fullText.split(' ');
 			let lines = [];
 			let currentLine = '';
@@ -173,7 +185,7 @@
 		// 5. Author
 		const authorY = Math.min(startY + (lines.length * lineHeight) + 80, 940);
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.6)' : accentColor;
-		ctx.font = `bold 32px ${font.css}`;
+		ctx.font = `bold 32px ${font.css}, sans-serif`;
 		ctx.fillText(`— ${quote.author}`, 540, authorY);
 
 		const dataUrl = canvas.toDataURL('image/png');
