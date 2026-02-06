@@ -1,4 +1,6 @@
 <script>
+	import ReaderModal from './ReaderModal.svelte';
+
 	let { accentColor } = $props();
 
 	let repos = $state([]);
@@ -6,6 +8,17 @@
 	let loading = $state(false);
 	let error = $state('');
 	let mode = $state('repositories'); // 'repositories' or 'developers'
+
+	// Reader Mode State
+	let readerUrl = $state('');
+	let showReader = $state(false);
+
+	function openReader(e, url) {
+		e.preventDefault();
+		readerUrl = url;
+		showReader = true;
+	}
+
 	let languages = [
 		'all',
 		'javascript',
@@ -77,6 +90,10 @@
 </script>
 
 <div class="space-y-8 pt-12 border-t border-slate-800/50">
+	{#if showReader}
+		<ReaderModal url={readerUrl} onClose={() => (showReader = false)} {accentColor} />
+	{/if}
+
 	<header class="flex flex-col md:flex-row justify-between items-center gap-4">
 		<div class="flex items-center gap-4">
 			<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
@@ -105,14 +122,14 @@
 		<div class="relative w-full md:w-48">
 			<select
 				bind:value={selectedLang}
-				class="w-full bg-black border border-slate-800 text-slate-300 text-[10px] font-bold uppercase py-2 px-3 focus:border-white/30 outline-none appearance-none cursor-pointer hover:bg-slate-900/50 transition-all"
+				class="w-full bg-black border border-slate-800 text-slate-300 text-[10px] font-bold uppercase appearance-none cursor-pointer py-2 px-3 outline-none transition-all hover:bg-slate-900/50 focus:border-white/30"
 			>
 				{#each languages as lang}
 					<option value={lang}>{lang}</option>
 				{/each}
 			</select>
 			<div
-				class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600 text-[8px]"
+				class="absolute right-3 top-1/2 pointer-events-none -translate-y-1/2 text-[8px] text-slate-600"
 			>
 				▼
 			</div>
@@ -135,8 +152,7 @@
 				{#each repos as repo}
 					<a
 						href={repo.url}
-						target="_blank"
-						rel="noopener noreferrer"
+						onclick={(e) => openReader(e, repo.url)}
 						class="group flex flex-col p-4 bg-black hover:bg-slate-900/50 transition-all border-b border-slate-800 last:border-0"
 					>
 						<div class="flex justify-between items-start mb-1">
@@ -166,8 +182,7 @@
 				{#each developers as dev}
 					<a
 						href={dev.url}
-						target="_blank"
-						rel="noopener noreferrer"
+						onclick={(e) => openReader(e, dev.url)}
 						class="group flex flex-col p-4 bg-black hover:bg-slate-900/50 transition-all border-r border-b border-slate-800 last:border-0"
 					>
 						<div class="flex items-center gap-3">

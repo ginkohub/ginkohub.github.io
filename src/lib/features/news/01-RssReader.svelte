@@ -1,4 +1,6 @@
 <script>
+	import ReaderModal from './ReaderModal.svelte';
+
 	let { accentColor } = $props();
 
 	let feeds = [
@@ -28,6 +30,16 @@
 	let articles = $state([]);
 	let loading = $state(false);
 	let error = $state('');
+
+	// Reader Mode State
+	let readerUrl = $state('');
+	let showReader = $state(false);
+
+	function openReader(e, url) {
+		e.preventDefault();
+		readerUrl = url;
+		showReader = true;
+	}
 
 	async function fetchFeed() {
 		loading = true;
@@ -72,19 +84,23 @@
 </script>
 
 <div class="space-y-8">
+	{#if showReader}
+		<ReaderModal url={readerUrl} onClose={() => (showReader = false)} {accentColor} />
+	{/if}
+
 	<header class="flex flex-col md:flex-row justify-between items-center gap-4">
 		<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Data Stream</h2>
 		<div class="relative w-full md:w-64">
 			<select
 				bind:value={selectedFeed}
-				class="w-full bg-black border border-slate-800 text-slate-300 text-[10px] font-bold uppercase py-2 px-3 focus:border-white/30 outline-none appearance-none cursor-pointer hover:bg-slate-900/50 transition-all"
+				class="w-full bg-black border border-slate-800 text-slate-300 text-[10px] font-bold uppercase appearance-none cursor-pointer py-2 px-3 outline-none transition-all hover:bg-slate-900/50 focus:border-white/30"
 			>
 				{#each feeds as feed}
 					<option value={feed.url}>{feed.name}</option>
 				{/each}
 			</select>
 			<div
-				class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600 text-[8px]"
+				class="absolute right-3 top-1/2 pointer-events-none -translate-y-1/2 text-[8px] text-slate-600"
 			>
 				▼
 			</div>
@@ -107,8 +123,7 @@
 				{#each articles as article}
 					<a
 						href={article.link}
-						target="_blank"
-						rel="noopener noreferrer"
+						onclick={(e) => openReader(e, article.link)}
 						class="group flex flex-col p-4 bg-black hover:bg-slate-900/50 transition-all border-b border-slate-800 last:border-0"
 					>
 						<span class="text-[7px] font-bold text-slate-600 uppercase mb-1">{article.date}</span>
