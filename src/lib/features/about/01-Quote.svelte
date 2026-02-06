@@ -61,6 +61,7 @@
 
 		const currentBg = customBg || bgImage;
 
+		// 1. Draw Background
 		if (selectedStyle === 'impact') {
 			ctx.fillStyle = accentColor;
 			ctx.fillRect(0, 0, 1080, 1080);
@@ -94,6 +95,7 @@
 			}
 		}
 
+		// 2. Overlays
 		if (selectedStyle === 'glass') {
 			ctx.fillStyle = 'rgba(255,255,255,0.1)';
 			ctx.fillRect(100, 100, 880, 880);
@@ -109,6 +111,7 @@
 			ctx.fillRect(0, 0, 1080, 1080);
 		}
 
+		// 3. Style Elements
 		if (selectedStyle === 'minimalist') {
 			ctx.strokeStyle = accentColor;
 			ctx.lineWidth = 40;
@@ -124,12 +127,15 @@
 			ctx.fillRect(940, 1030, 100, 10); ctx.fillRect(1030, 940, 10, 100);
 		}
 
+		// Branding
 		ctx.textAlign = 'center';
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
 		ctx.font = '900 24px Inter, sans-serif';
 		ctx.letterSpacing = '8px';
-		ctx.fillText('GINKOHUB.GITHUB.IO', 540, 1000);
+		const brandingY = selectedStyle === 'glass' ? 940 : 1000;
+		ctx.fillText('GINKOHUB.GITHUB.IO', 540, brandingY);
 
+		// 4. Quote Text
 		ctx.textAlign = 'center';
 		ctx.fillStyle = selectedStyle === 'impact' ? '#000000' : '#ffffff';
 		
@@ -170,6 +176,7 @@
 			ctx.fillText(line.trim(), 540, startY + (i * lineHeight));
 		});
 
+		// 5. Author
 		const authorY = Math.min(startY + (lines.length * lineHeight) + 80, 940);
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.6)' : accentColor;
 		ctx.font = `bold 32px ${font.css}, sans-serif`;
