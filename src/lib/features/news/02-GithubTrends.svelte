@@ -9,26 +9,50 @@
 
 	async function fetchTrends() {
 		loading = true;
+
 		error = '';
+
 		repos = [];
 
 		try {
-			const targetUrl = `https://api.gtrending.vercel.app/repositories?language=${selectedLang === 'all' ? '' : selectedLang}&since=daily`;
-			// Using AllOrigins proxy to bypass CORS
-			const response = await fetch(
-				`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
-			);
-			if (!response.ok) throw new Error('Network response was not ok');
-			const result = await response.json();
-			const data = JSON.parse(result.contents);
+			// Using GitHub's RSS feed via rss2json for maximum stability
 
-			if (Array.isArray(data)) {
-				repos = data.slice(0, 10);
+			const langParam = selectedLang === 'all' ? '' : selectedLang;
+
+			const rssUrl = `https://github.com/trending/${langParam}?since=daily`;
+
+			const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+
+			const response = await fetch(apiUrl);
+
+			const result = await response.json();
+
+			if (result.status === 'ok') {
+				repos = result.items.slice(0, 10).map((item) => {
+					// GitHub RSS titles are usually "author / repo"
+
+					const parts = item.title.split(' / ');
+
+					return {
+						author: parts[0]?.trim() || 'GitHub',
+
+						name: parts[1]?.trim() || item.title,
+
+						url: item.link,
+
+						description: item.description?.replace(/<[^>]*>?/gm, '').trim() || 'No description.',
+
+						stars: 0, // RSS doesn't provide star count directly
+
+						currentPeriodStars: 0
+					};
+				});
 			} else {
-				error = 'Invalid data format.';
+				throw new Error('RSS conversion failed');
 			}
 		} catch (e) {
 			error = 'Failed to fetch GitHub trends.';
+
 			console.error(e);
 		} finally {
 			loading = false;
@@ -82,11 +106,6 @@
 							<span class="text-[9px] font-black text-slate-400 font-space uppercase"
 								>{repo.author} /</span
 							>
-							<div class="flex items-center gap-2">
-								<span class="text-[8px] font-bold text-slate-500"
-									>★ {repo.stars.toLocaleString()}</span
-								>
-							</div>
 						</div>
 						<h3
 							class="text-sm font-bold text-white group-hover:underline transition-colors font-space leading-tight"
@@ -97,15 +116,9 @@
 							{repo.description || 'No description provided.'}
 						</p>
 						<div class="flex gap-3 mt-3">
-							{#if repo.language}
-								<span
-									class="text-[7px] font-black uppercase px-1.5 py-0.5 border border-slate-800 text-slate-500"
-									>{repo.language}</span
-								>
-							{/if}
 							<span
 								class="text-[7px] font-black uppercase py-0.5 text-slate-600"
-								style="color: {accentColor}">+{repo.currentPeriodStars} stars today</span
+								style="color: {accentColor}">Access Protocol →</span
 							>
 						</div>
 					</a>
