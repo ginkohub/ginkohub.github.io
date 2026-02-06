@@ -48,8 +48,7 @@
 		articles = [];
 
 		try {
-			// Using Microlink to scrape the homepage directly
-			// This is more robust than RSS which often has CORS issues
+			// Using centralized Microlink fetcher with data extraction
 			const result = await microlinkFetch(selectedFeed, {
 				data: {
 					items: {
@@ -63,24 +62,31 @@
 				}
 			});
 
-			if (result.success && result.data.items) {
-				// Filter out items without links or titles and clean URLs
-				articles = result.data.items
-					.filter((item) => item.title && item.link)
-					.slice(0, 10)
-					.map((item) => {
-						let link = item.link;
-						if (link.startsWith('/')) {
-							const urlObj = new URL(selectedFeed);
-							link = `${urlObj.origin}${link}`;
-						}
-						return {
-							title: item.title.trim(),
-							link: link,
-							date: 'LATEST',
-							snippet: 'Access protocol for full content extraction...'
-						};
-					});
+			if (result.success && result.data) {
+				const rawItems = result.data.items || [];
+				const items = Array.isArray(rawItems) ? rawItems : [rawItems];
+
+				if (items.length > 0 && items[0] !== null) {
+					// Filter out items without links or titles and clean URLs
+					articles = items
+						.filter((item) => item.title && item.link)
+						.slice(0, 10)
+						.map((item) => {
+							let link = item.link;
+							if (link.startsWith('/')) {
+								const urlObj = new URL(selectedFeed);
+								link = `${urlObj.origin}${link}`;
+							}
+							return {
+								title: item.title.trim(),
+								link: link,
+								date: 'LATEST',
+								snippet: 'Access protocol for full content extraction...'
+							};
+						});
+				} else {
+					throw new Error('Feed extraction failed');
+				}
 			} else {
 				throw new Error('Feed extraction failed');
 			}

@@ -78,28 +78,34 @@
 
 			const result = await microlinkFetch(targetUrl, options);
 
-			if (result.success && result.data.items) {
-				const items = result.data.items;
-				if (mode === 'repositories') {
-					repos = items.slice(0, 10).map((item) => {
-						const title = item.name || 'Unknown / Unknown';
-						const parts = title.split('/');
-						return {
-							author: parts[0]?.trim() || 'GitHub',
-							name: parts[1]?.trim() || title,
+			if (result.success && result.data) {
+				const rawItems = result.data.items || [];
+				const items = Array.isArray(rawItems) ? rawItems : [rawItems];
+
+				if (items.length > 0 && items[0] !== null) {
+					if (mode === 'repositories') {
+						repos = items.slice(0, 10).map((item) => {
+							const title = item.name || 'Unknown / Unknown';
+							const parts = title.split('/');
+							return {
+								author: parts[0]?.trim() || 'GitHub',
+								name: parts[1]?.trim() || title,
+								url: item.url.startsWith('http') ? item.url : `https://github.com${item.url}`,
+								description: item.description || 'No description provided.'
+							};
+						});
+					} else {
+						developers = items.slice(0, 10).map((item) => ({
+							name: item.name?.trim() || 'Unknown',
 							url: item.url.startsWith('http') ? item.url : `https://github.com${item.url}`,
-							description: item.description || 'No description provided.'
-						};
-					});
+							description: item.description || ''
+						}));
+					}
 				} else {
-					developers = items.slice(0, 10).map((item) => ({
-						name: item.name?.trim() || 'Unknown',
-						url: item.url.startsWith('http') ? item.url : `https://github.com${item.url}`,
-						description: item.description || ''
-					}));
+					throw new Error('Scraping protocol failed');
 				}
 			} else {
-				throw new Error('Scraping protocol failed');
+				throw new Error('No trends found');
 			}
 		} catch (e) {
 			error = `Failed to extract ${mode} protocol.`;
