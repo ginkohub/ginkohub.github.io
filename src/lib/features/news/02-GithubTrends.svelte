@@ -44,39 +44,55 @@
 			const langParam = selectedLang === 'all' ? 'all' : selectedLang;
 			const typePath = mode === 'repositories' ? 'daily' : 'developers/daily';
 			const rssUrl = `https://mshibanami.github.io/GitHubTrendingRSS/${typePath}/${langParam}.xml`;
-			const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
-			const response = await fetch(apiUrl);
-			const result = await response.json();
+			// Using manual XML parsing via CORS proxy
+			const response = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(rssUrl)}`);
+			if (!response.ok) throw new Error('CORS proxy failure');
 
-			if (result.status === 'ok') {
+			const xmlText = await response.text();
+			const parser = new DOMParser();
+			const xml = parser.parseFromString(xmlText, 'text/xml');
+			const items = xml.querySelectorAll('item');
+
+			if (items.length > 0) {
 				if (mode === 'repositories') {
-					repos = result.items.slice(0, 10).map((item) => {
-						const title = item.title || 'Unknown / Unknown';
-						const parts = title.split(' / ');
-						return {
-							author: parts[0]?.trim() || 'GitHub',
-							name: parts[1]?.trim() || title,
-							url: item.link || '#',
-							description:
-								item.description?.replace(/<[^>]*>?/gm, '').trim() || 'No description provided.'
-						};
-					});
+					repos = Array.from(items)
+						.slice(0, 10)
+						.map((item) => {
+							const title = item.querySelector('title')?.textContent || 'Unknown / Unknown';
+							const parts = title.split(' / ');
+							return {
+								author: parts[0]?.trim() || 'GitHub',
+								name: parts[1]?.trim() || title,
+								url: item.querySelector('link')?.textContent || '#',
+								description:
+									item
+										.querySelector('description')
+										?.textContent?.replace(/<[^>]*>?/gm, '')
+										.trim() || 'No description provided.'
+							};
+						});
 				} else {
-					developers = result.items.slice(0, 10).map((item) => {
-						return {
-							name: item.title || 'Unknown User',
-							url: item.link || '#',
-							description: item.description?.replace(/<[^>]*>?/gm, '').trim() || ''
-						};
-					});
+					developers = Array.from(items)
+						.slice(0, 10)
+						.map((item) => {
+							return {
+								name: item.querySelector('title')?.textContent || 'Unknown User',
+								url: item.querySelector('link')?.textContent || '#',
+								description:
+									item
+										.querySelector('description')
+										?.textContent?.replace(/<[^>]*>?/gm, '')
+										.trim() || ''
+							};
+						});
 				}
 			} else {
-				throw new Error('Transmission failure');
+				throw new Error('No trends found');
 			}
 		} catch (e) {
-			error = `Failed to fetch ${mode}.`;
-			console.error(e);
+			error = `Failed to fetch ${mode} stream.`;
+			console.error('Manual parse error:', e);
 		} finally {
 			loading = false;
 		}
