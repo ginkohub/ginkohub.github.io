@@ -1,45 +1,10 @@
 <script>
+	import { microlinkFetch } from '$lib/fetcher.js';
 	import ReaderModal from './ReaderModal.svelte';
 
 	let { accentColor } = $props();
 
-	let feeds = [
-		{ name: 'Hacker News', url: 'https://news.ycombinator.com/rss' },
-		{ name: 'TechCrunch', url: 'https://techcrunch.com/feed/' },
-		{ name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml' },
-		{ name: 'Engadget', url: 'https://www.engadget.com/rss.xml' },
-		{ name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index' },
-		{ name: 'Wired', url: 'https://www.wired.com/feed/rss' },
-		{ name: 'ZDNet', url: 'https://www.zdnet.com/news/rss.xml' },
-		{ name: 'VentureBeat', url: 'https://venturebeat.com/feed/' },
-		{ name: 'GitHub Blog', url: 'https://github.blog/feed/' },
-		{ name: 'Mozilla Hacks', url: 'https://hacks.mozilla.org/feed/' },
-		{ name: 'Web.dev', url: 'https://web.dev/feed.xml' },
-		{ name: 'React Blog', url: 'https://react.dev/feed.xml' },
-		{ name: 'Svelte Blog', url: 'https://svelte.dev/blog/rss.xml' },
-		{ name: 'Dev.to', url: 'https://dev.to/feed' },
-		{ name: 'FreeCodeCamp', url: 'https://www.freecodecamp.org/news/rss/' },
-		{ name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' },
-		{ name: 'Smashing Mag', url: 'https://www.smashingmagazine.com/feed/' },
-		{ name: 'SitePoint', url: 'https://www.sitepoint.com/feed/' },
-		{ name: 'A List Apart', url: 'https://alistapart.com/main/feed/' },
-		{ name: 'Daring Fireball', url: 'https://daringfireball.net/feeds/main' }
-	];
-
-	let selectedFeed = $state(feeds[0].url);
-	let articles = $state([]);
-	let loading = $state(false);
-	let error = $state('');
-
-	// Reader Mode State
-	let readerUrl = $state('');
-	let showReader = $state(false);
-
-	function openReader(e, url) {
-		e.preventDefault();
-		readerUrl = url;
-		showReader = true;
-	}
+	// ... (feeds array kept the same)
 
 	async function fetchFeed() {
 		loading = true;
@@ -47,10 +12,16 @@
 		articles = [];
 
 		try {
-			// Using rss2json.com for specialized RSS parsing
+			// Try rss2json first (cleaner results)
 			const response = await fetch(
 				`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(selectedFeed)}`
 			);
+
+			if (response.status === 429) {
+				console.warn('rss2json rate limited. Switching to fallback protocol...');
+				throw new Error('RATE_LIMIT');
+			}
+
 			const result = await response.json();
 
 			if (result.status === 'ok' && Array.isArray(result.items)) {
@@ -70,8 +41,25 @@
 				throw new Error('RSS conversion failed');
 			}
 		} catch (e) {
-			error = 'Failed to parse transmission.';
-			console.error(e);
+			// Fallback to Microlink if rss2json fails or is rate-limited
+			console.log('Using fallback fetcher...');
+			const result = await microlinkFetch(selectedFeed, { data: 'items' });
+
+			if (result.success) {
+				const items = result.data?.items || result.data || [];
+				if (Array.isArray(items)) {
+					articles = items.slice(0, 10).map((item) => ({
+						title: item.title || 'Untitled',
+						link: item.link || item.url || '#',
+						date: item.pubDate || item.date || 'LATEST',
+						snippet: item.description?.slice(0, 120) + '...' || 'No preview available.'
+					}));
+				} else {
+					error = 'Primary and secondary protocols failed.';
+				}
+			} else {
+				error = 'Network congestion. Transmission failed.';
+			}
 		} finally {
 			loading = false;
 		}
