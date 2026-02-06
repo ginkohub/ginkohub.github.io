@@ -53,7 +53,7 @@
 	// Lazy Loaded Components
 	let HumorSectionComponent = $state(null);
 	let WordFinderComponent = $state(null);
-	let SnakeGameComponent = $state(null);
+	let GameSectionComponent = $state(null);
 
 	async function loadHumor() {
 		if (!HumorSectionComponent) {
@@ -70,9 +70,9 @@
 	}
 
 	async function loadGame() {
-		if (!SnakeGameComponent) {
-			const module = await import('$lib/SnakeGame.svelte');
-			SnakeGameComponent = module.default;
+		if (!GameSectionComponent) {
+			const module = await import('$lib/GameSection.svelte');
+			GameSectionComponent = module.default;
 		}
 	}
 
@@ -316,11 +316,11 @@
 				</div>
 			{:else if activeTab === 'game'}
 				<div class="animate-in fade-in duration-500" in:fly={{ y: 10, duration: 400, delay: 100 }}>
-					{#if SnakeGameComponent}
-						<SnakeGameComponent />
+					{#if GameSectionComponent}
+						<GameSectionComponent />
 					{:else}
 						<div class="py-20 text-center animate-pulse">
-							<p class="text-[9px] font-bold text-slate-200 uppercase tracking-widest font-space">Initializing Systems...</p>
+							<p class="text-[9px] font-bold text-slate-200 uppercase tracking-widest font-space">Initializing Arcade...</p>
 						</div>
 					{/if}
 				</div>
