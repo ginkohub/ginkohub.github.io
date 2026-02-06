@@ -13,7 +13,6 @@
 			component: module.default
 		};
 	}).sort((a, b) => {
-		// Ensure 'about' is first, 'game' is last
 		if (a.label === 'about') return -1;
 		if (b.label === 'about') return 1;
 		if (a.label === 'game') return 1;
@@ -29,14 +28,28 @@
 	let joke = $state({ setup: '', punchline: '', loading: false });
 	let showAura = $state(false);
 	
-	// Background State
+	// Expanded Background Library (20 Images)
 	const backgrounds = [
 		'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80',
 		'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1920&q=80',
 		'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=1920&q=80',
 		'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80',
 		'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1920&q=80',
-		'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80'
+		'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1434725039720-aaad6dd32dee?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1493246507139-91e8bef99c02?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1475924156734-496f6acc6716?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1433086966358-54859d0ed716?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=80',
+		'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1920&q=80'
 	];
 	let selectedBg = $state('');
 
