@@ -7,12 +7,13 @@
 	let highScore = $state(0);
 	let gameOver = $state(false);
 	let gameStarted = $state(false);
+	let showSettings = $state(false);
 
-	const COLS = 10;
+	let cols = $state(10);
 	const ROWS = 20;
-	const BLOCK_SIZE = 20;
+	let blockSize = $state(20);
 
-	let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+	let grid = Array.from({ length: ROWS }, () => Array(cols).fill(0));
 	let currentPiece = $state(null);
 	let dropCounter = 0;
 	let dropInterval = 1000;
@@ -32,7 +33,7 @@
 	function createPiece() {
 		const shape = PIECES[Math.floor(Math.random() * PIECES.length)];
 		return {
-			pos: { x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 },
+			pos: { x: Math.floor(cols / 2) - Math.floor(shape[0].length / 2), y: 0 },
 			shape: shape
 		};
 	}
@@ -117,13 +118,12 @@
 			++y;
 			score += rowCount * 10;
 			rowCount *= 2;
-			// Speed up
 			if (dropInterval > 100) dropInterval -= 10;
 		}
 	}
 
 	function initGame() {
-		grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+		grid = Array.from({ length: ROWS }, () => Array(cols).fill(0));
 		score = 0;
 		dropInterval = 1000;
 		gameOver = false;
@@ -148,31 +148,16 @@
 	}
 
 	function draw() {
+		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent-color') || '#10b981';
-
-		// Draw background grid
-		ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-		ctx.lineWidth = 0.5;
-		for(let x=0; x<=COLS; x++) {
-			ctx.beginPath();
-			ctx.moveTo(x * BLOCK_SIZE, 0);
-			ctx.lineTo(x * BLOCK_SIZE, ROWS * BLOCK_SIZE);
-			ctx.stroke();
-		}
-		for(let y=0; y<=ROWS; y++) {
-			ctx.beginPath();
-			ctx.moveTo(0, y * BLOCK_SIZE);
-			ctx.lineTo(COLS * BLOCK_SIZE, y * BLOCK_SIZE);
-			ctx.stroke();
-		}
 
 		// Draw arena
 		grid.forEach((row, y) => {
 			row.forEach((value, x) => {
 				if (value !== 0) {
 					ctx.fillStyle = 'rgba(255,255,255,0.8)';
-					ctx.fillRect(x * BLOCK_SIZE + 1, y * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+					ctx.fillRect(x * blockSize + 1, y * blockSize + 1, blockSize - 2, blockSize - 2);
 				}
 			});
 		});
@@ -183,7 +168,7 @@
 			currentPiece.shape.forEach((row, y) => {
 				row.forEach((value, x) => {
 					if (value !== 0) {
-						ctx.fillRect((x + currentPiece.pos.x) * BLOCK_SIZE + 1, (y + currentPiece.pos.y) * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+						ctx.fillRect((x + currentPiece.pos.x) * blockSize + 1, (y + currentPiece.pos.y) * blockSize + 1, blockSize - 2, blockSize - 2);
 					}
 				});
 			});
@@ -198,49 +183,99 @@
 	}
 
 	function handleKey(e) {
-		if (!gameStarted) return;
+		if (!gameStarted && !showSettings) return;
 		if (e.key === 'ArrowLeft') playerMove(-1);
 		if (e.key === 'ArrowRight') playerMove(1);
 		if (e.key === 'ArrowDown') playerDrop();
 		if (e.key === 'ArrowUp') playerRotate();
 	}
 
+	function updateCanvas() {
+		if (!canvas) return;
+		canvas.width = cols * blockSize;
+		canvas.height = ROWS * blockSize;
+		grid = Array.from({ length: ROWS }, () => Array(cols).fill(0));
+		draw();
+	}
+
 	onMount(() => {
 		ctx = canvas.getContext('2d');
-		canvas.width = COLS * BLOCK_SIZE;
-		canvas.height = ROWS * BLOCK_SIZE;
+		updateCanvas();
 		window.addEventListener('keydown', handleKey);
-		draw();
 	});
 
 	onDestroy(() => {
 		cancelAnimationFrame(animationFrame);
 		window.removeEventListener('keydown', handleKey);
 	});
+
+	$effect(() => {
+		blockSize; cols;
+		updateCanvas();
+	});
 </script>
 
 <div class="flex flex-col items-center space-y-6 w-full">
-	<div class="flex justify-between w-full max-w-[200px] mb-2">
+	<div class="flex justify-between w-full max-w-[240px] mb-2">
 		<div class="flex flex-col">
 			<span class="text-[8px] font-bold uppercase tracking-widest text-slate-500">Score</span>
 			<span class="text-xl font-bold font-space text-white">{score}</span>
 		</div>
-		<div class="flex flex-col items-end">
-			<span class="text-[8px] font-bold uppercase tracking-widest text-slate-500">Best</span>
-			<span class="text-xl font-bold font-space text-slate-300">{highScore}</span>
+		<div class="flex items-center gap-4">
+			<button 
+				onclick={() => showSettings = !showSettings}
+				class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all"
+			>
+				Config
+			</button>
+			<div class="flex flex-col items-end">
+				<span class="text-[8px] font-bold uppercase tracking-widest text-slate-500">Best</span>
+				<span class="text-xl font-bold font-space text-slate-300">{highScore}</span>
+			</div>
 		</div>
 	</div>
 
 	<div class="relative group border border-slate-800 bg-slate-900/50">
 		<canvas bind:this={canvas} class="block shadow-2xl"></canvas>
 
-		{#if !gameStarted}
+		{#if showSettings}
+			<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-6 z-20">
+				<h3 class="text-[10px] font-black text-white uppercase tracking-[0.3em] mb-6">Matrix Config</h3>
+				
+				<div class="w-full space-y-4 mb-8">
+					<div class="space-y-1">
+						<div class="flex justify-between text-[7px] font-bold uppercase text-slate-500">
+							<span>Block Size</span>
+							<span class="text-white">{blockSize}px</span>
+						</div>
+						<input type="range" min="15" max="35" step="1" bind:value={blockSize} class="w-full accent-white" />
+					</div>
+
+					<div class="space-y-1">
+						<div class="flex justify-between text-[7px] font-bold uppercase text-slate-500">
+							<span>Columns</span>
+							<span class="text-white">{cols}</span>
+						</div>
+						<input type="range" min="8" max="16" step="1" bind:value={cols} class="w-full accent-white" />
+					</div>
+				</div>
+
+				<button 
+					onclick={() => showSettings = false}
+					class="w-full py-3 text-[10px] font-black uppercase tracking-widest bg-white text-black active:scale-95 transition-all"
+				>
+					Save & Close
+				</button>
+			</div>
+		{/if}
+
+		{#if !gameStarted && !showSettings}
 			<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
 				{#if gameOver}
 					<span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] mb-2">Matrix Overflow</span>
 					<span class="text-2xl font-bold text-white mb-6 font-space">STACK FULL</span>
 				{:else}
-					<span class="text-[10px] font-black text-violet-500 uppercase tracking-[0.3em] mb-2">Protocol: Tertlis</span>
+					<span class="text-[10px] font-black text-violet-500 uppercase tracking-[0.3em] mb-2">Protocol: Tetris</span>
 					<span class="text-2xl font-bold text-white mb-6 font-space">READY?</span>
 				{/if}
 				
@@ -263,3 +298,9 @@
 		<button onclick={() => playerMove(1)} class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800">→</button>
 	</div>
 </div>
+
+<style>
+	canvas {
+		image-rendering: pixelated;
+	}
+</style>
