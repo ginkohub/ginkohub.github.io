@@ -10,7 +10,8 @@
 	
 	let selectedStyle = $state('minimalist');
 	let selectedFont = $state('sans');
-	let bgOpacity = $state(35); // Default 35%
+	let bgOpacity = $state(35);
+	let manualFontSize = $state(64); // Default 64px
 	
 	const styles = [
 		{ id: 'minimalist', name: 'Minimal' },
@@ -82,9 +83,8 @@
 					const y = (canvas.height / 2) - (img.height / 2) * scale;
 					
 					ctx.save();
-					const brightness = bgOpacity;
-					ctx.filter = `grayscale(100%) brightness(${brightness}%)`;
-					if (selectedStyle === 'glass') ctx.filter = `grayscale(100%) brightness(${brightness + 15}%) blur(10px)`;
+					ctx.filter = `grayscale(100%) brightness(${bgOpacity}%)`;
+					if (selectedStyle === 'glass') ctx.filter = `grayscale(100%) brightness(${bgOpacity + 15}%) blur(10px)`;
 					ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
 					ctx.restore();
 				} catch (e) {
@@ -138,12 +138,9 @@
 		ctx.textAlign = 'center';
 		ctx.fillStyle = selectedStyle === 'impact' ? '#000000' : '#ffffff';
 		
-		let fontSize = selectedStyle === 'impact' ? 84 : 64;
 		const fontConfig = `${selectedStyle === 'poetic' ? 'italic' : 'bold italic'}`;
-		
 		const fullText = `"${quote.text}"`;
 		const maxWidth = 800;
-		const maxLines = 10;
 		
 		function getLines(fs) {
 			ctx.font = `${fontConfig} ${fs}px ${font.css}, sans-serif`;
@@ -163,14 +160,10 @@
 			return lines;
 		}
 
-		let lines = getLines(fontSize);
-		while (lines.length > maxLines && fontSize > 24) {
-			fontSize -= 4;
-			lines = getLines(fontSize);
-		}
-
-		const lineHeight = fontSize * 1.3;
+		const lines = getLines(manualFontSize);
+		const lineHeight = manualFontSize * 1.3;
 		let startY = (1080 / 2) - ((lines.length * lineHeight) / 2);
+
 		lines.forEach((line, i) => {
 			ctx.fillText(line.trim(), 540, startY + (i * lineHeight));
 		});
@@ -220,6 +213,7 @@
 		accentColor;
 		quote;
 		bgOpacity;
+		manualFontSize;
 
 		if (showPreview) generateImage(false);
 		if (typeof navigator !== 'undefined') {
@@ -265,10 +259,18 @@
 
 				<div>
 					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-3 text-center md:text-left">Typography</h3>
-					<div class="grid grid-cols-2 gap-2">
+					<div class="grid grid-cols-2 gap-2 mb-4">
 						{#each fonts as font}
 							<button onclick={() => selectedFont = font.id} class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedFont === font.id ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/30'}">{font.name}</button>
 						{/each}
+					</div>
+					
+					<div class="space-y-2">
+						<div class="flex justify-between text-[7px] font-black uppercase tracking-widest text-slate-500">
+							<span>Font Size</span>
+							<span>{manualFontSize}px</span>
+						</div>
+						<input type="range" min="20" max="120" step="2" bind:value={manualFontSize} class="w-full accent-white opacity-50 hover:opacity-100 cursor-pointer" />
 					</div>
 				</div>
 
@@ -281,11 +283,7 @@
 								<span>Brightness</span>
 								<span>{bgOpacity}%</span>
 							</div>
-							<input 
-								type="range" min="5" max="80" step="5" 
-								bind:value={bgOpacity}
-								class="w-full accent-white opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
-							/>
+							<input type="range" min="5" max="80" step="5" bind:value={bgOpacity} class="w-full accent-white opacity-50 hover:opacity-100 transition-opacity cursor-pointer" />
 						</div>
 					{/if}
 
