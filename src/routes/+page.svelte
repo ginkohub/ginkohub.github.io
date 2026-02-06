@@ -178,6 +178,7 @@
 			<img 
 				id="main-bg-image"
 				src={selectedBg} 
+				crossorigin="anonymous"
 				alt="" 
 				class="w-full h-full object-cover grayscale transition-opacity duration-1000 opacity-[0.35]"
 				in:fade={{ duration: 1000 }}
