@@ -128,12 +128,11 @@
 		}
 
 		// Branding
-		ctx.textAlign = 'center';
-		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
-		ctx.font = '900 24px Inter, sans-serif';
-		ctx.letterSpacing = '8px';
-		const brandingY = selectedStyle === 'glass' ? 940 : 1000;
-		ctx.fillText('GINKOHUB.GITHUB.IO', 540, brandingY);
+		ctx.textAlign = 'right';
+		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)';
+		ctx.font = '900 18px Inter, sans-serif';
+		ctx.letterSpacing = '4px';
+		ctx.fillText('GINKOHUB.GITHUB.IO', 1040, 1040);
 
 		// 4. Quote Text
 		ctx.textAlign = 'center';
