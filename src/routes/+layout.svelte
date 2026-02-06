@@ -17,14 +17,14 @@
 	<meta property="og:url" content="https://ginkohub.github.io/" />
 	<meta property="og:title" content="GinkoHub • Cyber Flâneur" />
 	<meta property="og:description" content="Explore a minimalist collection of digital artifacts, poetic wisdom, and developer experiments." />
-	<meta property="og:image" content="https://github.com/ginkohub.png" />
+	<meta property="og:image" content="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&h=630&q=80" />
 
 	<!-- Twitter -->
 	<meta property="twitter:card" content="summary_large_image" />
 	<meta property="twitter:url" content="https://ginkohub.github.io/" />
 	<meta property="twitter:title" content="GinkoHub • Cyber Flâneur" />
 	<meta property="twitter:description" content="Explore a minimalist collection of digital artifacts, poetic wisdom, and developer experiments." />
-	<meta property="twitter:image" content="https://github.com/ginkohub.png" />
+	<meta property="twitter:image" content="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&h=630&q=80" />
 
 	<link rel="icon" href="https://github.com/ginkohub.png" />
 </svelte:head>
