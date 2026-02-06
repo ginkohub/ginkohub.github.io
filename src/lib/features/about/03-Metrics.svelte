@@ -24,9 +24,9 @@
 		<span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">Global Connectivity</span>
 		<div class="flex items-center gap-3">
 			<img 
-				src="https://hits.dwyl.com/ginkohub/ginkohub.github.io.svg" 
+				src="https://komarev.com/ghpvc/?username=ginkohub-portfolio&color=000000&style=flat-square&label=VISITS" 
 				alt="Visit Counter"
-				class="h-4 opacity-80 grayscale hover:grayscale-0 transition-all cursor-crosshair"
+				class="h-4 transition-all cursor-crosshair"
 			/>
 		</div>
 	</div>
