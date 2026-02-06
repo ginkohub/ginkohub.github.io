@@ -86,7 +86,21 @@
 		'Web Tinkerer',
 		'Logic Voyager',
 		'Information Gatherer',
-		'Internet Surfer'
+		'Internet Surfer',
+		'System Architect',
+		'Data Mystic',
+		'Code Alchemist',
+		'Pixel Dreamer',
+		'Virtual Nomad',
+		'Syntax Weaver',
+		'Binary Poet',
+		'Neural Navigator',
+		'Reality Glitcher',
+		'Ghost in the Shell',
+		'Protocol Phantom',
+		'Void Walker',
+		'Silicon Sage',
+		'Bit Explorer'
 	];
 
 	function shufflePersona() {
