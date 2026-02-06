@@ -5,11 +5,17 @@
 		{ name: 'Hacker News', url: 'https://news.ycombinator.com/rss' },
 		{ name: 'TechCrunch', url: 'https://techcrunch.com/feed/' },
 		{ name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml' },
-		{ name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' },
+		{ name: 'Engadget', url: 'https://www.engadget.com/rss.xml' },
 		{ name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index' },
-		{ name: 'Smashing Mag', url: 'https://www.smashingmagazine.com/feed/' },
+		{ name: 'Wired', url: 'https://www.wired.com/feed/rss' },
+		{ name: 'ZDNet', url: 'https://www.zdnet.com/news/rss.xml' },
+		{ name: 'VentureBeat', url: 'https://venturebeat.com/feed/' },
+		{ name: 'GitHub Blog', url: 'https://github.blog/feed/' },
 		{ name: 'FreeCodeCamp', url: 'https://www.freecodecamp.org/news/rss/' },
-		{ name: 'GitHub Blog', url: 'https://github.blog/feed/' }
+		{ name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' },
+		{ name: 'Smashing Mag', url: 'https://www.smashingmagazine.com/feed/' },
+		{ name: 'SitePoint', url: 'https://www.sitepoint.com/feed/' },
+		{ name: 'A List Apart', url: 'https://alistapart.com/main/feed/' }
 	];
 
 	let selectedFeed = $state(feeds[0].url);
@@ -62,18 +68,20 @@
 <div class="space-y-8">
 	<header class="flex flex-col md:flex-row justify-between items-center gap-4">
 		<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Data Stream</h2>
-		<div class="flex flex-wrap justify-center gap-2">
-			{#each feeds as feed}
-				<button
-					onclick={() => (selectedFeed = feed.url)}
-					class="text-[8px] font-bold uppercase border px-3 py-1 transition-all
-					{selectedFeed === feed.url
-						? 'bg-white text-black border-white'
-						: 'border-slate-800 text-slate-500 hover:border-slate-600'}"
-				>
-					{feed.name}
-				</button>
-			{/each}
+		<div class="relative w-full md:w-64">
+			<select
+				bind:value={selectedFeed}
+				class="w-full bg-black border border-slate-800 text-slate-300 text-[10px] font-bold uppercase py-2 px-3 focus:border-white/30 outline-none appearance-none cursor-pointer hover:bg-slate-900/50 transition-all"
+			>
+				{#each feeds as feed}
+					<option value={feed.url}>{feed.name}</option>
+				{/each}
+			</select>
+			<div
+				class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600 text-[8px]"
+			>
+				▼
+			</div>
 		</div>
 	</header>
 
