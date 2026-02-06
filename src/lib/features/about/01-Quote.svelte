@@ -144,22 +144,9 @@
 
 <div class="pb-10 relative group/quote text-center md:text-left border-b border-slate-800/50 mb-10">
 	<div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
-		<div class="flex flex-col gap-4">
-			<div class="flex gap-2">
-				{#each styles as style}
-					<button 
-						onclick={() => selectedStyle = style.id}
-						class="text-[7px] font-black uppercase border px-2 py-1 transition-all
-						{selectedStyle === style.id ? 'bg-white text-black border-white' : 'border-slate-800 text-slate-500'}"
-					>
-						{style.name}
-					</button>
-				{/each}
-			</div>
-			<div class="flex gap-3">
-				<button id="copy-btn" onclick={copyQuote} class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300">Copy Text</button>
-				<button onclick={() => generateImage(false)} class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300 disabled:opacity-50" disabled={isGenerating}>{isGenerating ? 'GEN...' : 'Generate Image'}</button>
-			</div>
+		<div class="flex gap-3">
+			<button id="copy-btn" onclick={copyQuote} class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300">Copy Text</button>
+			<button onclick={() => generateImage(false)} class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300 disabled:opacity-50" disabled={isGenerating}>{isGenerating ? 'GEN...' : 'Save Image'}</button>
 		</div>
 		<div class="flex gap-2 items-center">
 			<button onclick={prevQuote} class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black" style="border-color: {accentColor}; color: {accentColor};">← Prev</button>
