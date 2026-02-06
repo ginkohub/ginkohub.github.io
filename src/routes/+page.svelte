@@ -1,12 +1,29 @@
 <script>
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import HumorSection from '$lib/HumorSection.svelte';
-	import WordFinder from '$lib/WordFinder.svelte';
 	
 	let { data } = $props(); 
 	
-	let activeTab = $state('about');
+	// Modular Tab System
+	const tabModules = import.meta.glob('$lib/tabs/*.svelte', { eager: true });
+	const tabs = Object.entries(tabModules).map(([path, module]) => {
+		const label = path.split('/').pop().replace('.svelte', '').toLowerCase();
+		return {
+			label,
+			component: module.default
+		};
+	}).sort((a, b) => {
+		// Ensure 'about' is first, 'game' is last
+		if (a.label === 'about') return -1;
+		if (b.label === 'about') return 1;
+		if (a.label === 'game') return 1;
+		if (b.label === 'game') return -1;
+		return a.label.localeCompare(b.label);
+	});
+
+	let activeTabLabel = $state('about');
+	let ActiveTabComponent = $derived(tabs.find(t => t.label === activeTabLabel)?.component);
+
 	let persona = $state('Internet Surfer');
 	let meme = $state({ url: '', title: '', loading: false });
 	let joke = $state({ setup: '', punchline: '', loading: false });
@@ -48,38 +65,6 @@
 		text: scrapedQuotes[currentQuoteIndex]?.text || 'Seeking wisdom...', 
 		author: scrapedQuotes[currentQuoteIndex]?.author || 'Rumi',
 		loading: false 
-	});
-
-	// Lazy Loaded Components
-	let HumorSectionComponent = $state(null);
-	let WordFinderComponent = $state(null);
-	let GameSectionComponent = $state(null);
-
-	async function loadHumor() {
-		if (!HumorSectionComponent) {
-			const module = await import('$lib/HumorSection.svelte');
-			HumorSectionComponent = module.default;
-		}
-	}
-
-	async function loadWords() {
-		if (!WordFinderComponent) {
-			const module = await import('$lib/WordFinder.svelte');
-			WordFinderComponent = module.default;
-		}
-	}
-
-	async function loadGame() {
-		if (!GameSectionComponent) {
-			const module = await import('$lib/GameSection.svelte');
-			GameSectionComponent = module.default;
-		}
-	}
-
-	$effect(() => {
-		if (activeTab === 'humor') loadHumor();
-		if (activeTab === 'words') loadWords();
-		if (activeTab === 'game') loadGame();
 	});
 
 	const personas = [
@@ -225,105 +210,38 @@
 			</button>
 		</header>
 
-		<!-- Navigation -->
+		<!-- Modular Navigation -->
 		<nav class="flex w-full border-b border-slate-800 mb-10 relative">
-			{#each ['about', 'humor', 'words', 'game'] as tab}
+			{#each tabs as tab}
 				<button
-					onclick={() => (activeTab = tab)}
+					onclick={() => (activeTabLabel = tab.label)}
 					class="flex-1 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
-                    {activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-slate-300'}"
+                    {activeTabLabel === tab.label ? 'text-white' : 'text-slate-500 hover:text-slate-300'}"
 				>
-					{tab}
-					{#if activeTab === tab}
+					{tab.label}
+					{#if activeTabLabel === tab.label}
 						<div class="absolute bottom-0 left-0 w-full h-[2px]" style="background-color: var(--accent-color)" in:fade={{ duration: 200 }}></div>
 					{/if}
 				</button>
 			{/each}
 		</nav>
 
-		<!-- Content -->
+		<!-- Dynamic Content -->
 		<div class="w-full min-h-[250px] pb-24">
-			{#if activeTab === 'about'}
-				<div class="space-y-10 animate-in fade-in duration-500" in:fly={{ y: 10, duration: 400, delay: 100 }}>
-					<!-- Rumi Section -->
-					<div class="pb-10 relative group/quote text-center md:text-left">
-						<div class="flex justify-end items-center mb-4">
-							<div class="flex gap-2 items-center">
-								<button 
-									onclick={prevQuote} 
-									class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
-									style="border-color: var(--accent-color); color: var(--accent-color);"
-								>
-									← Prev
-								</button>
-								<span class="text-[7px] text-slate-500 font-bold uppercase tracking-widest px-2">
-									{currentQuoteIndex + 1} / {scrapedQuotes.length}
-								</span>
-								<button 
-									onclick={nextQuote} 
-									class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
-									style="border-color: var(--accent-color); color: var(--accent-color);"
-								>
-									Next →
-								</button>
-							</div>
-						</div>
-						<div class="space-y-3 min-h-[4rem]">
-							<p class="text-lg md:text-xl font-bold leading-snug text-slate-200 font-space italic">
-								"{quote.text}"
-							</p>
-							<p class="text-[9px] font-black uppercase tracking-widest text-slate-500/70">— {quote.author}</p>
-						</div>
-					</div>
-
-					<div class="space-y-6 pt-6 border-t border-slate-800">
-						<h2 class="text-[9px] font-bold uppercase tracking-widest text-slate-500">Connect</h2>
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-							{#each contacts as contact}
-								<div class="flex flex-col group/item">
-									<span class="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5 group-hover/item:text-slate-300 transition-colors">{contact.label}</span>
-									{#if contact.link}
-										<a href={contact.link} target="_blank" class="text-sm font-bold text-white hover:text-slate-300 active:text-slate-300 transition-colors w-fit break-all font-space">
-											{contact.value}
-										</a>
-									{:else}
-										<span class="text-sm font-bold text-white break-all font-space">{contact.value}</span>
-									{/if}
-								</div>
-							{/each}
-						</div>
-					</div>
-				</div>
-			{:else if activeTab === 'humor'}
-				<div class="animate-in fade-in duration-700" in:fly={{ y: 10, duration: 400, delay: 100 }}>
-					{#if HumorSectionComponent}
-						<HumorSectionComponent bind:meme bind:joke {fetchMeme} {fetchJoke} />
-					{:else}
-						<div class="py-20 text-center animate-pulse">
-							<p class="text-[9px] font-bold text-slate-200 uppercase tracking-widest font-space">Loading Humor...</p>
-						</div>
-					{/if}
-				</div>
-			{:else if activeTab === 'words'}
-				<div class="animate-in fade-in duration-500" in:fly={{ y: 10, duration: 400, delay: 100 }}>
-					{#if WordFinderComponent}
-						<WordFinderComponent />
-					{:else}
-						<div class="py-20 text-center animate-pulse">
-							<p class="text-[9px] font-bold text-slate-200 uppercase tracking-widest font-space">Loading Tools...</p>
-						</div>
-					{/if}
-				</div>
-			{:else if activeTab === 'game'}
-				<div class="animate-in fade-in duration-500" in:fly={{ y: 10, duration: 400, delay: 100 }}>
-					{#if GameSectionComponent}
-						<GameSectionComponent />
-					{:else}
-						<div class="py-20 text-center animate-pulse">
-							<p class="text-[9px] font-bold text-slate-200 uppercase tracking-widest font-space">Initializing Arcade...</p>
-						</div>
-					{/if}
-				</div>
+			{#if ActiveTabComponent}
+				<ActiveTabComponent 
+					{data} 
+					{meme} 
+					{joke} 
+					{fetchMeme} 
+					{fetchJoke} 
+					{scrapedQuotes} 
+					{currentQuoteIndex} 
+					{quote} 
+					{prevQuote} 
+					{nextQuote} 
+					{contacts} 
+				/>
 			{/if}
 		</div>
 
