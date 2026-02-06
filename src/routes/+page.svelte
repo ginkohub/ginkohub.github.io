@@ -13,11 +13,8 @@
 			component: module.default
 		};
 	}).sort((a, b) => {
-		if (a.label === 'about') return -1;
-		if (b.label === 'about') return 1;
-		if (a.label === 'game') return 1;
-		if (b.label === 'game') return -1;
-		return a.label.localeCompare(b.label);
+		const order = { 'about': 0, 'humor': 1, 'words': 2, 'preview': 3, 'game': 4 };
+		return (order[a.label] ?? 99) - (order[b.label] ?? 99);
 	});
 
 	let activeTabLabel = $state('about');
@@ -243,20 +240,22 @@
 			</button>
 		</header>
 
-		<!-- Modular Navigation -->
-		<nav class="flex w-full border-b border-slate-800 mb-10 relative">
-			{#each tabs as tab}
-				<button
-					onclick={() => (activeTabLabel = tab.label)}
-					class="flex-1 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
-                    {activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
-				>
-					{tab.label}
-					{#if activeTabLabel === tab.label}
-						<div class="absolute bottom-0 left-0 w-full h-[2px]" style="background-color: var(--accent-color)" in:fade={{ duration: 200 }}></div>
-					{/if}
-				</button>
-			{/each}
+		<!-- Modular Navigation (Fixed with Scroll Support) -->
+		<nav class="flex w-full border-b border-slate-800 mb-10 overflow-x-auto no-scrollbar scroll-smooth">
+			<div class="flex min-w-full">
+				{#each tabs as tab}
+					<button
+						onclick={() => (activeTabLabel = tab.label)}
+						class="flex-1 min-w-[80px] py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
+						{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+					>
+						{tab.label}
+						{#if activeTabLabel === tab.label}
+							<div class="absolute bottom-0 left-0 w-full h-[2px]" style="background-color: var(--accent-color)" in:fade={{ duration: 200 }}></div>
+						{/if}
+					</button>
+				{/each}
+			</div>
 		</nav>
 
 		<!-- Dynamic Content -->
@@ -300,6 +299,17 @@
 
 	.font-space {
 		font-family: 'Space Grotesk', sans-serif;
+	}
+
+	/* Hide scrollbar for Chrome, Safari and Opera */
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* Hide scrollbar for IE, Edge and Firefox */
+	.no-scrollbar {
+		-ms-overflow-style: none;  /* IE and Edge */
+		scrollbar-width: none;  /* Firefox */
 	}
 
 	@keyframes glow-expand {
