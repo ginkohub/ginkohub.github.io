@@ -5,12 +5,24 @@
 	let previewUrl = $state('');
 	let showPreview = $state(false);
 	let isGenerating = $state(false);
+	let customBg = $state(null);
 	
 	let selectedStyle = $state('minimalist');
+	let selectedFont = $state('sans');
+	
 	const styles = [
-		{ id: 'minimalist', name: 'Minimalist' },
+		{ id: 'minimalist', name: 'Minimal' },
 		{ id: 'impact', name: 'Impact' },
-		{ id: 'poetic', name: 'Poetic' }
+		{ id: 'poetic', name: 'Poetic' },
+		{ id: 'cyber', name: 'Cyber' },
+		{ id: 'glass', name: 'Glass' }
+	];
+
+	const fonts = [
+		{ id: 'sans', name: 'Inter', css: 'Inter, sans-serif' },
+		{ id: 'display', name: 'Grotesk', css: '"Space Grotesk", sans-serif' },
+		{ id: 'serif', name: 'Serif', css: 'serif' },
+		{ id: 'mono', name: 'Mono', css: 'monospace' }
 	];
 
 	function copyQuote() {
@@ -22,6 +34,18 @@
 		setTimeout(() => btn.innerText = originalText, 2000);
 	}
 
+	function handleFileUpload(e) {
+		const file = e.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (event) => {
+				customBg = event.target.result;
+				generateImage(false);
+			};
+			reader.readAsDataURL(file);
+		}
+	}
+
 	async function generateImage(download = false) {
 		isGenerating = true;
 		const canvas = document.createElement('canvas');
@@ -29,26 +53,50 @@
 		canvas.width = 1080;
 		canvas.height = 1080;
 
+		const currentBg = customBg || bgImage;
+
+		// 1. Draw Background
 		if (selectedStyle === 'impact') {
 			ctx.fillStyle = accentColor;
 			ctx.fillRect(0, 0, 1080, 1080);
 		} else {
-			const existingImg = document.getElementById('main-bg-image');
-			if (existingImg && existingImg.complete) {
-				const scale = Math.max(canvas.width / existingImg.naturalWidth, canvas.height / existingImg.naturalHeight);
-				const x = (canvas.width / 2) - (existingImg.naturalWidth / 2) * scale;
-				const y = (canvas.height / 2) - (existingImg.naturalHeight / 2) * scale;
-				ctx.save();
-				ctx.filter = selectedStyle === 'poetic' ? 'grayscale(100%) brightness(50%)' : 'grayscale(100%) brightness(35%)';
-				ctx.drawImage(existingImg, x, y, existingImg.naturalWidth * scale, existingImg.naturalHeight * scale);
-				ctx.restore();
+			if (currentBg) {
+				try {
+					const img = new Image();
+					img.crossOrigin = "anonymous";
+					img.src = currentBg;
+					await new Promise((resolve, reject) => {
+						img.onload = resolve;
+						img.onerror = reject;
+					});
+					
+					const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+					const x = (canvas.width / 2) - (img.width / 2) * scale;
+					const y = (canvas.height / 2) - (img.height / 2) * scale;
+					
+					ctx.save();
+					ctx.filter = 'grayscale(100%) brightness(35%)';
+					if (selectedStyle === 'glass') ctx.filter = 'grayscale(100%) brightness(50%) blur(10px)';
+					ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+					ctx.restore();
+				} catch (e) {
+					ctx.fillStyle = '#000000';
+					ctx.fillRect(0, 0, 1080, 1080);
+				}
 			} else {
 				ctx.fillStyle = '#000000';
 				ctx.fillRect(0, 0, 1080, 1080);
 			}
 		}
 
-		if (selectedStyle !== 'impact') {
+		// 2. Overlays & Glass effect
+		if (selectedStyle === 'glass') {
+			ctx.fillStyle = 'rgba(255,255,255,0.1)';
+			ctx.fillRect(100, 100, 880, 880);
+			ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+			ctx.lineWidth = 2;
+			ctx.strokeRect(100, 100, 880, 880);
+		} else if (selectedStyle !== 'impact') {
 			const grad = ctx.createLinearGradient(0, 0, 0, 1080);
 			grad.addColorStop(0, 'rgba(0,0,0,0.7)');
 			grad.addColorStop(0.5, 'transparent');
@@ -57,39 +105,43 @@
 			ctx.fillRect(0, 0, 1080, 1080);
 		}
 
+		// 3. Style Elements
 		if (selectedStyle === 'minimalist') {
 			ctx.strokeStyle = accentColor;
 			ctx.lineWidth = 40;
 			ctx.strokeRect(0, 0, 1080, 1080);
-			ctx.fillStyle = accentColor;
-			ctx.fillRect(100, 100, 80, 4);
-		} else if (selectedStyle === 'poetic') {
-			ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-			ctx.lineWidth = 2;
+		} else if (selectedStyle === 'cyber') {
+			ctx.strokeStyle = accentColor;
+			ctx.lineWidth = 4;
 			ctx.strokeRect(60, 60, 960, 960);
+			// Corners
+			ctx.fillStyle = accentColor;
+			ctx.fillRect(40, 40, 100, 10); ctx.fillRect(40, 40, 10, 100); // TL
+			ctx.fillRect(940, 40, 100, 10); ctx.fillRect(1030, 40, 10, 100); // TR
+			ctx.fillRect(40, 1030, 100, 10); ctx.fillRect(40, 940, 10, 100); // BL
+			ctx.fillRect(940, 1030, 100, 10); ctx.fillRect(1030, 940, 10, 100); // BR
 		}
 
-		ctx.textAlign = 'left';
+		// Branding
+		ctx.textAlign = 'center';
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
 		ctx.font = '900 24px Inter, sans-serif';
 		ctx.letterSpacing = '8px';
-		if (selectedStyle === 'minimalist') ctx.fillText('GINKOHUB.GITHUB.IO', 200, 115);
-		else {
-			ctx.textAlign = 'center';
-			ctx.fillText('GINKOHUB.GITHUB.IO', 540, 1000);
-		}
+		ctx.fillText('GINKOHUB.GITHUB.IO', 540, 1000);
 
+		// 4. Quote Text
 		ctx.textAlign = 'center';
 		ctx.fillStyle = selectedStyle === 'impact' ? '#000000' : '#ffffff';
+		
+		const font = fonts.find(f => f.id === selectedFont);
 		let fontSize = selectedStyle === 'impact' ? 84 : 64;
-		const fontName = selectedStyle === 'poetic' ? 'serif' : '"Space Grotesk", sans-serif';
-		const fontWeight = selectedStyle === 'poetic' ? 'italic' : 'bold italic';
+		
 		const fullText = `"${quote.text}"`;
-		const maxWidth = 840;
-		const maxLines = 8;
+		const maxWidth = 800;
+		const maxLines = 10;
 		
 		function getLines(fs) {
-			ctx.font = `${fontWeight} ${fs}px ${fontName}`;
+			ctx.font = `bold italic ${fs}px ${font.css}`;
 			const words = fullText.split(' ');
 			let lines = [];
 			let currentLine = '';
@@ -107,28 +159,28 @@
 		}
 
 		let lines = getLines(fontSize);
-		while (lines.length > maxLines && fontSize > 32) {
+		while (lines.length > maxLines && fontSize > 24) {
 			fontSize -= 4;
 			lines = getLines(fontSize);
 		}
 
-		const lineHeight = fontSize * 1.2;
+		const lineHeight = fontSize * 1.3;
 		let startY = (1080 / 2) - ((lines.length * lineHeight) / 2);
 		lines.forEach((line, i) => {
 			ctx.fillText(line.trim(), 540, startY + (i * lineHeight));
 		});
 
-		const authorY = Math.min(startY + (lines.length * lineHeight) + 80, 1000);
+		// 5. Author
+		const authorY = Math.min(startY + (lines.length * lineHeight) + 80, 940);
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.6)' : accentColor;
-		ctx.font = selectedStyle === 'poetic' ? 'italic 32px serif' : 'bold 32px Inter, sans-serif';
-		ctx.letterSpacing = '1px';
+		ctx.font = `bold 32px ${font.css}`;
 		ctx.fillText(`— ${quote.author}`, 540, authorY);
 
 		const dataUrl = canvas.toDataURL('image/png');
 		isGenerating = false;
 		if (download) {
 			const link = document.createElement('a');
-			link.download = `ginkohub-${selectedStyle}-${Date.now()}.png`;
+			link.download = `ginkohub-quote-${Date.now()}.png`;
 			link.href = dataUrl;
 			link.click();
 		} else {
@@ -161,16 +213,48 @@
 </div>
 
 {#if showPreview}
-	<div class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6" onclick={() => showPreview = false} in:fade={{ duration: 250 }}>
-		<div class="mb-8 flex gap-2">
-			{#each styles as style}
-				<button onclick={(e) => { e.stopPropagation(); selectedStyle = style.id; }} class="px-4 py-2 text-[10px] font-black uppercase tracking-widest border transition-all {selectedStyle === style.id ? 'bg-white text-black border-white' : 'border-white/20 text-white/50 hover:border-white/40'}">{style.name}</button>
-			{/each}
-		</div>
-		<div class="relative w-full max-w-[500px] aspect-square shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden" onclick={(e) => e.stopPropagation()}><img src={previewUrl} alt="Quote Preview" class="w-full h-full object-contain" /></div>
-		<div class="mt-10 flex gap-4">
-			<button onclick={() => generateImage(true)} class="px-10 py-4 text-[11px] font-black uppercase tracking-[0.3em] bg-white text-black hover:invert transition-all active:scale-95">Download PNG</button>
-			<button onclick={() => showPreview = false} class="px-10 py-4 text-[11px] font-black uppercase tracking-[0.3em] border border-white/20 text-white hover:bg-white/10 transition-all active:scale-95">Close</button>
+	<div class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 overflow-y-auto" onclick={() => showPreview = false} in:fade={{ duration: 250 }}>
+		<div class="w-full max-w-4xl flex flex-col md:flex-row gap-10 items-center justify-center" onclick={(e) => e.stopPropagation()}>
+			
+			<!-- Controls Column -->
+			<div class="flex flex-col gap-8 w-full md:w-64 order-2 md:order-1">
+				<div>
+					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Visual Style</h3>
+					<div class="grid grid-cols-2 gap-2">
+						{#each styles as style}
+							<button onclick={() => selectedStyle = style.id} class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedStyle === style.id ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/30'}">{style.name}</button>
+						{/each}
+					</div>
+				</div>
+
+				<div>
+					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Typography</h3>
+					<div class="grid grid-cols-2 gap-2">
+						{#each fonts as font}
+							<button onclick={() => selectedFont = font.id} class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedFont === font.id ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/30'}">{font.name}</button>
+						{/each}
+					</div>
+				</div>
+
+				<div>
+					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Background</h3>
+					<label class="block w-full py-2 text-center text-[8px] font-black uppercase border border-white/10 text-white/40 hover:bg-white/5 cursor-pointer transition-all">
+						Upload Image
+						<input type="file" accept="image/*" class="hidden" onchange={handleFileUpload} />
+					</label>
+				</div>
+			</div>
+
+			<!-- Preview Image -->
+			<div class="relative w-full max-w-[500px] aspect-square shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/5 order-1 md:order-2">
+				<img src={previewUrl} alt="Quote Preview" class="w-full h-full object-contain" />
+			</div>
+
+			<!-- Action Column -->
+			<div class="flex flex-col gap-4 w-full md:w-48 order-3">
+				<button onclick={() => generateImage(true)} class="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] bg-white text-black hover:bg-slate-200 transition-all active:scale-95">Download PNG</button>
+				<button onclick={() => showPreview = false} class="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] border border-white/20 text-white hover:bg-white/10 transition-all">Close</button>
+			</div>
 		</div>
 	</div>
 {/if}
