@@ -26,84 +26,102 @@
 
 		// 1. Draw Background Image
 		if (bgImage) {
-			const img = new Image();
-			img.crossOrigin = "anonymous";
-			img.src = bgImage;
-			await new Promise(r => img.onload = r);
-			
-			// Fill cover logic
-			const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-			const x = (canvas.width / 2) - (img.width / 2) * scale;
-			const y = (canvas.height / 2) - (img.height / 2) * scale;
-			
-			ctx.save();
-			// Make background grayscale
-			ctx.filter = 'grayscale(100%) brightness(40%)';
-			ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-			ctx.restore();
+			try {
+				const img = new Image();
+				img.crossOrigin = "anonymous";
+				img.src = bgImage;
+				await new Promise((resolve, reject) => {
+					img.onload = resolve;
+					img.onerror = reject;
+				});
+				
+				const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+				const x = (canvas.width / 2) - (img.width / 2) * scale;
+				const y = (canvas.height / 2) - (img.height / 2) * scale;
+				
+				ctx.save();
+				ctx.filter = 'grayscale(100%) brightness(35%)';
+				ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+				ctx.restore();
+			} catch (e) {
+				ctx.fillStyle = '#000000';
+				ctx.fillRect(0, 0, 1080, 1080);
+			}
 		} else {
 			ctx.fillStyle = '#000000';
 			ctx.fillRect(0, 0, 1080, 1080);
 		}
 
-		// 2. Add Gradient Overlay for Depth
+		// 2. Add Gradient Overlay
 		const grad = ctx.createLinearGradient(0, 0, 0, 1080);
-		grad.addColorStop(0, 'rgba(0,0,0,0.6)');
+		grad.addColorStop(0, 'rgba(0,0,0,0.7)');
 		grad.addColorStop(0.5, 'transparent');
-		grad.addColorStop(1, 'rgba(0,0,0,0.8)');
+		grad.addColorStop(1, 'rgba(0,0,0,0.9)');
 		ctx.fillStyle = grad;
 		ctx.fillRect(0, 0, 1080, 1080);
 
-		// 3. Draw Design Elements
-		// Accent border/line
+		// 3. Design Elements
 		ctx.strokeStyle = accentColor;
 		ctx.lineWidth = 40;
 		ctx.strokeRect(0, 0, 1080, 1080);
 
-		// Accent decoration
 		ctx.fillStyle = accentColor;
 		ctx.fillRect(100, 100, 80, 4);
 
-		// Branding
 		ctx.fillStyle = 'rgba(255,255,255,0.4)';
 		ctx.font = '900 24px Inter, sans-serif';
 		ctx.letterSpacing = '8px';
 		ctx.fillText('GINKOHUB.GITHUB.IO', 200, 115);
 
-		// 4. Draw Quote Text
+		// 4. Quote Text with Dynamic Scaling
 		ctx.textAlign = 'center';
 		ctx.fillStyle = '#ffffff';
-		ctx.font = 'bold italic 64px "Space Grotesk", sans-serif';
 		
-		const words = `"${quote.text}"`.split(' ');
-		let lines = [];
-		let currentLine = '';
-		const maxWidth = 800;
+		const fullText = `"${quote.text}"`;
+		const maxWidth = 840;
+		const maxLines = 8;
+		let fontSize = 64; // Default
+		
+		function getLines(fs) {
+			ctx.font = `bold italic ${fs}px "Space Grotesk", sans-serif`;
+			const words = fullText.split(' ');
+			let lines = [];
+			let currentLine = '';
+			
+			words.forEach(word => {
+				let testLine = currentLine + word + ' ';
+				if (ctx.measureText(testLine).width > maxWidth) {
+					lines.push(currentLine);
+					currentLine = word + ' ';
+				} else {
+					currentLine = testLine;
+				}
+			});
+			lines.push(currentLine);
+			return lines;
+		}
 
-		words.forEach(word => {
-			let testLine = currentLine + word + ' ';
-			if (ctx.measureText(testLine).width > maxWidth) {
-				lines.push(currentLine);
-				currentLine = word + ' ';
-			} else {
-				currentLine = testLine;
-			}
-		});
-		lines.push(currentLine);
+		let lines = getLines(fontSize);
+		
+		// Auto-shrink font if too many lines
+		while (lines.length > maxLines && fontSize > 32) {
+			fontSize -= 4;
+			lines = getLines(fontSize);
+		}
 
-		const lineHeight = 80;
+		const lineHeight = fontSize * 1.2;
 		let startY = (1080 / 2) - ((lines.length * lineHeight) / 2);
 
 		lines.forEach((line, i) => {
 			ctx.fillText(line.trim(), 540, startY + (i * lineHeight));
 		});
 
-		// 5. Draw Author
-		const authorY = startY + (lines.length * lineHeight) + 60;
+		// 5. Author (Not Capitalized)
+		const authorY = Math.min(startY + (lines.length * lineHeight) + 80, 1000);
 		ctx.fillStyle = accentColor;
-		ctx.font = 'black 32px Inter, sans-serif';
-		ctx.letterSpacing = '2px';
-		ctx.fillText(`— ${quote.author.toUpperCase()}`, 540, authorY);
+		ctx.font = 'bold 32px Inter, sans-serif';
+		ctx.letterSpacing = '1px';
+		ctx.fillText(`— ${quote.author}`, 540, authorY);
 
 		const dataUrl = canvas.toDataURL('image/png');
 		isGenerating = false;
@@ -218,6 +236,6 @@
 			</button>
 		</div>
 		
-		<p class="mt-8 text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] animate-pulse">Design: Minimalist Digital Card</p>
+		<p class="mt-8 text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] animate-pulse">Design: Adaptive Digital Card</p>
 	</div>
 {/if}
