@@ -1,7 +1,9 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
 
+	/** @type {HTMLCanvasElement} */
 	let canvas;
+	/** @type {CanvasRenderingContext2D | null} */
 	let ctx;
 	let score = $state(0);
 	let highScore = $state(0);
@@ -9,13 +11,16 @@
 	let gameStarted = $state(false);
 
 	let player = { x: 0, y: 0, size: 20 };
+	/** @type {any[]} */
 	let obstacles = [];
+	/** @type {number} */
 	let animationFrame;
 	let lastTime = 0;
 	let spawnTimer = 0;
 	let difficulty = 1;
 
 	function initGame() {
+		if (!canvas || !canvas.parentElement) return;
 		const size = Math.min(canvas.parentElement.clientWidth, 400);
 		canvas.width = size;
 		canvas.height = size;
@@ -31,6 +36,7 @@
 	}
 
 	function spawnObstacle() {
+		if (!canvas) return;
 		const size = Math.random() * 30 + 10;
 		obstacles.push({
 			x: Math.random() * (canvas.width - size),
@@ -41,7 +47,7 @@
 	}
 
 	function animate(time = performance.now()) {
-		if (!gameStarted) return;
+		if (!gameStarted || !ctx || !canvas) return;
 
 		const dt = time - lastTime;
 		lastTime = time;
@@ -98,22 +104,25 @@
 		if (score > highScore) highScore = score;
 	}
 
+	/** @param {any} e */
 	function handleMove(e) {
-		if (!gameStarted) return;
+		if (!gameStarted || !canvas) return;
 		const rect = canvas.getBoundingClientRect();
 		const clientX = e.touches ? e.touches[0].clientX : e.clientX;
 		const targetX = clientX - rect.left - player.size / 2;
 		player.x = Math.max(0, Math.min(canvas.width - player.size, targetX));
 	}
 
+	/** @param {KeyboardEvent} e */
 	function handleKey(e) {
-		if (!gameStarted) return;
+		if (!gameStarted || !canvas) return;
 		const step = 20;
 		if (e.key === 'ArrowLeft') player.x = Math.max(0, player.x - step);
 		if (e.key === 'ArrowRight') player.x = Math.min(canvas.width - player.size, player.x + step);
 	}
 
 	onMount(() => {
+		if (!canvas || !canvas.parentElement) return;
 		ctx = canvas.getContext('2d');
 		const size = Math.min(canvas.parentElement.clientWidth, 400);
 		canvas.width = size;
@@ -143,6 +152,7 @@
 		class="relative group border border-slate-800 bg-slate-900/50 touch-none"
 		onmousemove={handleMove}
 		ontouchmove={handleMove}
+		role="presentation"
 	>
 		<canvas bind:this={canvas} class="block cursor-none shadow-2xl"></canvas>
 

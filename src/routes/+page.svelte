@@ -39,7 +39,6 @@
 	let isGlitching = $state(false);
 	let isOverloaded = $state(false);
 	let commandBuffer = $state('');
-	let mousePos = $state({ x: 0, y: 0 });
 
 	// Combo Strike State
 	let comboCount = $state(0);
@@ -153,119 +152,83 @@
 		}, 2500);
 	}
 
-		function handleLogoClick(e) {
+	function handleLogoClick(e) {
+		triggerAura();
 
-			triggerAura();
+		shufflePersona();
 
-			shufflePersona();
+		shuffleAccent();
 
-			shuffleAccent();
+		// Combo Strike Logic
 
-			
+		comboCount++;
 
-			// Combo Strike Logic
+		showCombo = true;
 
-			comboCount++;
+		comboScale = 1 + Math.min(comboCount * 0.02, 0.3);
 
-			showCombo = true;
+		isShaking = true;
 
-			comboScale = 1 + Math.min(comboCount * 0.02, 0.3);
+		// Overload Mode Trigger
 
-			isShaking = true;
+		if (comboCount >= 50 && !isOverloaded) {
+			isOverloaded = true;
 
-	
+			if (typeof window !== 'undefined') {
+				const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
 
-			// Overload Mode Trigger
+				audio.volume = 0.2;
 
-			if (comboCount >= 50 && !isOverloaded) {
+				audio.play().catch(() => {});
+			}
+		}
+
+		// Reset shake effect
+
+		setTimeout(() => {
+			isShaking = false;
+		}, 80);
+
+		// Handle Reset Timer
+
+		clearTimeout(comboTimeout);
+
+		comboTimeout = setTimeout(() => {
+			if (!isOverloaded) comboCount = 0;
+
+			showCombo = false;
+
+			comboScale = 1;
+		}, 1500);
+	}
+
+	function handleGlobalKeydown(e) {
+		if (e.key.length === 1) {
+			commandBuffer += e.key.toLowerCase();
+
+			if (commandBuffer.length > 20) commandBuffer = commandBuffer.slice(-20);
+
+			if (commandBuffer.endsWith('matrix')) {
+				currentAccent = { name: 'matrix', hex: '#00ff41' };
 
 				isOverloaded = true;
 
-				if (typeof window !== 'undefined') {
+				commandBuffer = '';
+			} else if (commandBuffer.endsWith('reset')) {
+				isOverloaded = false;
 
-					const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+				comboCount = 0;
 
-					audio.volume = 0.2;
+				commandBuffer = '';
 
-					audio.play().catch(() => {});
+				shuffleAccent();
+			} else if (commandBuffer.endsWith('rumi')) {
+				activeTabLabel = 'about';
 
-				}
-
+				commandBuffer = '';
 			}
-
-			
-
-			// Reset shake effect
-
-			setTimeout(() => { isShaking = false; }, 80);
-
-	
-
-			// Handle Reset Timer
-
-			clearTimeout(comboTimeout);
-
-			comboTimeout = setTimeout(() => {
-
-				if (!isOverloaded) comboCount = 0;
-
-				showCombo = false;
-
-				comboScale = 1;
-
-			}, 1500);
-
 		}
-
-	
-
-		function handleGlobalKeydown(e) {
-
-			if (e.key.length === 1) {
-
-				commandBuffer += e.key.toLowerCase();
-
-				if (commandBuffer.length > 20) commandBuffer = commandBuffer.slice(-20);
-
-				
-
-				if (commandBuffer.endsWith('matrix')) {
-
-					currentAccent = { name: 'matrix', hex: '#00ff41' };
-
-					isOverloaded = true;
-
-					commandBuffer = '';
-
-				} else if (commandBuffer.endsWith('reset')) {
-
-					isOverloaded = false;
-
-					comboCount = 0;
-
-					commandBuffer = '';
-
-					shuffleAccent();
-
-				} else if (commandBuffer.endsWith('rumi')) {
-
-					activeTabLabel = 'about';
-
-					commandBuffer = '';
-
-				}
-
-			}
-
-		}
-
-	
-
-		function handleMouseMove(e) {
-
-			mousePos = { x: e.clientX, y: e.clientY };
-
-		}
+	}
 
 	function nextQuote() {
 		if (scrapedQuotes.length === 0) return;
@@ -315,14 +278,12 @@
 			currentQuoteIndex = Math.floor(Math.random() * scrapedQuotes.length);
 		}
 		window.addEventListener('keydown', handleGlobalKeydown);
-		window.addEventListener('mousemove', handleMouseMove);
 	});
 
 	import { onDestroy } from 'svelte';
 	onDestroy(() => {
 		if (typeof window !== 'undefined') {
 			window.removeEventListener('keydown', handleGlobalKeydown);
-			window.removeEventListener('mousemove', handleMouseMove);
 		}
 	});
 
@@ -334,19 +295,11 @@
 </script>
 
 <div
-	class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500 {isOverloaded ? 'overload-mode' : ''}"
+	class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500 {isOverloaded
+		? 'overload-mode'
+		: ''}"
 	style="--accent-color: {currentAccent.hex}"
 >
-	<!-- Cursor Digital Dust -->
-	<div class="fixed pointer-events-none z-[9999] hidden md:block">
-		{#each Array(4) as _, i}
-			<div 
-				class="absolute w-1 h-1 bg-white opacity-40"
-				style="left: {mousePos.x}px; top: {mousePos.y}px; transition: transform {0.1 + i * 0.05}s ease-out; transform: translate3d(-50%, -50%, 0) scale({1 - i * 0.2});"
-			></div>
-		{/each}
-	</div>
-
 	<!-- Stable Background: Outside the shaking container -->
 	<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
 		{#if selectedBg}
@@ -652,8 +605,14 @@
 	}
 
 	@keyframes critical-flicker {
-		0% { opacity: 0.1; }
-		50% { opacity: 0.2; }
-		100% { opacity: 0.1; }
+		0% {
+			opacity: 0.1;
+		}
+		50% {
+			opacity: 0.2;
+		}
+		100% {
+			opacity: 0.1;
+		}
 	}
 </style>

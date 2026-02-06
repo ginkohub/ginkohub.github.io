@@ -1,7 +1,9 @@
 <script>
 	import { onMount, onDestroy, untrack } from 'svelte';
 
+	/** @type {HTMLCanvasElement} */
 	let canvas;
+	/** @type {CanvasRenderingContext2D | null} */
 	let ctx;
 	let score = $state(0);
 	let highScore = $state(0);
@@ -13,11 +15,14 @@
 	const ROWS = 20;
 	let blockSize = $state(20);
 
+	/** @type {number[][]} */
 	let grid = $state(Array.from({ length: ROWS }, () => Array(10).fill(0)));
+	/** @type {any} */
 	let currentPiece = $state(null);
 	let dropCounter = 0;
 	let dropInterval = 1000;
 	let lastTime = 0;
+	/** @type {number} */
 	let animationFrame;
 
 	const PIECES = [
@@ -219,6 +224,7 @@
 		if (score > highScore) highScore = score;
 	}
 
+	/** @param {KeyboardEvent} e */
 	function handleKey(e) {
 		if (!gameStarted || showSettings) return;
 		if (e.key === 'ArrowLeft') playerMove(-1);
