@@ -25,7 +25,6 @@
 	let joke = $state({ setup: '', punchline: '', loading: false });
 	let showAura = $state(false);
 	let isGlitching = $state(false);
-	let isGlobalGlitching = $state(false);
 	
 	// Combo Strike State
 	let comboCount = $state(0);
@@ -123,9 +122,6 @@
 		shufflePersona();
 		shuffleAccent();
 		
-		isGlobalGlitching = true;
-		setTimeout(() => { isGlobalGlitching = false; }, 150);
-		
 		// Combo Strike Logic
 		comboCount++;
 		showCombo = true;
@@ -200,23 +196,9 @@
 	];
 </script>
 
-<div class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500 {isGlobalGlitching ? 'global-glitch' : ''}" 
+<div class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500" 
 	style="--accent-color: {currentAccent.hex}">
 	
-	<!-- Cyber Overlays -->
-	<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-		<!-- Perspective Grid -->
-		<div class="absolute inset-0 perspective-container">
-			<div class="grid-plane"></div>
-		</div>
-		
-		<!-- Scanlines & Noise -->
-		<div class="absolute inset-0 z-50 opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
-		<div class="absolute inset-0 z-50 opacity-[0.02] mix-blend-overlay">
-			<div class="absolute inset-0 bg-repeat bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-		</div>
-	</div>
-
 	<!-- Stable Background: Outside the shaking container -->
 	<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
 		{#if selectedBg}
@@ -393,68 +375,5 @@
 
 	.animate-pulse-slow {
 		animation: pulse-slow 3s ease-in-out infinite;
-	}
-
-	/* Perspective Grid Styles */
-	.perspective-container {
-		perspective: 1000px;
-		width: 100%;
-		height: 100%;
-		position: absolute;
-		bottom: 0;
-		overflow: hidden;
-	}
-
-	.grid-plane {
-		position: absolute;
-		width: 200%;
-		height: 200%;
-		bottom: -50%;
-		left: -50%;
-		background-image: 
-			linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-			linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-		background-size: 50px 50px;
-		transform: rotateX(60deg) translate3d(0, 0, 0);
-		animation: grid-move 20s linear infinite;
-		mask-image: linear-gradient(to top, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 80%);
-		will-change: transform;
-		display: none;
-	}
-
-	@media (min-width: 768px) {
-		.grid-plane {
-			display: block;
-		}
-	}
-
-	@keyframes grid-move {
-		0% { transform: rotateX(60deg) translate3d(0, 0, 0); }
-		100% { transform: rotateX(60deg) translate3d(0, 50px, 0); }
-	}
-
-	/* Global Glitch Style */
-	.global-glitch {
-		animation: mobile-flash 0.15s ease-out;
-	}
-
-	@media (min-width: 768px) {
-		.global-glitch {
-			animation: chromatic-flash 0.15s ease-out;
-			filter: contrast(1.2) brightness(1.2);
-		}
-	}
-
-	@keyframes mobile-flash {
-		0% { opacity: 1; }
-		50% { opacity: 0.7; transform: scale(0.99); }
-		100% { opacity: 1; }
-	}
-
-	@keyframes chromatic-flash {
-		0% { transform: scale(1); filter: contrast(1) brightness(1); }
-		20% { transform: scale(1.01); filter: contrast(2) brightness(1.5) hue-rotate(90deg); }
-		50% { transform: scale(0.99); text-shadow: 2px 0 red, -2px 0 blue; }
-		100% { transform: scale(1); filter: contrast(1) brightness(1); }
 	}
 </style>
