@@ -8,7 +8,7 @@
 <svelte:head>
 	<title>GINKOHUB</title>
 	<meta name="description" content="Ginkohub - Developer Portfolio" />
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href="https://github.com/ginkohub.png" />
 </svelte:head>
 
 {@render children()}
