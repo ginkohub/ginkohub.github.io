@@ -11,6 +11,7 @@
 	// Design State
 	let selectedStyle = $state('minimalist');
 	let selectedFont = $state('sans');
+	let selectedAlign = $state('center'); // NEW: left, center, right
 	let bgOpacity = $state(35);
 	let manualFontSize = $state(64);
 	let textOffsetX = $state(0);
@@ -31,9 +32,16 @@
 		{ id: 'mono', name: 'Mono', css: 'monospace' }
 	];
 
+	const aligns = [
+		{ id: 'left', name: 'LEFT', icon: '⫷' },
+		{ id: 'center', name: 'CENTER', icon: '〓' },
+		{ id: 'right', name: 'RIGHT', icon: '⫸' }
+	];
+
 	function resetSettings() {
 		selectedStyle = 'minimalist';
 		selectedFont = 'sans';
+		selectedAlign = 'center';
 		bgOpacity = 35;
 		manualFontSize = 64;
 		textOffsetX = 0;
@@ -148,7 +156,7 @@
 		ctx.fillText('GINKOHUB.GITHUB.IO', 1040, 1040);
 
 		// 4. Quote Text
-		ctx.textAlign = 'center';
+		ctx.textAlign = selectedAlign;
 		ctx.fillStyle = selectedStyle === 'impact' ? '#000000' : '#ffffff';
 		
 		const fontConfig = `${selectedStyle === 'poetic' ? 'italic' : 'bold italic'}`;
@@ -175,18 +183,22 @@
 
 		const lines = getLines(manualFontSize);
 		const lineHeight = manualFontSize * 1.3;
+		
+		let drawX = 540 + textOffsetX;
+		if (selectedAlign === 'left') drawX = 140 + textOffsetX;
+		if (selectedAlign === 'right') drawX = 940 + textOffsetX;
+
 		let startY = (1080 / 2) - ((lines.length * lineHeight) / 2) + textOffsetY;
-		let startX = 540 + textOffsetX;
 
 		lines.forEach((line, i) => {
-			ctx.fillText(line.trim(), startX, startY + (i * lineHeight));
+			ctx.fillText(line.trim(), drawX, startY + (i * lineHeight));
 		});
 
 		// 5. Author
 		const authorY = Math.min(startY + (lines.length * lineHeight) + 80, 940);
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.6)' : accentColor;
 		ctx.font = `bold 32px ${font.css}, sans-serif`;
-		ctx.fillText(`— ${quote.author}`, startX, authorY);
+		ctx.fillText(`— ${quote.author}`, drawX, authorY);
 
 		const dataUrl = canvas.toDataURL('image/png');
 		isGenerating = false;
@@ -221,8 +233,7 @@
 	}
 
 	$effect(() => {
-		// Dependencies
-		selectedStyle; selectedFont; customBg; accentColor; quote; bgOpacity; manualFontSize; textOffsetX; textOffsetY;
+		selectedStyle; selectedFont; selectedAlign; customBg; accentColor; quote; bgOpacity; manualFontSize; textOffsetX; textOffsetY;
 
 		if (showPreview) generateImage(false);
 		if (typeof navigator !== 'undefined') {
@@ -274,6 +285,12 @@
 						{/each}
 					</div>
 					
+					<div class="grid grid-cols-3 gap-2 mb-4">
+						{#each aligns as align}
+							<button onclick={() => selectedAlign = align.id} class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedAlign === align.id ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/30'}">{align.name}</button>
+						{/each}
+					</div>
+
 					<div class="space-y-4">
 						<div class="space-y-2">
 							<div class="flex justify-between text-[7px] font-black uppercase tracking-widest text-slate-500">
