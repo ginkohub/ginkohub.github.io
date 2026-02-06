@@ -30,7 +30,12 @@
 					return {
 						title: item.title || 'Untitled',
 						link: item.link || '#',
-						date: item.pubDate || ''
+						date: item.pubDate || '',
+						snippet:
+							item.description
+								?.replace(/<[^>]*>?/gm, '')
+								.trim()
+								.slice(0, 120) + '...' || 'No preview available.'
 					};
 				});
 			} else {
@@ -94,8 +99,11 @@
 						>
 							{article.title}
 						</h3>
+						<p class="text-[10px] text-slate-400 line-clamp-2 mt-2 leading-relaxed">
+							{article.snippet}
+						</p>
 						<span
-							class="text-[8px] font-black text-slate-700 uppercase mt-2 group-hover:translate-x-1 transition-transform inline-block"
+							class="text-[8px] font-black text-slate-700 uppercase mt-3 group-hover:translate-x-1 transition-transform inline-block"
 							style="color: {accentColor}">Access Protocol →</span
 						>
 					</a>
