@@ -184,7 +184,6 @@
 	});
 
 	const contacts = [
-		{ label: 'WhatsApp', value: '+62 878-2174-7174', icon: '💬' },
 		{ label: 'Email', value: 'ginkohub@gmail.com', icon: '📧', link: 'mailto:ginkohub@gmail.com' },
 		{ label: 'GitHub', value: 'ginkohub', icon: '🐙', link: 'https://github.com/ginkohub' },
 		{ label: 'Discord', value: 'ginkohub', icon: '🎮' }
