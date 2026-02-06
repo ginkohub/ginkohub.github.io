@@ -1,4 +1,6 @@
 <script>
+	import { microlinkFetch } from '$lib/fetcher.js';
+
 	let { accentColor } = $props();
 
 	let feeds = [
@@ -18,30 +20,23 @@
 		error = '';
 		articles = [];
 
-		try {
-			// Using rss2json.com to get JSON format and avoid CORS
-			const response = await fetch(
-				`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(selectedFeed)}`
-			);
-			const result = await response.json();
+		const result = await microlinkFetch(selectedFeed, { data: 'items' });
 
-			if (result.status === 'ok') {
-				articles = result.items.slice(0, 10).map((item) => {
-					return {
-						title: item.title || 'Untitled',
-						link: item.link || '#',
-						date: item.pubDate || ''
-					};
-				});
+		if (result.success) {
+			const items = result.data?.items || result.data || [];
+			if (Array.isArray(items)) {
+				articles = items.slice(0, 10).map((item) => ({
+					title: item.title || 'Untitled',
+					link: item.link || item.url || '#',
+					date: item.pubDate || item.date || ''
+				}));
 			} else {
-				throw new Error('RSS conversion failed');
+				error = 'Invalid feed format.';
 			}
-		} catch (e) {
+		} else {
 			error = 'Failed to load transmission.';
-			console.error(e);
-		} finally {
-			loading = false;
 		}
+		loading = false;
 	}
 
 	$effect(() => {

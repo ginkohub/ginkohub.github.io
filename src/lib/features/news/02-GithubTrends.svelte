@@ -1,4 +1,6 @@
 <script>
+	import { microlinkFetch } from '$lib/fetcher.js';
+
 	let { accentColor } = $props();
 
 	let repos = $state([]);
@@ -12,19 +14,22 @@
 		error = '';
 		repos = [];
 
-		try {
-			// Using gtrending API via a proxy
-			const url = `https://api.gtrending.vercel.app/repositories?language=${selectedLang === 'all' ? '' : selectedLang}&since=daily`;
-			const response = await fetch(url);
-			if (!response.ok) throw new Error('Network response was not ok');
-			const data = await response.json();
-			repos = data.slice(0, 10);
-		} catch (e) {
+		const url = `https://api.gtrending.vercel.app/repositories?language=${selectedLang === 'all' ? '' : selectedLang}&since=daily`;
+		const result = await microlinkFetch(url);
+
+		if (result.success) {
+			const data = result.data;
+			// Microlink might wrap the data or return it directly depending on the source
+			const rawRepos = Array.isArray(data) ? data : data.data || [];
+			if (Array.isArray(rawRepos)) {
+				repos = rawRepos.slice(0, 10);
+			} else {
+				error = 'Invalid data format received.';
+			}
+		} else {
 			error = 'Failed to fetch GitHub trends.';
-			console.error(e);
-		} finally {
-			loading = false;
 		}
+		loading = false;
 	}
 
 	$effect(() => {
