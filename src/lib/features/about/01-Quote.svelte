@@ -8,10 +8,13 @@
 	let canShare = $state(false);
 	let customBg = $state(null);
 	
+	// Design State
 	let selectedStyle = $state('minimalist');
 	let selectedFont = $state('sans');
 	let bgOpacity = $state(35);
-	let manualFontSize = $state(64); // Default 64px
+	let manualFontSize = $state(64);
+	let textOffsetX = $state(0);
+	let textOffsetY = $state(0);
 	
 	const styles = [
 		{ id: 'minimalist', name: 'Minimal' },
@@ -27,6 +30,16 @@
 		{ id: 'serif', name: 'Serif', css: 'serif' },
 		{ id: 'mono', name: 'Mono', css: 'monospace' }
 	];
+
+	function resetSettings() {
+		selectedStyle = 'minimalist';
+		selectedFont = 'sans';
+		bgOpacity = 35;
+		manualFontSize = 64;
+		textOffsetX = 0;
+		textOffsetY = 0;
+		customBg = null;
+	}
 
 	function copyQuote() {
 		const text = `"${quote.text}" — ${quote.author}`;
@@ -162,17 +175,18 @@
 
 		const lines = getLines(manualFontSize);
 		const lineHeight = manualFontSize * 1.3;
-		let startY = (1080 / 2) - ((lines.length * lineHeight) / 2);
+		let startY = (1080 / 2) - ((lines.length * lineHeight) / 2) + textOffsetY;
+		let startX = 540 + textOffsetX;
 
 		lines.forEach((line, i) => {
-			ctx.fillText(line.trim(), 540, startY + (i * lineHeight));
+			ctx.fillText(line.trim(), startX, startY + (i * lineHeight));
 		});
 
 		// 5. Author
 		const authorY = Math.min(startY + (lines.length * lineHeight) + 80, 940);
 		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.6)' : accentColor;
 		ctx.font = `bold 32px ${font.css}, sans-serif`;
-		ctx.fillText(`— ${quote.author}`, 540, authorY);
+		ctx.fillText(`— ${quote.author}`, startX, authorY);
 
 		const dataUrl = canvas.toDataURL('image/png');
 		isGenerating = false;
@@ -207,13 +221,8 @@
 	}
 
 	$effect(() => {
-		selectedStyle; 
-		selectedFont; 
-		customBg; 
-		accentColor;
-		quote;
-		bgOpacity;
-		manualFontSize;
+		// Dependencies
+		selectedStyle; selectedFont; customBg; accentColor; quote; bgOpacity; manualFontSize; textOffsetX; textOffsetY;
 
 		if (showPreview) generateImage(false);
 		if (typeof navigator !== 'undefined') {
@@ -244,7 +253,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-start md:justify-center p-4 md:p-6 overflow-y-auto" onclick={() => showPreview = false} in:fade={{ duration: 250 }}>
-		<div class="w-full max-w-4xl flex flex-col md:flex-row gap-6 md:gap-10 items-center justify-center pt-10 md:pt-0" onclick={(e) => e.stopPropagation()}>
+		<div class="w-full max-w-5xl flex flex-col md:flex-row gap-6 md:gap-10 items-center justify-center pt-10 md:pt-0" onclick={(e) => e.stopPropagation()}>
 			
 			<!-- Controls Column -->
 			<div class="flex flex-col gap-6 w-full md:w-64 order-2 md:order-1">
@@ -265,16 +274,34 @@
 						{/each}
 					</div>
 					
-					<div class="space-y-2">
-						<div class="flex justify-between text-[7px] font-black uppercase tracking-widest text-slate-500">
-							<span>Font Size</span>
-							<span>{manualFontSize}px</span>
+					<div class="space-y-4">
+						<div class="space-y-2">
+							<div class="flex justify-between text-[7px] font-black uppercase tracking-widest text-slate-500">
+								<span>Size</span>
+								<span>{manualFontSize}px</span>
+							</div>
+							<input type="range" min="20" max="120" step="2" bind:value={manualFontSize} class="w-full accent-white opacity-50 hover:opacity-100 cursor-pointer" />
 						</div>
-						<input type="range" min="20" max="120" step="2" bind:value={manualFontSize} class="w-full accent-white opacity-50 hover:opacity-100 cursor-pointer" />
+						
+						<div class="space-y-2">
+							<div class="flex justify-between text-[7px] font-black uppercase tracking-widest text-slate-500">
+								<span>Horizontal (X)</span>
+								<span>{textOffsetX}px</span>
+							</div>
+							<input type="range" min="-400" max="400" step="10" bind:value={textOffsetX} class="w-full accent-white opacity-50 hover:opacity-100 cursor-pointer" />
+						</div>
+
+						<div class="space-y-2">
+							<div class="flex justify-between text-[7px] font-black uppercase tracking-widest text-slate-500">
+								<span>Vertical (Y)</span>
+								<span>{textOffsetY}px</span>
+							</div>
+							<input type="range" min="-400" max="400" step="10" bind:value={textOffsetY} class="w-full accent-white opacity-50 hover:opacity-100 cursor-pointer" />
+						</div>
 					</div>
 				</div>
 
-				<div class="flex flex-col gap-3">
+				<div class="flex flex-col gap-3 border-t border-white/5 pt-4">
 					<h3 class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1 text-center md:text-left">Background</h3>
 					
 					{#if selectedStyle !== 'impact'}
@@ -291,6 +318,8 @@
 						Upload Image
 						<input type="file" accept="image/*" class="hidden" onchange={handleFileUpload} />
 					</label>
+					
+					<button onclick={resetSettings} class="w-full py-2 text-[8px] font-black uppercase tracking-widest border border-rose-500/20 text-rose-500/50 hover:bg-rose-500 hover:text-white transition-all">Reset All</button>
 				</div>
 			</div>
 
