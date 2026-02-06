@@ -1,38 +1,108 @@
-# ginkohub.github.io
+# GinkoHub • Cyber Flâneur
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+> A minimalist, sharp-edged developer portfolio and digital playground.
 
-## Creating a project
+[![Deploy to GitHub Pages](https://github.com/ginkohub/ginkohub.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/ginkohub/ginkohub.github.io/actions/workflows/deploy.yml)
 
-If you're seeing this, you've probably already done this step. Congrats!
+GinkoHub is a modern, performance-optimized developer portfolio built with **SvelteKit 5** and **Tailwind CSS 4.0**. It follows a "Cyber Flâneur" aesthetic—minimalist, pure black dark theme, and immersive nature backgrounds—blending tech-focused experiments with poetic wisdom.
 
-```sh
-# create a new project in the current directory
-npx sv create
+## 🚀 Live Demo
+Visit the live site: [https://ginkohub.github.io/](https://ginkohub.github.io/)
 
-# create a new project in my-app
-npx sv create my-app
+---
+
+## ✨ Key Features
+
+### 🧩 Fully Modular Architecture
+The project uses an advanced **Auto-Scanning Component System**. Adding new content is as simple as dropping a `.svelte` file into the right folder:
+- **Modular Tabs**: Automatically builds navigation from `src/lib/tabs/`.
+- **Feature Sections**: Each tab automatically scans its own `src/lib/features/<tab_name>/` directory.
+- **Arcade Hub**: Games are automatically detected and added to the "Game" tab from `src/lib/features/game/`.
+
+### 🖋️ Advanced Quote Image Generator
+A professional-grade tool to generate and share wisdom:
+- **Multiple Styles**: Choose from Minimal, Impact, Poetic, Cyber, or Glass themes.
+- **Typography Engine**: Integrated font loading for Inter, Space Grotesk, Serif, and Monospace.
+- **Creative Controls**: Real-time X/Y text positioning, font size scaling, and background brightness sliders.
+- **Custom Backgrounds**: Use the site's nature images or upload your own.
+- **Mobile Friendly**: Integrated **Web Share API** for one-tap sharing to social apps.
+
+### 🎮 Retro Arcade Hub
+A collection of sharp, minimalist digital experiments:
+- **Snake.exe**: Classic survival.
+- **Evasion.sys**: High-speed obstacle dodging.
+- **Tetris.sys**: Modular block stacking.
+
+### 🛠️ Developer Tools
+- **Word Finder**: High-performance dictionary search (English/Indonesian) with Soundex and prefix matching.
+- **Link Previewer**: Real-time social metadata visualization for any URL (X, Facebook, Discord, WhatsApp, LinkedIn).
+- **Automated Scraping**: Build-time scraper that gathers fresh Rumi quotes from Goodreads without manual updates.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: [SvelteKit 5.0](https://svelte.dev/) (Runes-based reactivity)
+- **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/)
+- **Runtime**: [Bun](https://bun.sh/)
+- **Deployment**: GitHub Actions & GitHub Pages
+- **Data**: Build-time Node.js Scraper
+
+---
+
+## 💻 Getting Started
+
+### Prerequisites
+- [Bun](https://bun.sh/) installed on your machine.
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/ginkohub/ginkohub.github.io.git
+
+# Install dependencies
+bun install
 ```
 
-## Developing
+### Development
+```bash
+# Start dev server
+bun run dev
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# Manually trigger quote scraper
+bun run scrape
 ```
 
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
+### Build
+```bash
+# Build for production (static generation)
+bun run build
 ```
 
-You can preview the production build with `npm run preview`.
+---
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## 📂 Project Structure
+
+```text
+src/
+├── lib/
+│   ├── features/      # Modular tab features (scanned automatically)
+│   │   ├── about/     # Quotes, Connections, etc.
+│   │   ├── game/      # Arcade components
+│   │   └── ...
+│   └── tabs/          # Main navigation tabs (scanned automatically)
+├── routes/            # SvelteKit routes
+└── static/            # Static assets & Dictionaries
+scripts/
+└── scrape-quotes.js   # Build-time Rumi quote scraper
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Made with ❤️ by Google Gemini 3 Pro**
