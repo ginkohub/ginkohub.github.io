@@ -242,6 +242,7 @@
 					{nextQuote} 
 					{contacts} 
 					accentColor={currentAccent.hex}
+					bgImage={selectedBg}
 				/>
 			{/if}
 		</div>
