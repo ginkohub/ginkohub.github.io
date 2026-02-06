@@ -24,6 +24,8 @@
 	let meme = $state({ url: '', title: '', loading: false });
 	let joke = $state({ setup: '', punchline: '', loading: false });
 	let showAura = $state(false);
+	let isGlitching = $state(false);
+	let isGlobalGlitching = $state(false);
 	
 	// Combo Strike State
 	let comboCount = $state(0);
@@ -99,10 +101,15 @@
 		do {
 			newPersona = personas[Math.floor(Math.random() * personas.length)];
 		} while (newPersona === persona);
-		persona = newPersona;
-		if (typeof document !== 'undefined') {
-			document.title = `GinkoHub • ${persona}`;
-		}
+		
+		isGlitching = true;
+		setTimeout(() => {
+			persona = newPersona;
+			if (typeof document !== 'undefined') {
+				document.title = `GinkoHub • ${persona}`;
+			}
+		}, 50);
+		setTimeout(() => { isGlitching = false; }, 300);
 	}
 
 	function triggerAura() {
@@ -115,6 +122,9 @@
 		triggerAura();
 		shufflePersona();
 		shuffleAccent();
+		
+		isGlobalGlitching = true;
+		setTimeout(() => { isGlobalGlitching = false; }, 150);
 		
 		// Combo Strike Logic
 		comboCount++;
@@ -190,9 +200,23 @@
 	];
 </script>
 
-<div class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500" 
+<div class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500 {isGlobalGlitching ? 'global-glitch' : ''}" 
 	style="--accent-color: {currentAccent.hex}">
 	
+	<!-- Cyber Overlays -->
+	<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+		<!-- Perspective Grid -->
+		<div class="absolute inset-0 perspective-container">
+			<div class="grid-plane"></div>
+		</div>
+		
+		<!-- Scanlines & Noise -->
+		<div class="absolute inset-0 z-50 opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
+		<div class="absolute inset-0 z-50 opacity-[0.02] mix-blend-overlay">
+			<div class="absolute inset-0 bg-repeat bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+		</div>
+	</div>
+
 	<!-- Stable Background: Outside the shaking container -->
 	<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
 		{#if selectedBg}
@@ -250,7 +274,7 @@
 				<h1 class="text-2xl font-bold tracking-tight text-white mb-1 font-space active:scale-95 transition-transform">GinkoHub</h1>
 				<button 
 					onclick={() => { if (!showAura) { triggerAura(); shufflePersona(); shuffleAccent(); } }}
-					class="text-[9px] font-bold text-slate-300 uppercase tracking-widest hover:text-white active:text-white transition-colors cursor-pointer select-none"
+					class="text-[9px] font-bold text-slate-300 uppercase tracking-widest hover:text-white active:text-white transition-colors cursor-pointer select-none {isGlitching ? 'animate-glitch' : ''}"
 					title="Click to shuffle"
 				>
 					{persona} ↻
@@ -268,7 +292,7 @@
 						>
 							{tab.label}
 							{#if activeTabLabel === tab.label}
-								<div class="absolute bottom-0 left-0 w-full h-[2px]" style="background-color: var(--accent-color)" in:fade={{ duration: 200 }}></div>
+								<div class="absolute bottom-0 left-0 w-full h-[2px] animate-pulse-slow" style="background-color: var(--accent-color)" in:fade={{ duration: 200 }}></div>
 							{/if}
 						</button>
 					{/each}
@@ -348,4 +372,89 @@
 
 	.animate-glow-expand { animation: glow-expand 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 	.animate-ripple { animation: ripple 2s cubic-bezier(0, 0, 0.2, 1) forwards; }
+
+	@keyframes glitch {
+		0% { transform: translate(0); text-shadow: -2px 0 var(--accent-color), 2px 0 #fff; }
+		20% { transform: translate(-2px, 2px); }
+		40% { transform: translate(-2px, -2px); text-shadow: 2px 0 var(--accent-color), -2px 0 #fff; }
+		60% { transform: translate(2px, 2px); }
+		80% { transform: translate(2px, -2px); text-shadow: -1px 0 var(--accent-color), 1px 0 #fff; }
+		100% { transform: translate(0); }
+	}
+
+	.animate-glitch {
+		animation: glitch 0.3s cubic-bezier(.25,.46,.45,.94) both infinite;
+	}
+
+	@keyframes pulse-slow {
+		0%, 100% { opacity: 1; filter: brightness(1); }
+		50% { opacity: 0.6; filter: brightness(1.5); }
+	}
+
+	.animate-pulse-slow {
+		animation: pulse-slow 3s ease-in-out infinite;
+	}
+
+	/* Perspective Grid Styles */
+	.perspective-container {
+		perspective: 1000px;
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		bottom: 0;
+		overflow: hidden;
+	}
+
+	.grid-plane {
+		position: absolute;
+		width: 200%;
+		height: 200%;
+		bottom: -50%;
+		left: -50%;
+		background-image: 
+			linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+			linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+		background-size: 50px 50px;
+		transform: rotateX(60deg) translate3d(0, 0, 0);
+		animation: grid-move 20s linear infinite;
+		mask-image: linear-gradient(to top, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 80%);
+		will-change: transform;
+		display: none;
+	}
+
+	@media (min-width: 768px) {
+		.grid-plane {
+			display: block;
+		}
+	}
+
+	@keyframes grid-move {
+		0% { transform: rotateX(60deg) translate3d(0, 0, 0); }
+		100% { transform: rotateX(60deg) translate3d(0, 50px, 0); }
+	}
+
+	/* Global Glitch Style */
+	.global-glitch {
+		animation: mobile-flash 0.15s ease-out;
+	}
+
+	@media (min-width: 768px) {
+		.global-glitch {
+			animation: chromatic-flash 0.15s ease-out;
+			filter: contrast(1.2) brightness(1.2);
+		}
+	}
+
+	@keyframes mobile-flash {
+		0% { opacity: 1; }
+		50% { opacity: 0.7; transform: scale(0.99); }
+		100% { opacity: 1; }
+	}
+
+	@keyframes chromatic-flash {
+		0% { transform: scale(1); filter: contrast(1) brightness(1); }
+		20% { transform: scale(1.01); filter: contrast(2) brightness(1.5) hue-rotate(90deg); }
+		50% { transform: scale(0.99); text-shadow: 2px 0 red, -2px 0 blue; }
+		100% { transform: scale(1); filter: contrast(1) brightness(1); }
+	}
 </style>
