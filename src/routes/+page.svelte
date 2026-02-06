@@ -50,6 +50,38 @@
 		loading: false 
 	});
 
+	// Lazy Loaded Components
+	let HumorSectionComponent = $state(null);
+	let WordFinderComponent = $state(null);
+	let SnakeGameComponent = $state(null);
+
+	async function loadHumor() {
+		if (!HumorSectionComponent) {
+			const module = await import('$lib/HumorSection.svelte');
+			HumorSectionComponent = module.default;
+		}
+	}
+
+	async function loadWords() {
+		if (!WordFinderComponent) {
+			const module = await import('$lib/WordFinder.svelte');
+			WordFinderComponent = module.default;
+		}
+	}
+
+	async function loadGame() {
+		if (!SnakeGameComponent) {
+			const module = await import('$lib/SnakeGame.svelte');
+			SnakeGameComponent = module.default;
+		}
+	}
+
+	$effect(() => {
+		if (activeTab === 'humor') loadHumor();
+		if (activeTab === 'words') loadWords();
+		if (activeTab === 'game') loadGame();
+	});
+
 	const personas = [
 		'Cyber Flâneur',
 		'Digital Observer',
@@ -124,9 +156,6 @@
 	}
 
 	onMount(() => {
-		// Set dark mode on html tag for components
-		document.documentElement.classList.add('dark');
-		
 		selectedBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
 		shuffleAccent();
 		if (scrapedQuotes.length > 0) {
@@ -164,7 +193,7 @@
 	</div>
 
 	<div class="max-w-xl mx-auto flex flex-col items-center relative z-10 px-6">
-		<!-- Profile Image with Refined Aura -->
+		<!-- Profile Image -->
 		<div class="group perspective mt-12 mb-2 relative select-none">
 			{#if showAura}
 				<div class="absolute inset-0 rounded-full blur-2xl animate-glow-expand pointer-events-none" style="background-color: var(--accent-color); opacity: 0.3;"></div>
@@ -198,7 +227,7 @@
 
 		<!-- Navigation -->
 		<nav class="flex w-full border-b border-slate-800 mb-10 relative">
-			{#each ['about', 'humor', 'words'] as tab}
+			{#each ['about', 'humor', 'words', 'game'] as tab}
 				<button
 					onclick={() => (activeTab = tab)}
 					class="flex-1 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
@@ -267,11 +296,33 @@
 				</div>
 			{:else if activeTab === 'humor'}
 				<div class="animate-in fade-in duration-700" in:fly={{ y: 10, duration: 400, delay: 100 }}>
-					<HumorSection bind:meme bind:joke {fetchMeme} {fetchJoke} />
+					{#if HumorSectionComponent}
+						<HumorSectionComponent bind:meme bind:joke {fetchMeme} {fetchJoke} />
+					{:else}
+						<div class="py-20 text-center animate-pulse">
+							<p class="text-[9px] font-bold text-slate-200 uppercase tracking-widest font-space">Loading Humor...</p>
+						</div>
+					{/if}
 				</div>
 			{:else if activeTab === 'words'}
 				<div class="animate-in fade-in duration-500" in:fly={{ y: 10, duration: 400, delay: 100 }}>
-					<WordFinder />
+					{#if WordFinderComponent}
+						<WordFinderComponent />
+					{:else}
+						<div class="py-20 text-center animate-pulse">
+							<p class="text-[9px] font-bold text-slate-200 uppercase tracking-widest font-space">Loading Tools...</p>
+						</div>
+					{/if}
+				</div>
+			{:else if activeTab === 'game'}
+				<div class="animate-in fade-in duration-500" in:fly={{ y: 10, duration: 400, delay: 100 }}>
+					{#if SnakeGameComponent}
+						<SnakeGameComponent />
+					{:else}
+						<div class="py-20 text-center animate-pulse">
+							<p class="text-[9px] font-bold text-slate-200 uppercase tracking-widest font-space">Initializing Systems...</p>
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>
