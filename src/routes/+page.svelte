@@ -25,7 +25,10 @@
 	let joke = $state({ setup: '', punchline: '', loading: false });
 	let showAura = $state(false);
 	
-	// Verified Working Background Library (20 Images)
+	// Persistent Session State
+	let sessionStartTime = $state(Date.now());
+	
+	// Expanded Background Library
 	const backgrounds = [
 		'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80',
 		'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1920&q=80',
@@ -275,6 +278,7 @@
 					{contacts} 
 					accentColor={currentAccent.hex}
 					bgImage={selectedBg}
+					{sessionStartTime}
 				/>
 			{/if}
 		</div>

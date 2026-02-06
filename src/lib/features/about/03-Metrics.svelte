@@ -1,12 +1,11 @@
 <script>
 	import { onMount } from 'svelte';
-	let { accentColor } = $props();
+	let { accentColor, sessionStartTime } = $props();
 	
 	let uptime = $state('00:00:00');
-	let startTime = Date.now();
 
 	function updateUptime() {
-		const diff = Date.now() - startTime;
+		const diff = Date.now() - sessionStartTime;
 		const hours = Math.floor(diff / 3600000).toString().padStart(2, '0');
 		const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
 		const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
@@ -14,6 +13,7 @@
 	}
 
 	onMount(() => {
+		updateUptime(); // Initial call
 		const interval = setInterval(updateUptime, 1000);
 		return () => clearInterval(interval);
 	});
