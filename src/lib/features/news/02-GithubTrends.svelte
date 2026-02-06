@@ -1,4 +1,5 @@
 <script>
+	import { microlinkFetch } from '$lib/fetcher.js';
 	import ReaderModal from './ReaderModal.svelte';
 
 	let { accentColor } = $props();
@@ -45,54 +46,42 @@
 			const typePath = mode === 'repositories' ? 'daily' : 'developers/daily';
 			const rssUrl = `https://mshibanami.github.io/GitHubTrendingRSS/${typePath}/${langParam}.xml`;
 
-			// Using manual XML parsing via CORS proxy
-			const response = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(rssUrl)}`);
-			if (!response.ok) throw new Error('CORS proxy failure');
+			// Using centralized Microlink fetcher
+			const result = await microlinkFetch(rssUrl, { data: 'items' });
 
-			const xmlText = await response.text();
-			const parser = new DOMParser();
-			const xml = parser.parseFromString(xmlText, 'text/xml');
-			const items = xml.querySelectorAll('item');
-
-			if (items.length > 0) {
-				if (mode === 'repositories') {
-					repos = Array.from(items)
-						.slice(0, 10)
-						.map((item) => {
-							const title = item.querySelector('title')?.textContent || 'Unknown / Unknown';
+			if (result.success) {
+				const items = result.data?.items || result.data || [];
+				if (Array.isArray(items)) {
+					if (mode === 'repositories') {
+						repos = items.slice(0, 10).map((item) => {
+							const title = item.title || 'Unknown / Unknown';
 							const parts = title.split(' / ');
 							return {
 								author: parts[0]?.trim() || 'GitHub',
 								name: parts[1]?.trim() || title,
-								url: item.querySelector('link')?.textContent || '#',
+								url: item.link || item.url || '#',
 								description:
-									item
-										.querySelector('description')
-										?.textContent?.replace(/<[^>]*>?/gm, '')
-										.trim() || 'No description provided.'
+									item.description?.replace(/<[^>]*>?/gm, '').trim() || 'No description provided.'
 							};
 						});
-				} else {
-					developers = Array.from(items)
-						.slice(0, 10)
-						.map((item) => {
+					} else {
+						developers = items.slice(0, 10).map((item) => {
 							return {
-								name: item.querySelector('title')?.textContent || 'Unknown User',
-								url: item.querySelector('link')?.textContent || '#',
-								description:
-									item
-										.querySelector('description')
-										?.textContent?.replace(/<[^>]*>?/gm, '')
-										.trim() || ''
+								name: item.title || 'Unknown User',
+								url: item.link || item.url || '#',
+								description: item.description?.replace(/<[^>]*>?/gm, '').trim() || ''
 							};
 						});
+					}
+				} else {
+					throw new Error('Invalid transmission format');
 				}
 			} else {
-				throw new Error('No trends found');
+				throw new Error(result.error);
 			}
 		} catch (e) {
 			error = `Failed to fetch ${mode} stream.`;
-			console.error('Manual parse error:', e);
+			console.error('Microlink Trends error:', e);
 		} finally {
 			loading = false;
 		}
