@@ -1,5 +1,5 @@
 <script>
-	const gameModules = import.meta.glob('../games/*.svelte', { eager: true });
+	const gameModules = import.meta.glob('../features/game/*.svelte', { eager: true });
 	
 	const games = Object.entries(gameModules).map(([path, module]) => {
 		const id = path.split('/').pop().replace('.svelte', '').toLowerCase();
