@@ -1,17 +1,24 @@
 <script>
-	const gameModules = import.meta.glob('../features/game/*.svelte', { eager: true });
+	const gameModules = import.meta.glob('../features/game/*.svelte');
 	
-	const games = Object.entries(gameModules).map(([path, module]) => {
+	const games = Object.entries(gameModules).map(([path, moduleFunc]) => {
 		const id = path.split('/').pop().replace('.svelte', '').toLowerCase();
 		return {
 			id,
 			name: `${path.split('/').pop().replace('.svelte', '')}.sys`,
-			component: module.default
+			load: moduleFunc
 		};
 	});
 
 	let selectedGameId = $state(games[0]?.id || '');
-	let ActiveGame = $derived(games.find(g => g.id === selectedGameId)?.component);
+	let ActiveGame = $state(null);
+
+	$effect(() => {
+		const game = games.find(g => g.id === selectedGameId);
+		if (game) {
+			game.load().then(m => ActiveGame = m.default);
+		}
+	});
 </script>
 
 <div class="w-full space-y-10">
