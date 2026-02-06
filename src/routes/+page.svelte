@@ -37,6 +37,9 @@
 	let joke = $state({ setup: '', punchline: '', loading: false });
 	let showAura = $state(false);
 	let isGlitching = $state(false);
+	let isOverloaded = $state(false);
+	let commandBuffer = $state('');
+	let mousePos = $state({ x: 0, y: 0 });
 
 	// Combo Strike State
 	let comboCount = $state(0);
@@ -150,30 +153,119 @@
 		}, 2500);
 	}
 
-	function handleLogoClick(e) {
-		triggerAura();
-		shufflePersona();
-		shuffleAccent();
+		function handleLogoClick(e) {
 
-		// Combo Strike Logic
-		comboCount++;
-		showCombo = true;
-		comboScale = 1 + Math.min(comboCount * 0.02, 0.3);
-		isShaking = true;
+			triggerAura();
 
-		// Reset shake effect
-		setTimeout(() => {
-			isShaking = false;
-		}, 80);
+			shufflePersona();
 
-		// Handle Reset Timer
-		clearTimeout(comboTimeout);
-		comboTimeout = setTimeout(() => {
-			comboCount = 0;
-			showCombo = false;
-			comboScale = 1;
-		}, 1500);
-	}
+			shuffleAccent();
+
+			
+
+			// Combo Strike Logic
+
+			comboCount++;
+
+			showCombo = true;
+
+			comboScale = 1 + Math.min(comboCount * 0.02, 0.3);
+
+			isShaking = true;
+
+	
+
+			// Overload Mode Trigger
+
+			if (comboCount >= 50 && !isOverloaded) {
+
+				isOverloaded = true;
+
+				if (typeof window !== 'undefined') {
+
+					const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+
+					audio.volume = 0.2;
+
+					audio.play().catch(() => {});
+
+				}
+
+			}
+
+			
+
+			// Reset shake effect
+
+			setTimeout(() => { isShaking = false; }, 80);
+
+	
+
+			// Handle Reset Timer
+
+			clearTimeout(comboTimeout);
+
+			comboTimeout = setTimeout(() => {
+
+				if (!isOverloaded) comboCount = 0;
+
+				showCombo = false;
+
+				comboScale = 1;
+
+			}, 1500);
+
+		}
+
+	
+
+		function handleGlobalKeydown(e) {
+
+			if (e.key.length === 1) {
+
+				commandBuffer += e.key.toLowerCase();
+
+				if (commandBuffer.length > 20) commandBuffer = commandBuffer.slice(-20);
+
+				
+
+				if (commandBuffer.endsWith('matrix')) {
+
+					currentAccent = { name: 'matrix', hex: '#00ff41' };
+
+					isOverloaded = true;
+
+					commandBuffer = '';
+
+				} else if (commandBuffer.endsWith('reset')) {
+
+					isOverloaded = false;
+
+					comboCount = 0;
+
+					commandBuffer = '';
+
+					shuffleAccent();
+
+				} else if (commandBuffer.endsWith('rumi')) {
+
+					activeTabLabel = 'about';
+
+					commandBuffer = '';
+
+				}
+
+			}
+
+		}
+
+	
+
+		function handleMouseMove(e) {
+
+			mousePos = { x: e.clientX, y: e.clientY };
+
+		}
 
 	function nextQuote() {
 		if (scrapedQuotes.length === 0) return;
@@ -222,6 +314,16 @@
 		if (scrapedQuotes.length > 0) {
 			currentQuoteIndex = Math.floor(Math.random() * scrapedQuotes.length);
 		}
+		window.addEventListener('keydown', handleGlobalKeydown);
+		window.addEventListener('mousemove', handleMouseMove);
+	});
+
+	import { onDestroy } from 'svelte';
+	onDestroy(() => {
+		if (typeof window !== 'undefined') {
+			window.removeEventListener('keydown', handleGlobalKeydown);
+			window.removeEventListener('mousemove', handleMouseMove);
+		}
 	});
 
 	const contacts = [
@@ -232,9 +334,19 @@
 </script>
 
 <div
-	class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500"
+	class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500 {isOverloaded ? 'overload-mode' : ''}"
 	style="--accent-color: {currentAccent.hex}"
 >
+	<!-- Cursor Digital Dust -->
+	<div class="fixed pointer-events-none z-[9999] hidden md:block">
+		{#each Array(4) as _, i}
+			<div 
+				class="absolute w-1 h-1 bg-white opacity-40"
+				style="left: {mousePos.x}px; top: {mousePos.y}px; transition: transform {0.1 + i * 0.05}s ease-out; transform: translate3d(-50%, -50%, 0) scale({1 - i * 0.2});"
+			></div>
+		{/each}
+	</div>
+
 	<!-- Stable Background: Outside the shaking container -->
 	<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
 		{#if selectedBg}
@@ -277,14 +389,14 @@
 
 				{#if showCombo && comboCount > 1}
 					<div
-						class="absolute top-[-20%] left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:-right-12 md:top-0 z-20 pointer-events-none font-black italic tracking-tighter whitespace-nowrap"
+						class="absolute top-[-20%] left-1/2 z-20 -translate-x-1/2 whitespace-nowrap font-black italic tracking-tighter pointer-events-none md:top-0 md:left-auto md:-right-12 md:translate-x-0"
 						style="color: var(--accent-color); font-size: {Math.min(
 							14 + comboCount,
 							32
 						)}px; filter: drop-shadow(0 0 10px var(--accent-color));"
 						in:fly={{ y: 10, duration: 150 }}
 					>
-						x{comboCount} STRIKE
+						{isOverloaded ? 'SYSTEM OVERLOAD' : `x${comboCount} STRIKE`}
 					</div>
 				{/if}
 
@@ -518,5 +630,30 @@
 
 	.animate-pulse-slow {
 		animation: pulse-slow 3s ease-in-out infinite;
+	}
+
+	.overload-mode {
+		filter: contrast(1.1) brightness(1.1);
+	}
+
+	.overload-mode :global(button) {
+		text-shadow: 0 0 5px var(--accent-color);
+	}
+
+	.overload-mode::after {
+		content: '';
+		position: fixed;
+		inset: 0;
+		border: 1px solid var(--accent-color);
+		opacity: 0.2;
+		pointer-events: none;
+		z-index: 100;
+		animation: critical-flicker 0.1s infinite;
+	}
+
+	@keyframes critical-flicker {
+		0% { opacity: 0.1; }
+		50% { opacity: 0.2; }
+		100% { opacity: 0.1; }
 	}
 </style>
