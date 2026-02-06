@@ -6,24 +6,24 @@
 </script>
 
 <svelte:head>
-	<title>GinkoHub • Cyber Flâneur</title>
-	<meta name="description" content="GinkoHub - Developer portfolio, poetic wisdom, and digital experiments. Cyber flâneur in the digital void." />
-	<meta name="keywords" content="developer, portfolio, sveltekit, coding, rumi, quotes, games, word finder" />
+	<title>GinkoHub • Cyber Flâneur | Poetic Wisdom & Digital Experiments</title>
+	<meta name="description" content="Discover GinkoHub, a unique developer portfolio featuring minimalist design, poetic Rumi wisdom, interactive arcade games, and experimental digital artifacts." />
+	<meta name="keywords" content="developer, portfolio, sveltekit, coding, rumi, quotes, games, word finder, minimalist design" />
 	<meta name="author" content="GinkoHub" />
 	<meta name="theme-color" content="#000000" />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://ginkohub.github.io/" />
-	<meta property="og:title" content="GinkoHub • Cyber Flâneur" />
-	<meta property="og:description" content="Explore a minimalist collection of digital artifacts, poetic wisdom, and developer experiments." />
+	<meta property="og:title" content="GinkoHub • Cyber Flâneur | Minimalist Portfolio & Poetic Logic" />
+	<meta property="og:description" content="Explore GinkoHub: A minimalist collection of digital experiments, Rumi's poetic wisdom, and interactive arcade games. Click here to initialize your session." />
 	<meta property="og:image" content="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&h=630&q=80" />
 
 	<!-- Twitter -->
 	<meta property="twitter:card" content="summary_large_image" />
 	<meta property="twitter:url" content="https://ginkohub.github.io/" />
-	<meta property="twitter:title" content="GinkoHub • Cyber Flâneur" />
-	<meta property="twitter:description" content="Explore a minimalist collection of digital artifacts, poetic wisdom, and developer experiments." />
+	<meta property="twitter:title" content="GinkoHub • Cyber Flâneur | Minimalist Portfolio & Poetic Logic" />
+	<meta property="twitter:description" content="Explore GinkoHub: A minimalist collection of digital experiments, Rumi's poetic wisdom, and interactive arcade games. Click here to initialize your session." />
 	<meta property="twitter:image" content="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&h=630&q=80" />
 
 	<link rel="icon" href="https://github.com/ginkohub.png" />
