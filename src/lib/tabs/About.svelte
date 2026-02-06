@@ -2,22 +2,23 @@
 	import { fade, fly } from 'svelte/transition';
 	let { currentQuoteIndex = $bindable(), quote, prevQuote, nextQuote, scrapedQuotes, contacts, accentColor } = $props();
 
+	let previewUrl = $state('');
+	let showPreview = $state(false);
+
 	function copyQuote() {
 		const text = `"${quote.text}" — ${quote.author}`;
 		navigator.clipboard.writeText(text);
 		
-		// Visual feedback
 		const btn = document.getElementById('copy-btn');
 		const originalText = btn.innerText;
 		btn.innerText = 'COPIED!';
 		setTimeout(() => btn.innerText = originalText, 2000);
 	}
 
-	function downloadAsImage() {
+	function generateImage(download = false) {
 		const canvas = document.createElement('canvas');
 		const ctx = canvas.getContext('2d');
 		
-		// High res for sharing
 		canvas.width = 1080;
 		canvas.height = 1080;
 
@@ -25,7 +26,7 @@
 		ctx.fillStyle = '#000000';
 		ctx.fillRect(0, 0, 1080, 1080);
 
-		// Accent accent line
+		// Accent line
 		ctx.fillStyle = accentColor;
 		ctx.fillRect(100, 100, 10, 880);
 
@@ -35,7 +36,7 @@
 		ctx.letterSpacing = '4px';
 		ctx.fillText('GINKOHUB.GITHUB.IO', 140, 125);
 
-		// Quote text wrapping logic
+		// Quote text
 		ctx.fillStyle = '#ffffff';
 		ctx.font = 'bold italic 56px "Space Grotesk", sans-serif';
 		const words = `"${quote.text}"`.split(' ');
@@ -63,11 +64,17 @@
 		ctx.font = 'bold 32px Inter, sans-serif';
 		ctx.fillText(`— ${quote.author}`, 140, y + 100);
 
-		// Trigger download
-		const link = document.createElement('a');
-		link.download = `rumi-quote-${Date.now()}.png`;
-		link.href = canvas.toDataURL('image/png');
-		link.click();
+		const dataUrl = canvas.toDataURL('image/png');
+		
+		if (download) {
+			const link = document.createElement('a');
+			link.download = `rumi-quote-${Date.now()}.png`;
+			link.href = dataUrl;
+			link.click();
+		} else {
+			previewUrl = dataUrl;
+			showPreview = true;
+		}
 	}
 </script>
 
@@ -84,7 +91,7 @@
 					Copy Text
 				</button>
 				<button 
-					onclick={downloadAsImage}
+					onclick={() => generateImage(false)}
 					class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300"
 				>
 					Save Image
@@ -136,3 +143,38 @@
 		</div>
 	</div>
 </div>
+
+<!-- Preview Modal -->
+{#if showPreview}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div 
+		class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6"
+		onclick={() => showPreview = false}
+		in:fade={{ duration: 200 }}
+	>
+		<div 
+			class="relative max-w-full max-h-[70vh] aspect-square shadow-2xl border border-white/10"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<img src={previewUrl} alt="Quote Preview" class="w-full h-full object-contain" />
+		</div>
+		
+		<div class="mt-8 flex gap-4">
+			<button 
+				onclick={() => generateImage(true)}
+				class="px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] bg-white text-black hover:bg-slate-200 transition-all active:scale-95"
+			>
+				Download PNG
+			</button>
+			<button 
+				onclick={() => showPreview = false}
+				class="px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] border border-white/20 text-white hover:bg-white/10 transition-all active:scale-95"
+			>
+				Close
+			</button>
+		</div>
+		
+		<p class="mt-6 text-[8px] font-bold text-slate-500 uppercase tracking-widest animate-pulse">Generated at 1080x1080 resolution</p>
+	</div>
+{/if}
