@@ -1,6 +1,6 @@
 <script>
 	import { fade } from 'svelte/transition';
-	let { currentQuoteIndex = $bindable(), quote, prevQuote, nextQuote, scrapedQuotes, accentColor, bgImage } = $props();
+	let { currentQuoteIndex = $bindable(), quote, prevQuote, nextQuote, scrapedQuotes, contacts, accentColor, bgImage } = $props();
 
 	let previewUrl = $state('');
 	let showPreview = $state(false);
@@ -40,7 +40,6 @@
 			const reader = new FileReader();
 			reader.onload = (event) => {
 				customBg = event.target.result;
-				generateImage(false);
 			};
 			reader.readAsDataURL(file);
 		}
@@ -50,13 +49,10 @@
 		isGenerating = true;
 		
 		const font = fonts.find(f => f.id === selectedFont);
-		// Ensure fonts are loaded before drawing
+		// Pre-load font
 		try {
 			await document.fonts.load(`bold italic 64px ${font.css}`);
-			await document.fonts.load(`bold 32px ${font.css}`);
-		} catch(e) {
-			console.warn("Font loading failed, falling back to system fonts.");
-		}
+		} catch(e) {}
 
 		const canvas = document.createElement('canvas');
 		const ctx = canvas.getContext('2d');
@@ -71,9 +67,7 @@
 			ctx.fillRect(0, 0, 1080, 1080);
 		} else {
 			const existingImg = document.getElementById('main-bg-image');
-			const bgSource = customBg ? null : existingImg;
-			
-			if (customBg || (bgSource && bgSource.complete)) {
+			if (currentBg) {
 				try {
 					const img = new Image();
 					if (!customBg) img.crossOrigin = "anonymous";
@@ -201,8 +195,18 @@
 		}
 	}
 
+	// Fix: Ensure all reactive variables are tracked by accessing them synchronously
 	$effect(() => {
-		if (showPreview) generateImage(false);
+		// Access dependencies to track them
+		const dep1 = selectedStyle;
+		const dep2 = selectedFont;
+		const dep3 = customBg;
+		const dep4 = quote;
+		const dep5 = accentColor;
+		
+		if (showPreview) {
+			generateImage(false);
+		}
 	});
 </script>
 
@@ -225,6 +229,8 @@
 </div>
 
 {#if showPreview}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 overflow-y-auto" onclick={() => showPreview = false} in:fade={{ duration: 250 }}>
 		<div class="w-full max-w-4xl flex flex-col md:flex-row gap-10 items-center justify-center" onclick={(e) => e.stopPropagation()}>
 			
