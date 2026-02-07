@@ -206,7 +206,9 @@
 							<button
 								class="close-btn"
 								style="border-color: var(--accent-color)"
-								onclick={() => (showSettings = false)}>CLOSE</button
+								onclick={() => (showSettings = false)}
+								title="Close settings"
+								>CLOSE</button
 							>
 						</div>
 
@@ -260,6 +262,7 @@
 								class="w-full py-2 text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 active:brightness-90 transition-all"
 								style="background-color: var(--accent-color)"
 								onclick={reloadDatabase}
+								title="Reload the word dictionary database"
 							>
 								Reload Dictionary
 							</button>
@@ -277,6 +280,7 @@
 					<button
 						class="word-card active:brightness-95 transition-all"
 						onclick={() => handleCopy(word)}
+						title="Click to copy: {word}"
 					>
 						{#if mode === 'prefix'}
 							<span

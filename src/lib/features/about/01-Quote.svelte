@@ -281,19 +281,24 @@
 				id="copy-btn"
 				onclick={copyQuote}
 				class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300"
+				title="Copy quote text to clipboard"
 				>Copy Text</button
 			>
 			<button
 				onclick={() => generateImage(false)}
 				class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300 disabled:opacity-50"
-				disabled={isGenerating}>{isGenerating ? 'GEN...' : 'Save Image'}</button
+				disabled={isGenerating}
+				title="Generate and save quote as image"
+				>{isGenerating ? 'GEN...' : 'Save Image'}</button
 			>
 		</div>
 		<div class="flex gap-2 items-center">
 			<button
 				onclick={prevQuote}
 				class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
-				style="border-color: {accentColor}; color: {accentColor};">← Prev</button
+				style="border-color: {accentColor}; color: {accentColor};"
+				title="View previous quote"
+				>← Prev</button
 			>
 			<span class="text-[7px] text-slate-300 font-bold uppercase tracking-widest px-2"
 				>{currentQuoteIndex + 1} / {scrapedQuotes.length}</span
@@ -301,7 +306,9 @@
 			<button
 				onclick={nextQuote}
 				class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
-				style="border-color: {accentColor}; color: {accentColor};">Next →</button
+				style="border-color: {accentColor}; color: {accentColor};"
+				title="View next quote"
+				>Next →</button
 			>
 		</div>
 	</div>
@@ -340,7 +347,9 @@
 								class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedStyle ===
 								style.id
 									? 'bg-white text-black border-white'
-									: 'border-white/10 text-white/40 hover:border-white/30'}">{style.name}</button
+									: 'border-white/10 text-white/40 hover:border-white/30'}"
+								title="Select {style.name} style"
+								>{style.name}</button
 							>
 						{/each}
 					</div>
@@ -359,7 +368,9 @@
 								class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedFont ===
 								font.id
 									? 'bg-white text-black border-white'
-									: 'border-white/10 text-white/40 hover:border-white/30'}">{font.name}</button
+									: 'border-white/10 text-white/40 hover:border-white/30'}"
+								title="Select {font.name} font"
+								>{font.name}</button
 							>
 						{/each}
 					</div>
@@ -371,7 +382,9 @@
 								class="px-2 py-2 text-[8px] font-black uppercase border transition-all {selectedAlign ===
 								align.id
 									? 'bg-white text-black border-white'
-									: 'border-white/10 text-white/40 hover:border-white/30'}">{align.name}</button
+									: 'border-white/10 text-white/40 hover:border-white/30'}"
+								title="Align text to {align.name}"
+								>{align.name}</button
 							>
 						{/each}
 					</div>
@@ -460,6 +473,7 @@
 							class="w-full py-2 text-[8px] font-black uppercase border transition-all {grayscaleMode
 								? 'bg-white text-black border-white'
 								: 'border-white/10 text-white/40 hover:border-white/30'}"
+							title="Toggle grayscale background mode"
 						>
 							{grayscaleMode ? 'Mono Mode: ON' : 'Mono Mode: OFF'}
 						</button>
@@ -467,6 +481,7 @@
 
 					<label
 						class="block w-full py-2 text-center text-[8px] font-black uppercase border border-white/10 text-white/40 hover:bg-white/5 cursor-pointer transition-all"
+						title="Upload a custom background image"
 					>
 						Upload Image
 						<input type="file" accept="image/*" class="hidden" onchange={handleFileUpload} />
@@ -475,6 +490,7 @@
 					<button
 						onclick={resetSettings}
 						class="w-full py-2 text-[8px] font-black uppercase tracking-widest border border-rose-500/20 text-rose-500/50 hover:bg-rose-500 hover:text-white transition-all"
+						title="Reset all design settings to default"
 						>Reset All</button
 					>
 				</div>
@@ -499,17 +515,20 @@
 					<button
 						onclick={shareImage}
 						class="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] bg-emerald-500 text-black hover:bg-emerald-400 transition-all active:scale-95"
+						title="Share this quote card"
 						>Share Card</button
 					>
 				{/if}
 				<button
 					onclick={() => generateImage(true)}
 					class="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] bg-white text-black hover:bg-slate-200 transition-all active:scale-95"
+					title="Download quote card as PNG"
 					>Download PNG</button
 				>
 				<button
 					onclick={() => (showPreview = false)}
 					class="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] border border-white/20 text-white hover:bg-white/10 transition-all"
+					title="Close image preview"
 					>Close</button
 				>
 			</div>

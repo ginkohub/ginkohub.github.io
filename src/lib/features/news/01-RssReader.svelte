@@ -285,6 +285,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group flex p-4 bg-black hover:bg-slate-900/50 transition-all border-b border-slate-800 last:border-0 gap-4"
+						title="Read full article: {article.title}"
 					>
 						<div
 							class="flex-shrink-0 w-16 h-16 border border-slate-800 bg-slate-900 overflow-hidden flex items-center justify-center"

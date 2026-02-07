@@ -71,6 +71,7 @@
 					class="px-2 py-1 text-[7px] font-black uppercase transition-all {sortBy === 'likes'
 						? 'bg-white text-black'
 						: 'text-slate-500 hover:text-slate-300'}"
+					title="Sort by most liked"
 				>
 					Most Liked
 				</button>
@@ -79,6 +80,7 @@
 					class="px-2 py-1 text-[7px] font-black uppercase transition-all {sortBy === 'downloads'
 						? 'bg-white text-black'
 						: 'text-slate-500 hover:text-slate-300'}"
+					title="Sort by most downloads"
 				>
 					Most Used
 				</button>
@@ -87,6 +89,7 @@
 					class="px-2 py-1 text-[7px] font-black uppercase transition-all {sortBy === 'lastModified'
 						? 'bg-white text-black'
 						: 'text-slate-500 hover:text-slate-300'}"
+					title="Sort by newest models"
 				>
 					Newest
 				</button>
@@ -127,6 +130,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group grid grid-cols-12 gap-2 p-3 border-b border-slate-800 last:border-0 hover:bg-slate-900/50 transition-all items-center"
+						title="View {model.id} on Hugging Face"
 					>
 						<!-- Rank -->
 						<div class="col-span-1 text-center">

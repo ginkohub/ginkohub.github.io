@@ -129,6 +129,7 @@
 					class="px-2 py-1 text-[7px] font-black uppercase transition-all {mode === 'repositories'
 						? 'bg-white text-black'
 						: 'text-slate-500 hover:text-slate-300'}"
+					title="Show trending repositories"
 				>
 					REPOS
 				</button>
@@ -137,6 +138,7 @@
 					class="px-2 py-1 text-[7px] font-black uppercase transition-all {mode === 'developers'
 						? 'bg-white text-black'
 						: 'text-slate-500 hover:text-slate-300'}"
+					title="Show trending developers"
 				>
 					DEVS
 				</button>
@@ -179,6 +181,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group flex p-4 bg-black hover:bg-slate-900/50 transition-all border-b border-slate-800 last:border-0 gap-4"
+						title="View {repo.author}/{repo.name} on GitHub"
 					>
 						<div class="flex-shrink-0 w-10 h-10 border border-slate-800 bg-slate-900 overflow-hidden">
 							<img
@@ -220,6 +223,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group flex flex-col p-4 bg-black hover:bg-slate-900/50 transition-all border-r border-b border-slate-800 last:border-0"
+						title="View {dev.name} on GitHub"
 					>
 						<div class="flex items-center gap-3">
 							<div

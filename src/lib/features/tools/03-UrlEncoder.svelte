@@ -28,11 +28,13 @@
 			<button
 				onclick={encode}
 				class="tool-btn text-[8px] font-bold uppercase border border-slate-800 px-3 py-1 hover:bg-white hover:text-black transition-all"
+				title="Encode input string"
 				>Encode</button
 			>
 			<button
 				onclick={decode}
 				class="tool-btn text-[8px] font-bold uppercase border border-slate-800 px-3 py-1 hover:bg-white hover:text-black transition-all"
+				title="Decode input string"
 				>Decode</button
 			>
 		</div>
@@ -52,6 +54,7 @@
 				<button
 					onclick={copyOutput}
 					class="absolute top-2 right-2 bg-slate-800 text-white text-[8px] px-2 py-1 font-bold uppercase hover:bg-white hover:text-black transition-all"
+					title="Copy result to clipboard"
 					>Copy</button
 				>
 			{/if}

@@ -17,6 +17,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						class="text-sm font-bold text-white hover:text-slate-300 active:text-slate-300 transition-colors w-fit break-all font-space"
+						title="Connect via {contact.label}"
 					>
 						{contact.value}
 					</a>

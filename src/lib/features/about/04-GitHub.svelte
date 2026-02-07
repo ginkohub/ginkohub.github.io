@@ -86,6 +86,7 @@
 		target="_blank"
 		rel="noopener noreferrer"
 		class="block w-full py-2 text-center text-[8px] font-black uppercase tracking-[0.3em] border border-slate-800 text-slate-500 hover:bg-white hover:text-black transition-all"
+		title="View source code on GitHub"
 	>
 		View Source Code →
 	</a>

@@ -33,6 +33,7 @@
 				id="copy-meme-btn"
 				onclick={copyMeme}
 				class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-500"
+				title="Copy artifact link to clipboard"
 			>
 				Copy Link
 			</button>
@@ -40,6 +41,7 @@
 				<button
 					onclick={shareMeme}
 					class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-500"
+					title="Share this artifact"
 				>
 					Share
 				</button>
@@ -49,6 +51,7 @@
 				class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
 				style="border-color: {accentColor}; color: {accentColor};"
 				disabled={meme.loading}
+				title="Fetch another random artifact"
 			>
 				{meme.loading ? '...' : 'Refresh →'}
 			</button>

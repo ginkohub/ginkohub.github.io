@@ -389,6 +389,7 @@
 					onclick={handleLogoClick}
 					class="relative w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-full overflow-hidden transition-all duration-75 ease-out group-hover:scale-105 active:scale-90 z-10 block touch-manipulation"
 					style="transform: scale({comboScale})"
+					title="Click to trigger aura and shuffle persona"
 				>
 					<img
 						src="https://github.com/ginkohub.png"
@@ -437,6 +438,7 @@
 							}}
 							class="flex-1 min-w-[80px] py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
 							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+							title={tab.description}
 						>
 							{tab.label}
 							{#if activeTabLabel === tab.label}

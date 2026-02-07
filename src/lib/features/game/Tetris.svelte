@@ -272,6 +272,7 @@
 			<button
 				onclick={() => (showSettings = !showSettings)}
 				class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all"
+				title="Open configuration settings"
 			>
 				Config
 			</button>
@@ -332,6 +333,7 @@
 				<button
 					onclick={() => (showSettings = false)}
 					class="w-full py-3 text-[10px] font-black uppercase tracking-widest bg-white text-black active:scale-95 transition-all"
+					title="Save settings and close"
 				>
 					Save & Close
 				</button>
@@ -358,6 +360,7 @@
 					onclick={initGame}
 					class="px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
 					style="background-color: var(--accent-color); color: #000;"
+					title="{gameOver ? 'Restart the game' : 'Start the game'}"
 				>
 					{gameOver ? 'Clear Buffer' : 'Initialize'}
 				</button>
@@ -370,21 +373,25 @@
 		<button
 			onclick={() => playerRotate()}
 			class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800 col-span-3"
+			title="Rotate piece"
 			>ROTATE</button
 		>
 		<button
 			onclick={() => playerMove(-1)}
 			class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800"
+			title="Move left"
 			>←</button
 		>
 		<button
 			onclick={() => playerDrop()}
 			class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800"
+			title="Move down"
 			>↓</button
 		>
 		<button
 			onclick={() => playerMove(1)}
 			class="p-4 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800"
+			title="Move right"
 			>→</button
 		>
 	</div>

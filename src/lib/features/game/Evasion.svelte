@@ -176,6 +176,7 @@
 					onclick={initGame}
 					class="px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
 					style="background-color: var(--accent-color); color: #000;"
+					title="{gameOver ? 'Restart the game' : 'Start the game'}"
 				>
 					{gameOver ? 'Repair & Retry' : 'Launch'}
 				</button>

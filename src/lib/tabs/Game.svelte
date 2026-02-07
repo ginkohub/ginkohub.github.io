@@ -31,6 +31,7 @@
 				{selectedGameId === game.id
 					? 'bg-white text-black border-white'
 					: 'border-slate-800 text-slate-500 hover:border-slate-600'}"
+				title="Play {game.name}"
 			>
 				<span class="text-[9px] font-black uppercase tracking-widest">{game.name}</span>
 			</button>

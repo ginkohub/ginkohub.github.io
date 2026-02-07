@@ -222,6 +222,7 @@
 					onclick={initGame}
 					class="px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
 					style="background-color: var(--accent-color); color: #000;"
+					title="Start the game"
 				>
 					Initialize
 				</button>
@@ -243,6 +244,7 @@
 			onmousedown={() => (upPressed = true)}
 			onmouseup={() => (upPressed = false)}
 			class="flex-1 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800 flex items-center justify-center"
+			title="Move paddle up"
 		>
 			UP
 		</button>
@@ -258,6 +260,7 @@
 			onmousedown={() => (downPressed = true)}
 			onmouseup={() => (downPressed = false)}
 			class="flex-1 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800 flex items-center justify-center"
+			title="Move paddle down"
 		>
 			DOWN
 		</button>

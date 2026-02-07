@@ -17,6 +17,7 @@
 			disabled={previewState.isLoading}
 			class="px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
 			style="background-color: {accentColor}; color: #000;"
+			title="Fetch link preview metadata"
 		>
 			{previewState.isLoading ? 'Fetching...' : 'Preview Link'}
 		</button>

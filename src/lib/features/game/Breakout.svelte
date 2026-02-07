@@ -271,6 +271,7 @@
 					onclick={initGame}
 					class="px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
 					style="background-color: var(--accent-color); color: #000;"
+					title="{gameOver ? 'Restart the game' : 'Start the game'}"
 				>
 					{gameOver ? 'Retry' : 'Initialize'}
 				</button>
@@ -292,6 +293,7 @@
 			onmousedown={() => (leftPressed = true)}
 			onmouseup={() => (leftPressed = false)}
 			class="flex-1 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800 flex items-center justify-center"
+			title="Move paddle left"
 		>
 			LEFT
 		</button>
@@ -307,6 +309,7 @@
 			onmousedown={() => (rightPressed = true)}
 			onmouseup={() => (rightPressed = false)}
 			class="flex-1 bg-slate-900 border border-slate-800 text-white text-xl active:bg-slate-800 flex items-center justify-center"
+			title="Move paddle right"
 		>
 			RIGHT
 		</button>
