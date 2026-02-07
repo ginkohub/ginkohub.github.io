@@ -6,22 +6,12 @@
 
 	// Modular Tab System (Lazy Loaded)
 	const tabModules = import.meta.glob('$lib/tabs/*.svelte');
-	const tabDescriptions = {
-		tools: 'Utility tools for developers',
-		news: 'Tech news, trends, and leaderboards',
-		humor: 'Jokes and memes for a laugh',
-		words: 'Word finder and dictionary tool',
-		preview: 'Social media link previewer',
-		game: 'Retro arcade games collection'
-	};
-
 	const tabs = Object.entries(tabModules)
 		.map(([path, moduleFunc]) => {
 			const label = path.split('/').pop().replace('.svelte', '').toLowerCase();
 			return {
 				label,
-				load: moduleFunc,
-				description: tabDescriptions[label] // Add description here
+				load: moduleFunc
 			};
 		})
 		.sort((a, b) => {
@@ -439,9 +429,6 @@
 							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
 						>
 							{tab.label}
-							{#if tab.description}
-								<div class="text-[7px] font-normal opacity-70 mt-0.5">{tab.description}</div>
-							{/if}
 							{#if activeTabLabel === tab.label}
 								<div
 									class="absolute bottom-0 left-0 w-full h-[2px] animate-pulse-slow"
