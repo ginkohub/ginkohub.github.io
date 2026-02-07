@@ -61,7 +61,7 @@
 			style="border-color: {accentColor}"
 			title="Open AI Chat"
 		>
-			<div class="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity" style="background-color: {accentColor}"></div>
+			<div class="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity rounded-full" style="background-color: {accentColor}"></div>
 			<span class="text-xl relative z-10">🤖</span>
 		</button>
 	{:else}
@@ -108,7 +108,7 @@
 				{#each messages as msg}
 					<div class="flex flex-col {msg.role === 'user' ? 'items-end' : 'items-start'}">
 						<div
-							class="max-w-[90%] p-2.5 text-xs font-space leading-relaxed whitespace-pre-wrap border {msg.role === 'user' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-black border-slate-800 text-slate-300'}"
+							class="max-w-[90%] p-2.5 text-xs font-space leading-relaxed whitespace-pre-wrap border rounded-xl {msg.role === 'user' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-black border-slate-800 text-slate-300'}"
 							style={msg.role === 'user' ? `border-color: ${accentColor}` : ''}
 						>
 							{msg.content}
@@ -143,12 +143,12 @@
 						onkeydown={(e) => e.key === 'Enter' && sendMessage()}
 						placeholder="Transmitting message..."
 						disabled={isLoading}
-						class="flex-1 bg-black border border-slate-800 p-2 text-xs text-white font-space outline-none focus:border-white/20 disabled:opacity-50"
+						class="flex-1 bg-black border border-slate-800 p-2 text-xs text-white font-space outline-none focus:border-white/20 disabled:opacity-50 rounded-lg"
 					/>
 					<button
 						onclick={sendMessage}
 						disabled={isLoading || !input.trim()}
-						class="px-3 text-[9px] font-black uppercase transition-all active:scale-90"
+						class="px-3 text-[9px] font-black uppercase transition-all active:scale-90 rounded-lg"
 						style="background-color: {accentColor}; color: #000;"
 					>
 						Sync
