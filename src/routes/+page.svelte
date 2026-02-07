@@ -417,9 +417,9 @@
 
 			<!-- Modular Navigation -->
 			<nav
-				class="flex w-full border-b border-slate-800 mb-10 overflow-x-auto no-scrollbar scroll-smooth"
+				class="tab-scroll-indicator flex w-full border-b border-slate-800 mb-10 overflow-x-auto no-scrollbar scroll-smooth"
 			>
-				<div class="flex min-w-full">
+				<div class="flex">
 					{#each tabs as tab}
 						<button
 							onclick={() => {
@@ -638,5 +638,20 @@
 		100% {
 			opacity: 0.1;
 		}
+	}
+
+	/* New CSS for tab scroll indicator */
+	.tab-scroll-indicator::after {
+		content: '';
+		position: absolute;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		width: 40px; /* Adjust width as needed */
+		/* Gradient from transparent to near-black, ensuring it's visible over tabs */
+		background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 70%);
+		pointer-events: none;
+		z-index: 10; /* Ensure it's above the tabs */
+		transition: opacity 0.3s ease;
 	}
 </style>
