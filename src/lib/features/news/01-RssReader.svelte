@@ -67,24 +67,24 @@
 				{ name: 'CSS Weekly', url: 'http://feeds.feedburner.com/CSS-Weekly' },
 				{ name: 'Deno News', url: 'https://buttondown.email/denonews/rss' },
 				{ name: 'ESNext News', url: 'http://feeds.feedburner.com/EsnextNews' },
-				{ name: 'Frontend Focus', url: 'https://cprss.s3.amazonaws.com/frontendfoc.us.xml' },
+				{ name: 'Frontend Focus', url: 'https://frontendfoc.us/rss' },
 				{ name: 'Go Blog', url: 'https://go.dev/blog/feed.atom' },
-				{ name: 'Golang Weekly', url: 'https://cprss.s3.amazonaws.com/golangweekly.com.xml' },
+				{ name: 'Golang Weekly', url: 'https://golangweekly.com/rss' },
 				{ name: 'iOS Dev Weekly', url: 'https://iosdevweekly.com/issues.rss' },
 				{
 					name: 'JavaScript Weekly',
-					url: 'https://cprss.s3.amazonaws.com/javascriptweekly.com.xml'
+					url: 'https://javascriptweekly.com/rss'
 				},
 				{ name: 'Node.js Blog', url: 'https://nodejs.org/en/feed/blog.xml' },
-				{ name: 'Node.js Weekly', url: 'https://cprss.s3.amazonaws.com/nodeweekly.com.xml' },
+				{ name: 'Node.js Weekly', url: 'https://nodeweekly.com/rss' },
 				{ name: 'PHP Weekly', url: 'https://www.phpweekly.com/rss.xml' },
-				{ name: 'PostgreSQL Weekly', url: 'https://cprss.s3.amazonaws.com/postgresweekly.com.xml' },
+				{ name: 'PostgreSQL Weekly', url: 'https://postgresweekly.com/rss' },
 				{
 					name: 'Python Weekly',
 					url: 'https://us2.campaign-archive.com/feed?u=e2e180baf855ac797ef407fc7&id=9e26887fc5'
 				},
-				{ name: 'React Status', url: 'https://cprss.s3.amazonaws.com/react.statuscode.com.xml' },
-				{ name: 'Ruby Weekly', url: 'https://cprss.s3.amazonaws.com/rubyweekly.com.xml' },
+				{ name: 'React Status', url: 'https://reactstatus.com/rss' },
+				{ name: 'Ruby Weekly', url: 'https://rubyweekly.com/rss' },
 				{ name: 'Rust Weekly', url: 'https://this-week-in-rust.org/rss.xml' },
 				{ name: 'Serverless Status', url: 'https://serverless.email/rss/' },
 				{ name: 'Tailwind Weekly', url: 'https://tailwindweekly.com/rss/' },
