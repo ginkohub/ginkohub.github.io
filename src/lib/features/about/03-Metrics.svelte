@@ -65,4 +65,22 @@
 			>{uptime}</span
 		>
 	</div>
+
+	<!-- GitHub Contribution Block -->
+	<div class="col-span-2 mt-4 pt-4 border-t border-slate-800/50">
+		<div class="flex flex-col space-y-2">
+			<div class="flex justify-between items-center">
+				<span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">Contribution Pulse</span>
+				<span class="text-[7px] font-mono text-slate-700 uppercase">source: github.com/ginkohub</span>
+			</div>
+			<div class="w-full bg-black/40 border border-slate-800/50 p-3 rounded-lg overflow-hidden flex items-center justify-center">
+				<img 
+					src="https://ghchart.rshah.org/{accentColor.replace('#', '')}/ginkohub" 
+					alt="ginkohub's GitHub contributions" 
+					class="w-full h-auto opacity-80 hover:opacity-100 transition-opacity grayscale-50 hover:grayscale-0"
+					onerror={(e) => (e.target.style.display = 'none')}
+				/>
+			</div>
+		</div>
+	</div>
 </div>
