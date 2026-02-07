@@ -95,7 +95,7 @@
 				},
 				{
 					name: 'VS Code Updates',
-					url: 'https://us5.campaign-archive.com/feed?u=ea228d7061e8bbfa8639666ad&id=97e12d9faf'
+					url: 'https://code.visualstudio.com/feed.xml'
 				},
 				{ name: 'WebAssembly Weekly', url: 'https://wasmweekly.news/feed.xml' }
 			]
