@@ -3,61 +3,114 @@
 
 	const feedGroups = [
 		{
-			name: 'Tech Protocol',
+			name: 'Tech Media',
 			feeds: [
-				{ name: 'Hacker News', url: 'https://news.ycombinator.com/rss' },
-				{ name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml' },
-				{ name: 'TechCrunch', url: 'https://techcrunch.com/feed/' },
+				{ name: 'Ars Technica', url: 'https://arstechnica.com/feed/' },
+				{ name: 'Daring Fireball', url: 'https://daringfireball.net/feeds/main' },
 				{ name: 'Engadget', url: 'https://www.engadget.com/rss.xml' },
 				{ name: 'GSMArena', url: 'https://www.gsmarena.com/rss-news-reviews.php3' },
-				{ name: 'Ars Technica', url: 'https://arstechnica.com/feed/' },
-				{ name: 'Wired', url: 'https://www.wired.com/feed/rss' },
 				{ name: 'MacRumors', url: 'https://www.macrumors.com/rss/' },
-				{ name: '9to5Mac', url: 'https://9to5mac.com/feed/' },
-				{ name: '9to5Google', url: 'https://9to5google.com/feed/' },
-				{ name: 'Android Authority', url: 'https://www.androidauthority.com/feed/' },
-				{ name: 'XDA Developers', url: 'https://www.xda-developers.com/feed/' },
-				{ name: 'ZDNet', url: 'https://www.zdnet.com/rss.xml' },
+				{ name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml' },
 				{ name: 'VentureBeat', url: 'https://venturebeat.com/feed/' },
-				{ name: 'Daring Fireball', url: 'https://daringfireball.net/feeds/main' }
+				{ name: 'Wired', url: 'https://www.wired.com/feed/rss' },
+				{ name: 'ZDNet', url: 'https://www.zdnet.com/rss.xml' }
 			]
 		},
+
 		{
-			name: 'AI Intelligence',
+			name: 'AI & Machine Learning',
 			feeds: [
-				{ name: 'OpenAI', url: 'https://openai.com/blog/rss.xml' },
-				{ name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml' },
 				{ name: 'Anthropic', url: 'https://www.anthropic.com/feed' },
-				{ name: 'Google AI', url: 'https://blog.google/technology/ai/rss/' },
-				{ name: 'Microsoft AI', url: 'https://blogs.microsoft.com/ai/feed/' },
-				{ name: 'Last Week in AI', url: 'https://lastweekin.ai/feed' },
-				{ name: 'The Sequence', url: 'https://thesequence.substack.com/feed' },
 				{ name: 'Ahead of AI', url: 'https://magazine.sebastianraschka.com/feed' },
 				{ name: 'Cohere', url: 'https://txt.cohere.com/rss/' },
+				{ name: 'Google AI', url: 'https://blog.google/technology/ai/rss/' },
+				{ name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml' },
 				{ name: 'LangChain', url: 'https://blog.langchain.dev/rss/' },
-				{ name: 'Stability AI', url: 'https://stability.ai/blog/rss.xml' },
-				{ name: 'NVIDIA Deep Learning', url: 'https://blogs.nvidia.com/blog/category/deep-learning/feed/' },
-				{ name: 'Machine Learning Mastery', url: 'https://machinelearningmastery.com/feed/' }
+				{ name: 'Last Week in AI', url: 'https://lastweekin.ai/feed' },
+				{ name: 'Machine Learning Mastery', url: 'https://machinelearningmastery.com/feed/' },
+				{ name: 'Microsoft AI', url: 'https://blogs.microsoft.com/ai/feed/' },
+				{
+					name: 'NVIDIA Deep Learning',
+					url: 'https://blogs.nvidia.com/blog/category/deep-learning/feed/'
+				},
+				{ name: 'OpenAI', url: 'https://openai.com/blog/rss.xml' },
+				{ name: 'The Sequence', url: 'https://thesequence.substack.com/feed' }
 			]
 		},
+
 		{
-			name: 'Dev Uplink',
+			name: 'Developer Blogs',
 			feeds: [
-				{ name: 'GitHub Blog', url: 'https://github.blog/feed/' },
-				{ name: 'Stack Overflow', url: 'https://stackoverflow.blog/feed/' },
-				{ name: 'Google Developers', url: 'https://developers.googleblog.com/atom.xml' },
-				{ name: 'Mozilla Hacks', url: 'https://hacks.mozilla.org/feed/' },
-				{ name: 'Web.dev', url: 'https://web.dev/feed.xml' },
-				{ name: 'React Blog', url: 'https://react.dev/feed.xml' },
-				{ name: 'Svelte Blog', url: 'https://svelte.dev/rss.xml' },
-				{ name: 'Martin Fowler', url: 'https://martinfowler.com/feed.atom' },
+				{ name: 'A List Apart', url: 'https://alistapart.com/main/feed/' },
+				{ name: 'CodePen Blog', url: 'https://blog.codepen.io/feed/' },
+				{ name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' },
 				{ name: 'Dev.to', url: 'https://dev.to/rss' },
 				{ name: 'FreeCodeCamp', url: 'https://www.freecodecamp.org/news/rss/' },
-				{ name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' },
-				{ name: 'Smashing Mag', url: 'https://www.smashingmagazine.com/feed/' },
+				{ name: 'GitHub Blog', url: 'https://github.blog/feed/' },
+				{ name: 'Google Developers', url: 'https://developers.googleblog.com/atom.xml' },
+				{ name: 'Martin Fowler', url: 'https://martinfowler.com/feed.atom' },
+				{ name: 'Mozilla Hacks', url: 'https://hacks.mozilla.org/feed/' },
+				{ name: 'React Blog', url: 'https://react.dev/feed.xml' },
 				{ name: 'SitePoint', url: 'https://www.sitepoint.com/feed/' },
-				{ name: 'A List Apart', url: 'https://alistapart.com/main/feed/' },
-				{ name: 'CodePen Blog', url: 'https://blog.codepen.io/feed/' }
+				{ name: 'Smashing Magazine', url: 'https://www.smashingmagazine.com/feed/' },
+				{ name: 'Stack Overflow Blog', url: 'https://stackoverflow.blog/feed/' },
+				{ name: 'Svelte Blog', url: 'https://svelte.dev/rss.xml' },
+				{ name: 'Web.dev', url: 'https://web.dev/feed.xml' }
+			]
+		},
+
+		{
+			name: 'Language & Ecosystem Weekly',
+			feeds: [
+				{ name: 'Android Weekly', url: 'https://androidweekly.net/rss.xml' },
+				{ name: 'Bun Blog', url: 'https://bun.com/rss.xml' },
+				{ name: 'CSS Weekly', url: 'http://feeds.feedburner.com/CSS-Weekly' },
+				{ name: 'Deno News', url: 'https://buttondown.email/denonews/rss' },
+				{ name: 'ESNext News', url: 'http://feeds.feedburner.com/EsnextNews' },
+				{ name: 'Frontend Focus', url: 'https://cprss.s3.amazonaws.com/frontendfoc.us.xml' },
+				{ name: 'Go Blog', url: 'https://go.dev/blog/feed.atom' },
+				{ name: 'Golang Weekly', url: 'https://cprss.s3.amazonaws.com/golangweekly.com.xml' },
+				{ name: 'iOS Dev Weekly', url: 'https://iosdevweekly.com/issues.rss' },
+				{
+					name: 'JavaScript Weekly',
+					url: 'https://cprss.s3.amazonaws.com/javascriptweekly.com.xml'
+				},
+				{ name: 'Node.js Blog', url: 'https://nodejs.org/en/feed/blog.xml' },
+				{ name: 'Node.js Weekly', url: 'https://cprss.s3.amazonaws.com/nodeweekly.com.xml' },
+				{ name: 'PHP Weekly', url: 'https://www.phpweekly.com/rss.xml' },
+				{ name: 'PostgreSQL Weekly', url: 'https://cprss.s3.amazonaws.com/postgresweekly.com.xml' },
+				{
+					name: 'Python Weekly',
+					url: 'https://us2.campaign-archive.com/feed?u=e2e180baf855ac797ef407fc7&id=9e26887fc5'
+				},
+				{ name: 'React Status', url: 'https://cprss.s3.amazonaws.com/react.statuscode.com.xml' },
+				{ name: 'Ruby Weekly', url: 'https://cprss.s3.amazonaws.com/rubyweekly.com.xml' },
+				{ name: 'Rust Weekly', url: 'https://this-week-in-rust.org/rss.xml' },
+				{ name: 'Serverless Status', url: 'https://serverless.email/rss/' },
+				{ name: 'Tailwind Weekly', url: 'https://tailwindweekly.com/rss/' },
+				{ name: 'The New Stack', url: 'https://thenewstack.io/blog/feed/' },
+				{
+					name: 'TypeScript Weekly',
+					url: 'https://us14.campaign-archive.com/feed?u=809daf9442ece0a92a3d65f99&id=5693c0ed42'
+				},
+				{
+					name: 'VS Code Updates',
+					url: 'https://us5.campaign-archive.com/feed?u=ea228d7061e8bbfa8639666ad&id=97e12d9faf'
+				},
+				{ name: 'WebAssembly Weekly', url: 'https://wasmweekly.news/feed.xml' }
+			]
+		},
+
+		{
+			name: 'Editors & Tools',
+			feeds: [
+				{ name: 'Emacs Weekly', url: 'https://sachachua.com/blog/category/weekly/feed/' },
+				{ name: 'JS Tools', url: 'https://jstools.substack.com/feed' },
+				{ name: 'Neovim Weekly', url: 'https://dotfyle.com/this-week-in-neovim/rss.xml' },
+				{
+					name: 'Web Tools',
+					url: 'https://us5.campaign-archive.com/feed?u=ea228d7061e8bbfa8639666ad&id=104d6bcc2d'
+				}
 			]
 		}
 	];
@@ -91,7 +144,7 @@
 
 				const parser = new DOMParser();
 				const xmlDoc = parser.parseFromString(rawContent, 'text/xml');
-				
+
 				// Handle parsing error
 				if (xmlDoc.querySelector('parsererror')) {
 					throw new Error('XML Parsing failed');
@@ -103,12 +156,13 @@
 
 				articles = items.map((item) => {
 					// Extract fields with fallbacks for RSS vs Atom
-					const title = item.querySelector('title')?.textContent || 'Untitled Protocol';
-					
+					const rawTitle = item.querySelector('title')?.textContent || 'Untitled Protocol';
+					const title = fixEncoding(rawTitle);
+
 					// Link can be a tag text or an href attribute (Atom)
 					let link = item.querySelector('link')?.textContent;
 					if (!link) link = item.querySelector('link')?.getAttribute('href');
-					
+
 					// Date
 					const pubDate = item.querySelector('pubDate, published, updated')?.textContent;
 					const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'LATEST';
@@ -121,13 +175,15 @@
 
 					// Thumbnail extraction
 					let image = null;
-					
+
 					// 1. Try media:content / media:thumbnail
-					const media = item.getElementsByTagNameNS('*', 'content')[0] || item.getElementsByTagNameNS('*', 'thumbnail')[0];
+					const media =
+						item.getElementsByTagNameNS('*', 'content')[0] ||
+						item.getElementsByTagNameNS('*', 'thumbnail')[0];
 					if (media && media.getAttribute('url')) {
 						image = media.getAttribute('url');
 					}
-					
+
 					// 2. Try enclosure
 					if (!image) {
 						const enclosure = item.querySelector('enclosure');
@@ -135,7 +191,7 @@
 							image = enclosure.getAttribute('url');
 						}
 					}
-					
+
 					// 3. Try parsing description/content for img tag
 					if (!image && desc) {
 						const imgMatch = desc.match(/<img[^>]+src="([^">]+)"/);
@@ -160,6 +216,23 @@
 			console.error('RSS Feed error:', e);
 		} finally {
 			loading = false;
+		}
+	}
+
+	function fixEncoding(str) {
+		if (!str) return str;
+
+		// Common mojibake indicators (UTF-8 read as Latin-1)
+		if (!/[âÃ¤Ã¶Ã¼Ãâââ]/.test(str)) {
+			return str;
+		}
+
+		try {
+			return decodeURIComponent(
+				Array.from(str, (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
+			);
+		} catch {
+			return str;
 		}
 	}
 
@@ -213,12 +286,14 @@
 						rel="noopener noreferrer"
 						class="group flex p-4 bg-black hover:bg-slate-900/50 transition-all border-b border-slate-800 last:border-0 gap-4"
 					>
-						<div class="flex-shrink-0 w-16 h-16 border border-slate-800 bg-slate-900 overflow-hidden flex items-center justify-center">
-							<img 
-								src={article.image} 
-								alt="" 
+						<div
+							class="flex-shrink-0 w-16 h-16 border border-slate-800 bg-slate-900 overflow-hidden flex items-center justify-center"
+						>
+							<img
+								src={article.image}
+								alt=""
 								class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-								onerror={(e) => e.target.style.display = 'none'} 
+								onerror={(e) => (e.target.style.display = 'none')}
 							/>
 						</div>
 						<div class="flex flex-col min-w-0 flex-1">
