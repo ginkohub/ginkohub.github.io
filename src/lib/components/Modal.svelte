@@ -34,12 +34,13 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div 
-		class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl pointer-events-auto"
+		class="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md pointer-events-auto cursor-pointer"
+		style="-webkit-backdrop-filter: blur(12px);"
 		transition:fade={{ duration: 200 }}
 		onclick={handleBackdropClick}
 	>
 		<div 
-			class="w-full max-w-md bg-slate-950 border border-slate-800 p-6 rounded-none relative overflow-hidden group shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+			class="w-full max-w-[90%] md:max-w-md bg-slate-950 border border-slate-800 p-6 rounded-none relative overflow-y-auto max-h-[90vh] group shadow-[0_0_50px_rgba(0,0,0,0.5)] cursor-default"
 			transition:scale={{ start: 0.9, duration: 300, opacity: 0 }}
 			onclick={(e) => e.stopPropagation()}
 		>
@@ -69,7 +70,7 @@
 			<div class="mt-8 flex justify-end">
 				<button 
 					onclick={close}
-					class="px-8 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors active:scale-95"
+					class="w-full md:w-auto px-8 py-4 md:py-2 bg-white text-black text-[11px] md:text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors active:scale-95"
 				>
 					OK
 				</button>

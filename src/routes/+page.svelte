@@ -247,7 +247,7 @@
 
 		// Overload Mode Trigger
 
-		if (comboCount >= 50 && !isOverloaded) {
+		if (comboCount === 50) {
 			isOverloaded = true;
 			showOverloadModal = true;
 		}
@@ -268,7 +268,7 @@
 			showCombo = false;
 
 			comboScale = 1;
-		}, 1500);
+		}, 2000);
 	}
 
 	function handleGlobalKeydown(e) {
@@ -633,22 +633,22 @@
 			</footer>
 		</div>
 	</div>
-
-	<ChatWidget accentColor={currentAccent.hex} />
-
-	<Fireworks bind:this={fireworksSystem} accentColor={currentAccent.hex} />
-
-	<Modal 
-		bind:show={showOverloadModal} 
-		title="CRITICAL ERROR" 
-		message="You broke it man. The system integrity has been compromised by your excessive clicking." 
-		closeOnOutside={false}
-		onConfirm={() => {
-			comboCount = 0;
-			isOverloaded = false;
-		}}
-	/>
 </div>
+
+<ChatWidget accentColor={currentAccent.hex} />
+
+<Fireworks bind:this={fireworksSystem} accentColor={currentAccent.hex} />
+
+<Modal 
+	bind:show={showOverloadModal} 
+	title="CRITICAL ERROR" 
+	message="You broke it man. The system integrity has been compromised by your excessive clicking." 
+	closeOnOutside={false}
+	onConfirm={() => {
+		comboCount = 0;
+		isOverloaded = false;
+	}}
+/>
 
 <style>
 	:global(body) {
