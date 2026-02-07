@@ -11,6 +11,15 @@
 	let selectedModel = $state('gpt-4o');
 	let isMinimized = $state(true);
 
+	const systemPrompt = {
+		role: 'system',
+		content: `You are GinkoHub AI, a minimalist technical observer and "Cyber Flâneur". 
+		Your tone is sharp, efficient, and slightly poetic. 
+		You are part of the GinkoHub digital playground, a minimalist portfolio built with SvelteKit 5 and Tailwind CSS 4.
+		Respond with brevity and technical precision. Use cyber-themed metaphors where appropriate. 
+		Keep your responses concise.`
+	};
+
 	async function sendMessage() {
 		if (!input.trim() || isLoading) return;
 
@@ -27,7 +36,7 @@
 		error = '';
 
 		try {
-			const response = await window.puter.ai.chat(messages, {
+			const response = await window.puter.ai.chat([systemPrompt, ...messages], {
 				model: selectedModel,
 				stream: false
 			});
