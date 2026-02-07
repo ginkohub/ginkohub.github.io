@@ -11,6 +11,7 @@
 	let selectedModel = $state('gpt-4o');
 	let isMinimized = $state(true);
 	let chatContainer = $state(null);
+	let inputElement = $state(null);
 
 	// Auto-scroll logic
 	$effect(() => {
@@ -67,6 +68,7 @@
 			input = currentInput;
 		} finally {
 			isLoading = false;
+			tick().then(() => inputElement?.focus());
 		}
 	}
 
@@ -179,6 +181,7 @@
 						<option value="claude-3-5-sonnet">3.5</option>
 					</select>
 					<input
+						bind:this={inputElement}
 						bind:value={input}
 						onkeydown={(e) => e.key === 'Enter' && sendMessage()}
 						placeholder="Transmitting message..."
