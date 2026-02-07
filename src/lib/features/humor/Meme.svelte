@@ -72,7 +72,15 @@
 				{meme.title}
 			</p>
 		{:else if meme.loading}
-			<div class="h-40 bg-slate-900 animate-pulse"></div>
+			<div class="flex flex-col items-center justify-center py-20 gap-4 bg-slate-900/20 border border-slate-800">
+				<div
+					class="w-8 h-8 border-2 border-slate-800 border-t-transparent rounded-full animate-spin"
+					style="border-top-color: {accentColor}"
+				></div>
+				<span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600"
+					>Downloading Artifact...</span
+				>
+			</div>
 		{/if}
 	</div>
 </div>

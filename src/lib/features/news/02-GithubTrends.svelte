@@ -178,14 +178,30 @@
 
 	<div class="min-h-[400px] relative">
 		{#if loading}
-			<div class="space-y-4">
-				{#each Array(5) as _}
-					<div class="h-20 bg-slate-900/50 animate-pulse border border-slate-800/50"></div>
-				{/each}
+			<div class="flex flex-col items-center justify-center py-20 gap-4">
+				<div
+					class="w-8 h-8 border-2 border-slate-800 border-t-transparent rounded-full animate-spin"
+					style="border-top-color: {accentColor}"
+				></div>
+				<span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500"
+					>Scanning Trends...</span
+				>
 			</div>
 		{:else if error}
-			<div class="flex items-center justify-center h-40 border border-rose-900/30 bg-rose-950/10">
-				<span class="text-[9px] font-black uppercase text-rose-500 tracking-widest">{error}</span>
+			<div
+				class="flex flex-col items-center justify-center py-20 gap-4 border border-rose-900/30 bg-rose-950/5"
+			>
+				<div class="text-rose-500 text-2xl">⚠️</div>
+				<span class="text-[9px] font-black uppercase text-rose-500 tracking-widest text-center px-4"
+					>{error}</span
+				>
+				<button
+					onclick={fetchData}
+					class="mt-2 text-[8px] font-black uppercase border border-rose-900/50 px-3 py-1 text-rose-500 hover:bg-rose-500 hover:text-black transition-all"
+					title="Retry fetching trending data"
+				>
+					Retry Protocol
+				</button>
 			</div>
 		{:else if mode === 'repositories'}
 			<div class="grid grid-cols-1 gap-1 border border-slate-800">

@@ -24,7 +24,17 @@
 	</div>
 
 	{#if previewState.error}
-		<p class="text-[9px] font-bold text-rose-500 uppercase tracking-widest">{previewState.error}</p>
+		<div class="flex items-center gap-3 text-rose-500">
+			<span class="text-lg">⚠️</span>
+			<p class="text-[9px] font-bold uppercase tracking-widest flex-1">{previewState.error}</p>
+			<button 
+				onclick={() => previewState.fetch()}
+				class="text-[8px] font-black uppercase border border-rose-900/50 px-2 py-1 hover:bg-rose-500 hover:text-black transition-all"
+				title="Retry preview fetch"
+			>
+				Retry
+			</button>
+		</div>
 	{:else}
 		<p class="text-[8px] text-slate-600 font-bold uppercase tracking-tighter">
 			Enter a URL to see how it appears across different platforms
