@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import ChatWidget from '$lib/components/ChatWidget.svelte';
+	import Fireworks from '$lib/components/effects/Fireworks.svelte';
+	import Modal from '$lib/components/Modal.svelte';
 
 	let { data } = $props();
 
@@ -34,6 +36,23 @@
 	let activeTabLabel = $state('about');
 	let ActiveTabComponent = $state(null);
 
+	// Custom System Mount Transition
+	function systemMount(node, { duration = 400, delay = 0 }) {
+		return {
+			duration,
+			delay,
+			css: (t) => {
+				const eased = 1 - Math.pow(1 - t, 3); // Cubic ease out
+				return `
+					opacity: ${t};
+					transform: scale(${0.98 + t * 0.02}) translateY(${(1 - eased) * 10}px);
+					filter: blur(${(1 - t) * 4}px) hue-rotate(${(1 - t) * 90}deg);
+					border-top: 1px solid rgba(var(--accent-rgb), ${1 - t});
+				`;
+			}
+		};
+	}
+
 	// Load active tab from localStorage on mount
 	onMount(() => {
 		const savedTab = localStorage.getItem('ginkohub_active_tab');
@@ -65,6 +84,7 @@
 	let showAura = $state(false);
 	let isGlitching = $state(false);
 	let isOverloaded = $state(false);
+	let showOverloadModal = $state(false);
 	let commandBuffer = $state('');
 
 	// Combo Strike State
@@ -73,6 +93,9 @@
 	let showCombo = $state(false);
 	let comboTimeout;
 	let isShaking = $state(false);
+
+	// Effects System
+	let fireworksSystem;
 
 	// Persistent Session State
 	let sessionStartTime = $state(Date.now());
@@ -212,6 +235,10 @@
 
 		comboCount++;
 
+		if (comboCount % 10 === 0) {
+			fireworksSystem?.trigger(comboCount / 10);
+		}
+
 		showCombo = true;
 
 		comboScale = 1 + Math.min(comboCount * 0.02, 0.3);
@@ -222,6 +249,7 @@
 
 		if (comboCount >= 50 && !isOverloaded) {
 			isOverloaded = true;
+			showOverloadModal = true;
 		}
 
 		// Reset shake effect
@@ -506,13 +534,19 @@
 			<div class="w-full mb-5 border-b border-slate-800">
 				<!-- Row 1: Primary Content -->
 				<nav class="flex flex-wrap justify-center w-full">
-					{#each tabs.filter((t) => !['words', 'tools', 'game', 'preview'].includes(t.label)) as tab}
+					{#each tabs.filter((t) => !['words', 'tools', 'game', 'preview'].includes(t.label)) as tab, i}
 						<button
 							onclick={() => {
 								activeTabLabel = tab.label;
 							}}
-							class="min-w-[80px] px-4 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
-							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+							style={isOverloaded ? `
+								--hang-angle: ${-8 + (i * 5) % 20}deg;
+								--swing-speed: ${3 + (i % 3)}s;
+								--swing-delay: ${i * 0.2}s;
+							` : ''}
+							class="min-w-[80px] px-4 py-3 font-bold uppercase tracking-widest text-[9px] transition-all duration-300 relative active:bg-slate-900
+							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}
+							{isOverloaded ? 'broken-tab' : ''}"
 							title={tab.description}
 						>
 							{tab.label}
@@ -528,13 +562,19 @@
 				</nav>
 				<!-- Row 2: Utilities & Experiments -->
 				<nav class="flex flex-wrap justify-center w-full border-t border-slate-800/30 bg-white/5">
-					{#each tabs.filter((t) => ['words', 'tools', 'game', 'preview'].includes(t.label)) as tab}
+					{#each tabs.filter((t) => ['words', 'tools', 'game', 'preview'].includes(t.label)) as tab, i}
 						<button
 							onclick={() => {
 								activeTabLabel = tab.label;
 							}}
-							class="min-w-[80px] px-4 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
-							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+							style={isOverloaded ? `
+								--hang-angle: ${5 + (i * 6) % 15}deg;
+								--swing-speed: ${2.5 + (i % 4) * 0.5}s;
+								--swing-delay: ${i * 0.15}s;
+							` : ''}
+							class="min-w-[80px] px-4 py-3 font-bold uppercase tracking-widest text-[9px] transition-all duration-300 relative active:bg-slate-900
+							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}
+							{isOverloaded ? 'broken-tab' : ''}"
 							title={tab.description}
 						>
 							{tab.label}
@@ -552,29 +592,33 @@
 
 			<!-- Dynamic Content -->
 			<div class="w-full min-h-[250px] pb-24">
-				{#if activeTabLabel && tabs.find((t) => t.label === activeTabLabel)?.description}
-					<div class="text-base text-center mb-6 px-2">
-						{tabs.find((t) => t.label === activeTabLabel).description}
+				{#key activeTabLabel}
+					<div in:systemMount={{ duration: 500 }} class="w-full">
+						{#if activeTabLabel && tabs.find((t) => t.label === activeTabLabel)?.description}
+							<div class="text-base text-center mb-6 px-2 text-slate-400 font-mono text-[10px] tracking-[0.2em] uppercase opacity-70">
+								[{tabs.find((t) => t.label === activeTabLabel).description}]
+							</div>
+						{/if}
+						{#if ActiveTabComponent}
+							<ActiveTabComponent
+								{data}
+								bind:meme
+								bind:joke
+								{fetchMeme}
+								{fetchJoke}
+								{scrapedQuotes}
+								bind:currentQuoteIndex
+								{quote}
+								{prevQuote}
+								{nextQuote}
+								{contacts}
+								accentColor={currentAccent.hex}
+								bgImage={selectedBg}
+								{sessionStartTime}
+							/>
+						{/if}
 					</div>
-				{/if}
-				{#if ActiveTabComponent}
-					<ActiveTabComponent
-						{data}
-						bind:meme
-						bind:joke
-						{fetchMeme}
-						{fetchJoke}
-						{scrapedQuotes}
-						bind:currentQuoteIndex
-						{quote}
-						{prevQuote}
-						{nextQuote}
-						{contacts}
-						accentColor={currentAccent.hex}
-						bgImage={selectedBg}
-						{sessionStartTime}
-					/>
-				{/if}
+				{/key}
 			</div>
 
 			<!-- Footer -->
@@ -591,6 +635,19 @@
 	</div>
 
 	<ChatWidget accentColor={currentAccent.hex} />
+
+	<Fireworks bind:this={fireworksSystem} accentColor={currentAccent.hex} />
+
+	<Modal 
+		bind:show={showOverloadModal} 
+		title="CRITICAL ERROR" 
+		message="You broke it man. The system integrity has been compromised by your excessive clicking." 
+		closeOnOutside={false}
+		onConfirm={() => {
+			comboCount = 0;
+			isOverloaded = false;
+		}}
+	/>
 </div>
 
 <style>
@@ -754,6 +811,43 @@
 		100% {
 			opacity: 0.1;
 		}
+	}
+
+	@keyframes hang-broken {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(var(--hang-angle, 15deg));
+			transform-origin: top left;
+		}
+	}
+
+	@keyframes swing {
+		0%, 100% {
+			transform: rotate(var(--hang-angle, 15deg)) translateY(0);
+		}
+		25% {
+			transform: rotate(calc(var(--hang-angle, 15deg) + 3deg)) translateY(1px);
+		}
+		50% {
+			transform: rotate(calc(var(--hang-angle, 15deg) - 1deg)) translateY(0px);
+		}
+		75% {
+			transform: rotate(calc(var(--hang-angle, 15deg) + 5deg)) translateY(2px);
+		}
+	}
+
+	.broken-tab {
+		animation:
+			hang-broken 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+			swing var(--swing-speed, 4s) ease-in-out infinite var(--swing-delay, 0s);
+		pointer-events: auto;
+		z-index: 10;
+		box-shadow: -4px 6px 15px rgba(0, 0, 0, 0.6);
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		background: rgba(10, 10, 10, 0.95);
+		backdrop-filter: blur(4px);
 	}
 
 	@keyframes scanline {
