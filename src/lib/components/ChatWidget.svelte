@@ -12,6 +12,37 @@
 	let isMinimized = $state(true);
 	let chatContainer = $state(null);
 	let inputElement = $state(null);
+	let showSettings = $state(false);
+
+	const defaultSystemPrompt = `Nama lu Ginko, humble, expert tentang programming dan tekologi, kalem, gk banyak ngomong, gk suka pamer.
+  Bicara pake bahasa sehari-hari "lu" "gw".
+  Sebisa mungkin persingkat kalimat, seperti sedang chat di Discord.
+  Balas tanpa format percakapan dan ingat max 2000 karakter.
+  Gunakan kata pengganti :
+  - Oke = Omkeh
+  - Iya = Imyah
+  - Siap = Siyap`;
+
+	let systemContent = $state(defaultSystemPrompt);
+
+	onMount(() => {
+		const savedPrompt = localStorage.getItem('ginkohub_system_prompt');
+		if (savedPrompt) systemContent = savedPrompt;
+	});
+
+	function toggleSettings() {
+		showSettings = !showSettings;
+	}
+
+	function saveSettings() {
+		localStorage.setItem('ginkohub_system_prompt', systemContent);
+		showSettings = false;
+	}
+
+	function resetSettings() {
+		systemContent = defaultSystemPrompt;
+		saveSettings();
+	}
 
 	// Auto-scroll logic
 	$effect(() => {
@@ -26,18 +57,6 @@
 			});
 		}
 	});
-
-	const systemPrompt = {
-		role: 'system',
-		content: `Nama lu Ginko, humble, expert tentang programming dan tekologi, kalem, gk banyak ngomong, gk suka pamer.
-  Bicara pake bahasa sehari-hari "lu" "gw".
-  Sebisa mungkin persingkat kalimat, seperti sedang chat di Discord.
-  Balas tanpa format percakapan dan ingat max 2000 karakter.
-  Gunakan kata pengganti :
-  - Oke = Omkeh
-  - Iya = Imyah
-  - Siap = Siyap`
-	};
 
 	async function sendMessage() {
 		if (!input.trim() || isLoading) return;
@@ -55,7 +74,8 @@
 		error = '';
 
 		try {
-			const response = await window.puter.ai.chat([systemPrompt, ...messages], {
+			const systemMsg = { role: 'system', content: systemContent };
+			const response = await window.puter.ai.chat([systemMsg, ...messages], {
 				model: selectedModel,
 				stream: false
 			});
@@ -105,31 +125,67 @@
 				class="p-3 border-b border-slate-800 flex justify-between items-center bg-white/5"
 				style="border-bottom-color: {accentColor}"
 			>
-				<div class="flex items-center gap-2">
-					<span class="text-[10px] font-black uppercase tracking-widest text-white"
-						>Neural Node</span
-					>
-					<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-				</div>
-				<div class="flex gap-3">
-					<button
-						onclick={clearChat}
-						class="text-xs text-slate-500 hover:text-rose-500 transition-colors"
-						title="Clear conversation history"
-					>
-						🗑️
-					</button>
-					<button
-						onclick={toggleMinimize}
-						class="text-sm font-bold text-slate-500 hover:text-white transition-colors leading-none"
-						title="Close chat"
-					>
-						✕
-					</button>
-				</div>
-			</header>
-
-			<!-- Messages -->
+								<div class="flex items-center gap-2">
+									<span class="text-[10px] font-black uppercase tracking-widest text-white">Neural Node</span>
+									<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+								</div>
+								<div class="flex gap-3">
+									<button
+										onclick={toggleSettings}
+										class="text-xs text-slate-500 hover:text-white transition-colors"
+										title="Configure System Prompt"
+									>
+										⚙️
+									</button>
+									<button
+										onclick={clearChat}
+										class="text-xs text-slate-500 hover:text-rose-500 transition-colors"
+										title="Clear conversation history"
+									>
+										🗑️
+									</button>
+									<button
+										onclick={toggleMinimize}
+										class="text-sm font-bold text-slate-500 hover:text-white transition-colors leading-none"
+										title="Close chat"
+									>
+										✕
+									</button>
+								</div>
+							</header>
+				
+							{#if showSettings}
+								<div class="absolute inset-0 z-20 bg-black/95 backdrop-blur-md p-4 flex flex-col gap-4">
+									<h3 class="text-[10px] font-black uppercase tracking-widest text-white">System Persona</h3>
+									<textarea
+										bind:value={systemContent}
+										class="flex-1 bg-slate-900/50 border border-slate-700 p-3 text-xs text-slate-300 font-mono resize-none focus:border-white/30 outline-none rounded-lg"
+										placeholder="Define the AI's personality..."
+									></textarea>
+									<div class="flex gap-2">
+										<button
+											onclick={saveSettings}
+											class="flex-1 py-2 text-[9px] font-black uppercase bg-white text-black rounded-lg hover:bg-slate-200 transition-all"
+										>
+											Save
+										</button>
+										<button
+											onclick={resetSettings}
+											class="px-4 py-2 text-[9px] font-black uppercase border border-slate-700 text-slate-400 rounded-lg hover:text-white transition-all"
+										>
+											Reset
+										</button>
+										<button
+											onclick={() => (showSettings = false)}
+											class="px-4 py-2 text-[9px] font-black uppercase border border-slate-700 text-slate-400 rounded-lg hover:text-white transition-all"
+										>
+											Cancel
+										</button>
+									</div>
+								</div>
+							{/if}
+				
+							<!-- Messages -->
 			<div
 				bind:this={chatContainer}
 				class="h-80 overflow-y-auto p-4 space-y-4 no-scrollbar bg-black/40"
