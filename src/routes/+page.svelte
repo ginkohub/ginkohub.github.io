@@ -75,6 +75,13 @@
 
 	// Persistent Session State
 	let sessionStartTime = $state(Date.now());
+	let mouseX = $state(0);
+	let mouseY = $state(0);
+
+	function handleMouseMove(e) {
+		mouseX = e.clientX;
+		mouseY = e.clientY;
+	}
 
 	const backgrounds = {
 		morning: [
@@ -327,12 +334,14 @@
 		}
 
 		window.addEventListener('keydown', handleGlobalKeydown);
+		window.addEventListener('mousemove', handleMouseMove);
 	});
 
 	import { onDestroy } from 'svelte';
 	onDestroy(() => {
 		if (typeof window !== 'undefined') {
 			window.removeEventListener('keydown', handleGlobalKeydown);
+			window.removeEventListener('mousemove', handleMouseMove);
 		}
 	});
 
@@ -361,12 +370,27 @@
 				in:fade={{ duration: 1000 }}
 			/>
 		{/if}
+		
+		<!-- Scanline Effect -->
+		<div class="absolute inset-0 z-10 pointer-events-none opacity-[0.03] bg-scanline"></div>
+
+		<!-- Interactive Grid -->
 		<div
-			class="absolute inset-0 z-0 opacity-[0.05] pointer-events-none transition-all duration-1000"
-			style="background-image: radial-gradient({showAura
-				? 'var(--accent-color)'
-				: '#fff'} 1px, transparent 1px); background-size: 24px 24px;"
+			class="absolute inset-0 z-0 opacity-[0.15] pointer-events-none transition-opacity duration-300"
+			style="
+				background-image: radial-gradient({showAura ? 'var(--accent-color)' : '#fff'} 1px, transparent 1px);
+				background-size: 24px 24px;
+				mask-image: radial-gradient(circle 400px at {mouseX}px {mouseY}px, black 0%, transparent 100%);
+				-webkit-mask-image: radial-gradient(circle 400px at {mouseX}px {mouseY}px, black 0%, transparent 100%);
+			"
 		></div>
+		
+		<!-- Base Grid (fainter) -->
+		<div
+			class="absolute inset-0 z-[-1] opacity-[0.03] pointer-events-none"
+			style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 24px 24px;"
+		></div>
+
 		<div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40"></div>
 	</div>
 
@@ -693,6 +717,26 @@
 		100% {
 			opacity: 0.1;
 		}
+	}
+
+	@keyframes scanline {
+		0% {
+			transform: translateY(-100%);
+		}
+		100% {
+			transform: translateY(100%);
+		}
+	}
+
+	.bg-scanline {
+		background: linear-gradient(
+			to bottom,
+			transparent 50%,
+			rgba(255, 255, 255, 0.5) 51%,
+			transparent 55%
+		);
+		background-size: 100% 8px;
+		animation: scanline 8s linear infinite;
 	}
 
 </style>
