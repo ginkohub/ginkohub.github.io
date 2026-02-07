@@ -85,8 +85,8 @@
 					name: "PyCoder's Weekly",
 					url: 'https://pycoders.com/feed'
 				},
-				{ name: 'React Status', url: 'https://reactstatus.com/rss' },
-				{ name: 'Ruby Weekly', url: 'https://rubyweekly.com/rss' },
+				{ name: 'React Status', url: 'https://cprss.s3.amazonaws.com/react.statuscode.com.xml' },
+				{ name: 'Ruby Weekly', url: 'https://cprss.s3.amazonaws.com/rubyweekly.com.xml' },
 				{ name: 'Rust Weekly', url: 'https://this-week-in-rust.org/rss.xml' },
 				{ name: 'Serverless Status', url: 'https://serverless.email/rss/' },
 				{ name: 'Tailwind Weekly', url: 'https://tailwindweekly.com/rss/' },
@@ -328,25 +328,26 @@
 	>
 		<div class="w-full max-w-sm border border-slate-800 bg-black p-6 space-y-6 shadow-2xl">
 			<h3 class="text-[10px] font-black text-white uppercase tracking-[0.3em]">Configure Link</h3>
-			<div class="space-y-4">
-				<div class="space-y-1">
-					<label class="text-[7px] font-bold uppercase text-slate-500">Protocol Name</label>
-					<input
-						bind:value={newFeedName}
-						placeholder="e.g. My Blog"
-						class="w-full bg-slate-900/50 border border-slate-800 p-2 text-xs text-white outline-none focus:border-white/20"
-					/>
-				</div>
-				<div class="space-y-1">
-					<label class="text-[7px] font-bold uppercase text-slate-500">Source URL</label>
-					<input
-						bind:value={newFeedUrl}
-						placeholder="https://site.com/rss"
-						class="w-full bg-slate-900/50 border border-slate-800 p-2 text-xs text-white outline-none focus:border-white/20"
-					/>
-				</div>
-			</div>
-			<div class="flex gap-2">
+							<div class="space-y-4">
+								<div class="space-y-1">
+									<label for="feed-name" class="text-[7px] font-bold uppercase text-slate-500">Protocol Name</label>
+									<input
+										id="feed-name"
+										bind:value={newFeedName}
+										placeholder="e.g. My Blog"
+										class="w-full bg-slate-900/50 border border-slate-800 p-2 text-xs text-white outline-none focus:border-white/20"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="feed-url" class="text-[7px] font-bold uppercase text-slate-500">Source URL</label>
+									<input
+										id="feed-url"
+										bind:value={newFeedUrl}
+										placeholder="https://site.com/rss"
+										class="w-full bg-slate-900/50 border border-slate-800 p-2 text-xs text-white outline-none focus:border-white/20"
+									/>
+								</div>
+							</div>			<div class="flex gap-2">
 				<button
 					onclick={saveFeed}
 					class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest bg-white text-black active:scale-95 transition-all"
@@ -365,6 +366,40 @@
 {/if}
 
 <div class="space-y-8">
+	<header class="flex flex-col md:flex-row justify-between items-center gap-4">
+		<div class="flex items-center gap-4">
+			<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Data Stream</h2>
+			<button
+				onclick={() => (showAddModal = true)}
+				class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all"
+				title="Add custom RSS feed"
+			>
+				+ Add Feed
+			</button>
+		</div>
+
+		<div class="relative w-full md:w-64">
+			<select
+				bind:value={selectedFeed}
+				class="w-full bg-black border border-slate-800 text-slate-300 text-[10px] font-bold uppercase appearance-none cursor-pointer py-2 px-3 outline-none transition-all hover:bg-slate-900/50 focus:border-white/30"
+			>
+				{#each feedGroups as group}
+					<optgroup label={group.name} class="bg-black text-slate-500 font-black tracking-widest">
+						{#each group.feeds as feed}
+							<option value={feed.url} class="text-slate-300 font-bold">{feed.name}</option>
+						{/each}
+					</optgroup>
+				{/each}
+			</select>
+			<div
+				class="absolute right-3 top-1/2 pointer-events-none -translate-y-1/2 text-[8px] text-slate-600"
+			>
+				▼
+			</div>
+		</div>
+	</header>
+
+	<div class="min-h-[400px] relative">
 		{#if loading}
 			<div class="flex flex-col items-center justify-center py-20 gap-4">
 				<div

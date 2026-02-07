@@ -163,6 +163,15 @@
 				? `${filteredWords.length} words found`
 				: status
 	);
+
+	function portal(node) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				if (node.parentNode) node.parentNode.removeChild(node);
+			}
+		};
+	}
 </script>
 
 <div class="word-container font-inter">
@@ -195,9 +204,9 @@
 				<!-- Modal Overlay -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="modal-overlay" onclick={() => (showSettings = false)}>
+				<div use:portal class="modal-overlay" onclick={() => (showSettings = false)}>
 					<div
-						class="settings-modal"
+						class="settings-modal shadow-2xl"
 						onclick={(e) => e.stopPropagation()}
 						style="border-color: var(--accent-color)"
 					>
