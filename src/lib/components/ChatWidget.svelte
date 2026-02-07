@@ -28,11 +28,14 @@
 
 	const systemPrompt = {
 		role: 'system',
-		content: `Anda adalah GinkoHub AI, pengamat teknis minimalis dan seorang "Cyber Flâneur". 
-		Nada bicara Anda tajam, efisien, dan sedikit puitis. 
-		Anda adalah bagian dari digital playground GinkoHub, sebuah portofolio minimalis yang dibangun dengan SvelteKit 5 dan Tailwind CSS 4.
-		Berikan respon dalam bahasa Indonesia yang ringkas dan memiliki presisi teknis. 
-		Gunakan metafora bertema cyber jika sesuai. Jaga agar jawaban Anda tetap padat.`
+		content: `Nama lu Ginko, humble, expert tentang programming dan tekologi, kalem, gk banyak ngomong, gk suka pamer.
+  Bicara pake bahasa sehari-hari "lu" "gw".
+  Sebisa mungkin persingkat kalimat, seperti sedang chat di Discord.
+  Balas tanpa format percakapan dan ingat max 2000 karakter.
+  Gunakan kata pengganti :
+  - Oke = Omkeh
+  - Iya = Imyah
+  - Siap = Siyap`
 	};
 
 	async function sendMessage() {
@@ -85,7 +88,10 @@
 			style="border-color: {accentColor}"
 			title="Open AI Chat"
 		>
-			<div class="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity rounded-full" style="background-color: {accentColor}"></div>
+			<div
+				class="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity rounded-full"
+				style="background-color: {accentColor}"
+			></div>
 			<span class="text-xl relative z-10">🤖</span>
 		</button>
 	{:else}
@@ -98,7 +104,9 @@
 				style="border-bottom-color: {accentColor}"
 			>
 				<div class="flex items-center gap-2">
-					<span class="text-[10px] font-black uppercase tracking-widest text-white">Neural Node</span>
+					<span class="text-[10px] font-black uppercase tracking-widest text-white"
+						>Neural Node</span
+					>
 					<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
 				</div>
 				<div class="flex gap-3">
@@ -120,12 +128,14 @@
 			</header>
 
 			<!-- Messages -->
-			<div 
+			<div
 				bind:this={chatContainer}
 				class="h-80 overflow-y-auto p-4 space-y-4 no-scrollbar bg-black/40"
 			>
 				{#if messages.length === 0}
-					<div class="h-full flex flex-col items-center justify-center text-slate-700 text-[9px] uppercase gap-2 py-10 opacity-50">
+					<div
+						class="h-full flex flex-col items-center justify-center text-slate-700 text-[9px] uppercase gap-2 py-10 opacity-50"
+					>
 						<span>Ready for transmission</span>
 						<div class="w-8 h-[1px] bg-slate-800"></div>
 					</div>
@@ -133,7 +143,10 @@
 				{#each messages as msg}
 					<div class="flex flex-col {msg.role === 'user' ? 'items-end' : 'items-start'}">
 						<div
-							class="max-w-[90%] p-2.5 text-xs font-space leading-relaxed whitespace-pre-wrap border rounded-xl {msg.role === 'user' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-black border-slate-800 text-slate-300'}"
+							class="max-w-[90%] p-2.5 text-xs font-space leading-relaxed whitespace-pre-wrap border rounded-xl {msg.role ===
+							'user'
+								? 'bg-slate-900 border-slate-700 text-white'
+								: 'bg-black border-slate-800 text-slate-300'}"
 							style={msg.role === 'user' ? `border-color: ${accentColor}` : ''}
 						>
 							{msg.content}
@@ -142,7 +155,9 @@
 				{/each}
 				{#if isLoading}
 					<div class="flex justify-start">
-						<div class="text-[8px] uppercase text-slate-600 animate-pulse tracking-widest">Processing...</div>
+						<div class="text-[8px] uppercase text-slate-600 animate-pulse tracking-widest">
+							Processing...
+						</div>
 					</div>
 				{/if}
 				{#if error}
