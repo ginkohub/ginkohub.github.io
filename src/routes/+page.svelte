@@ -59,7 +59,7 @@
 	});
 
 	let persona = $state('Internet Surfer');
-	let meme = $state({ url: '', title: '', loading: false });
+	let meme = $state({ url: '', title: '', loading: false, channel: 'memes' });
 	let joke = $state({ setup: '', punchline: '', loading: false });
 	let showAura = $state(false);
 	let isGlitching = $state(false);
@@ -278,7 +278,8 @@
 		meme.loading = true;
 
 		try {
-			const res = await fetch('https://meme-api.com/gimme');
+			const channel = meme.channel || 'memes';
+			const res = await fetch(`https://meme-api.com/gimme/${channel}`);
 
 			const data = await res.json();
 

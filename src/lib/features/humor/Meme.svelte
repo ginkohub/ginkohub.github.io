@@ -23,11 +23,37 @@
 			}
 		}
 	}
+
+	const channels = [
+		{ id: 'memes', name: 'General' },
+		{ id: 'dankmemes', name: 'Dank' },
+		{ id: 'wholesomememes', name: 'Wholesome' },
+		{ id: 'ProgrammingHumor', name: 'Dev' },
+		{ id: 'softwaregore', name: 'Gore' }
+	];
 </script>
 
 <div class="relative group/meme text-center md:text-left">
-	<div class="flex justify-between items-center mb-4">
-		<h2 class="text-[9px] font-bold uppercase tracking-widest text-slate-400">Digital Artifact</h2>
+	<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+		<div class="flex items-center gap-4">
+			<h2 class="text-[9px] font-bold uppercase tracking-widest text-slate-400">Digital Artifact</h2>
+			<div class="flex border border-slate-800 p-0.5 bg-black">
+				{#each channels as channel}
+					<button
+						onclick={() => {
+							meme.channel = channel.id;
+							fetchMeme();
+						}}
+						class="px-2 py-1 text-[7px] font-black uppercase transition-all {meme.channel === channel.id
+							? 'bg-white text-black'
+							: 'text-slate-500 hover:text-slate-300'}"
+						title="Switch to {channel.name} channel"
+					>
+						{channel.name}
+					</button>
+				{/each}
+			</div>
+		</div>
 		<div class="flex gap-3">
 			<button
 				id="copy-meme-btn"
