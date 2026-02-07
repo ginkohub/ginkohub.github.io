@@ -1,4 +1,4 @@
-import { microlinkFetch } from '$lib/fetcher.js';
+import { ghpFetch } from '$lib/fetcher.js';
 
 class PreviewState {
 	inputUrl = $state('https://ginkohub.github.io');
@@ -20,14 +20,14 @@ class PreviewState {
 
 		console.log('Fetching metadata for:', this.inputUrl);
 
-		const result = await microlinkFetch(this.inputUrl);
+		const result = await ghpFetch(this.inputUrl, 'meta');
 
 		if (result.success) {
 			const data = result.data;
 			this.metadata = {
-				title: data.title || 'No title found',
-				description: data.description || 'No description found',
-				image: data.image?.url || data.logo?.url || '',
+				title: data.title || data['og:title'] || 'No title found',
+				description: data.description || data['og:description'] || 'No description found',
+				image: data.image || data['og:image'] || '',
 				url: new URL(this.inputUrl).hostname
 			};
 			console.log('Metadata updated:', this.metadata);

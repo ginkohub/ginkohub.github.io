@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { microlinkFetch } from '$lib/fetcher.js';
+	import { ghpFetch } from '$lib/fetcher.js';
 
 	let { accentColor } = $props();
 
@@ -134,10 +134,13 @@
 	let loading = $state(false);
 	let error = $state('');
 
-	function loadCustomFeeds() {
+	function loadPersistedState() {
 		if (typeof window !== 'undefined') {
-			const saved = localStorage.getItem('ginkohub_custom_feeds');
-			if (saved) customFeeds = JSON.parse(saved);
+			const savedFeeds = localStorage.getItem('ginkohub_custom_feeds');
+			if (savedFeeds) customFeeds = JSON.parse(savedFeeds);
+
+			const savedActiveFeed = localStorage.getItem('ginkohub_active_feed');
+			if (savedActiveFeed) selectedFeed = savedActiveFeed;
 		}
 	}
 
@@ -149,6 +152,7 @@
 			customFeeds = [...customFeeds, feed];
 			localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(customFeeds));
 			selectedFeed = newFeedUrl;
+			localStorage.setItem('ginkohub_active_feed', selectedFeed);
 			newFeedName = '';
 			newFeedUrl = '';
 			showAddModal = false;
@@ -160,84 +164,63 @@
 	function removeFeed(url) {
 		customFeeds = customFeeds.filter((f) => f.url !== url);
 		localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(customFeeds));
-		if (selectedFeed === url) selectedFeed = defaultFeedGroups[0].feeds[0].url;
+		if (selectedFeed === url) {
+			selectedFeed = defaultFeedGroups[0].feeds[0].url;
+			localStorage.setItem('ginkohub_active_feed', selectedFeed);
+		}
 	}
 
 	async function fetchFeed() {
+		if (!selectedFeed) return;
+		
+		// Persist selection
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('ginkohub_active_feed', selectedFeed);
+		}
+
 		loading = true;
 		error = '';
 		articles = [];
 
 		try {
-			// Use Microlink for robust scraping
-			const res = await microlinkFetch(selectedFeed, {
-				meta: false,
-				prerender: true
-			});
+			// Use GHP Tools for direct RSS parsing
+			const res = await ghpFetch(selectedFeed, 'rss');
 
 			if (!res.success) {
 				throw new Error(res.error);
 			}
 
-			const rawContent = res.data.html;
+			const data = res.data;
 
-			if (rawContent) {
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(rawContent, 'text/xml');
-
-				// Handle parsing error
-				if (xmlDoc.querySelector('parsererror')) {
-					throw new Error('XML Parsing failed');
-				}
-
-				const items = Array.from(xmlDoc.querySelectorAll('item, entry')).slice(0, 10);
-
-				if (items.length === 0) {
-					throw new Error('Feed is empty or format unsupported');
-				}
-
+			if (data && data.items && Array.isArray(data.items)) {
 				const feedHostname = new URL(selectedFeed).hostname;
 				const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
 
-				articles = items.map((item) => {
-					// Extract fields with fallbacks for RSS vs Atom
-					const rawTitle = item.querySelector('title')?.textContent || 'Untitled Protocol';
-					const title = fixEncoding(rawTitle);
-
-					// Link can be a tag text or an href attribute (Atom)
-					let link = item.querySelector('link')?.textContent;
-					if (!link) link = item.querySelector('link')?.getAttribute('href');
-
-					// Date
-					const pubDate = item.querySelector('pubDate, published, updated')?.textContent;
+				articles = data.items.slice(0, 10).map((item) => {
+					// Use parsed fields directly
+					const title = fixEncoding(item.title || 'Untitled Protocol');
+					const link = item.link;
+					const pubDate = item.published || item.created || item.pubDate;
 					const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'LATEST';
 
 					// Description/Snippet
-					const desc = item.querySelector('description, summary, content')?.textContent || '';
+					const desc = item.description || item.summary || item.content || '';
 					const snippet = desc
 						? desc.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
 						: 'Access protocol for full content extraction...';
 
 					// Thumbnail extraction
+					// GHP Tools might parse images into media, enclosure, or we scan content
 					let image = null;
 
-					// 1. Try media:content / media:thumbnail
-					const media =
-						item.getElementsByTagNameNS('*', 'content')[0] ||
-						item.getElementsByTagNameNS('*', 'thumbnail')[0];
-					if (media && media.getAttribute('url')) {
-						image = media.getAttribute('url');
+					if (item.media && item.media.thumbnail && item.media.thumbnail.url) {
+						image = item.media.thumbnail.url;
+					} else if (item.enclosures && item.enclosures.length > 0) {
+						const imgEnc = item.enclosures.find((e) => e.type && e.type.startsWith('image'));
+						if (imgEnc) image = imgEnc.url;
 					}
 
-					// 2. Try enclosure
-					if (!image) {
-						const enclosure = item.querySelector('enclosure');
-						if (enclosure && enclosure.getAttribute('type')?.startsWith('image')) {
-							image = enclosure.getAttribute('url');
-						}
-					}
-
-					// 3. Try parsing description/content for img tag
+					// Fallback: parse description for img tag if not found
 					if (!image && desc) {
 						const imgMatch = desc.match(/<img[^>]+src="([^">]+)"/);
 						if (imgMatch) {
@@ -254,15 +237,10 @@
 					};
 				});
 			} else {
-				throw new Error('Proxy returned no content');
+				throw new Error('Feed is empty or format unsupported');
 			}
 		} catch (e) {
-			clearTimeout(timeoutId);
-			if (e.name === 'AbortError') {
-				error = 'Connection timed out (10s limit).';
-			} else {
-				error = `Sync Error: ${e.message}`;
-			}
+			error = `Sync Error: ${e.message}`;
 			console.error('RSS Feed error:', e);
 		} finally {
 			loading = false;
@@ -287,7 +265,7 @@
 	}
 
 	onMount(() => {
-		loadCustomFeeds();
+		loadPersistedState();
 	});
 
 	$effect(() => {

@@ -42,7 +42,7 @@
 				speed: 'Standard',
 				context: '128K'
 			},
-			description: 'The world's largest open-weights model, rivaling top proprietary systems in general intelligence and synthetic data generation.',
+			description: "The world's largest open-weights model, rivaling top proprietary systems in general intelligence and synthetic data generation.",
 			benchmarks: { mmlu: '88.6%', human_eval: '89.0%' }
 		},
 		{

@@ -18,7 +18,7 @@
 	let customBg = $state(null);
 
 	// Design State
-	let selectedStyle = $state('minimalist');
+	let selectedStyle = $state('glass');
 	let selectedFont = $state('sans');
 	let selectedAlign = $state('center'); // NEW: left, center, right
 	let bgOpacity = $state(35);
@@ -32,7 +32,8 @@
 		{ id: 'impact', name: 'Impact' },
 		{ id: 'poetic', name: 'Poetic' },
 		{ id: 'cyber', name: 'Cyber' },
-		{ id: 'glass', name: 'Glass' }
+		{ id: 'glass', name: 'Glass' },
+		{ id: 'hologram', name: 'Hologram' }
 	];
 
 	const fonts = [
@@ -142,6 +143,30 @@
 			ctx.strokeStyle = 'rgba(255,255,255,0.2)';
 			ctx.lineWidth = 2;
 			ctx.strokeRect(100, 100, 880, 880);
+		} else if (selectedStyle === 'hologram') {
+			// Cyan/Blue tint for hologram
+			ctx.fillStyle = 'rgba(0, 255, 255, 0.05)';
+			ctx.fillRect(0, 0, 1080, 1080);
+			
+			// Scanlines
+			ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+			ctx.lineWidth = 1;
+			for (let i = 0; i < 1080; i += 4) {
+				ctx.beginPath();
+				ctx.moveTo(0, i);
+				ctx.lineTo(1080, i);
+				ctx.stroke();
+			}
+			
+			// Vertical glitch lines
+			ctx.strokeStyle = 'rgba(0, 255, 255, 0.05)';
+			for (let i = 0; i < 20; i++) {
+				const x = Math.random() * 1080;
+				ctx.beginPath();
+				ctx.moveTo(x, 0);
+				ctx.lineTo(x, 1080);
+				ctx.stroke();
+			}
 		} else if (selectedStyle !== 'impact') {
 			const grad = ctx.createLinearGradient(0, 0, 0, 1080);
 			grad.addColorStop(0, 'rgba(0,0,0,0.7)');
@@ -213,12 +238,24 @@
 		let startY = 1080 / 2 - (lines.length * lineHeight) / 2 + textOffsetY;
 
 		lines.forEach((line, i) => {
+			if (selectedStyle === 'hologram') {
+				// Chromatic Aberration effect
+				ctx.fillStyle = 'rgba(255, 0, 255, 0.5)'; // Magenta shift
+				ctx.fillText(line.trim(), drawX - 3, startY + i * lineHeight);
+				ctx.fillStyle = 'rgba(0, 255, 255, 0.5)'; // Cyan shift
+				ctx.fillText(line.trim(), drawX + 3, startY + i * lineHeight);
+				ctx.fillStyle = '#ffffff'; // White center
+			}
 			ctx.fillText(line.trim(), drawX, startY + i * lineHeight);
 		});
 
 		// 5. Author
 		const authorY = Math.min(startY + lines.length * lineHeight + 80, 940);
-		ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.6)' : accentColor;
+		if (selectedStyle === 'hologram') {
+			ctx.fillStyle = 'rgba(0, 255, 255, 0.8)';
+		} else {
+			ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.6)' : accentColor;
+		}
 		ctx.font = `bold 32px ${font.css}, sans-serif`;
 		ctx.fillText(`— ${quote.author}`, drawX, authorY);
 
@@ -274,49 +311,73 @@
 	});
 </script>
 
-<div class="pb-10 relative group/quote text-center md:text-left border-b border-slate-800/50 mb-10">
-	<div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
-		<div class="flex gap-3">
-			<button
-				id="copy-btn"
-				onclick={copyQuote}
-				class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300"
-				title="Copy quote text to clipboard"
-				>Copy Text</button
-			>
-			<button
-				onclick={() => generateImage(false)}
-				class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300 disabled:opacity-50"
-				disabled={isGenerating}
-				title="Generate and save quote as image"
-				>{isGenerating ? 'GEN...' : 'Save Image'}</button
-			>
-		</div>
-		<div class="flex gap-2 items-center">
-			<button
-				onclick={prevQuote}
-				class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
-				style="border-color: {accentColor}; color: {accentColor};"
-				title="View previous quote"
-				>← Prev</button
-			>
-			<span class="text-[7px] text-slate-300 font-bold uppercase tracking-widest px-2"
-				>{currentQuoteIndex + 1} / {scrapedQuotes.length}</span
-			>
-			<button
-				onclick={nextQuote}
-				class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
-				style="border-color: {accentColor}; color: {accentColor};"
-				title="View next quote"
-				>Next →</button
-			>
-		</div>
+<style>
+	.glass-quote {
+		background: rgba(255, 255, 255, 0.03);
+		backdrop-filter: blur(8px);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		padding: 2rem;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.glass-quote::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+	}
+</style>
+
+<div class="pb-10 relative group/quote text-right border-b border-slate-800/50 mb-10">
+	<!-- Navigation Header -->
+	<div class="flex justify-end items-center gap-2 mb-4">
+		<button
+			onclick={prevQuote}
+			class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
+			style="border-color: {accentColor}; color: {accentColor};"
+			title="View previous quote"
+			>← Prev</button
+		>
+		<span class="text-[7px] text-slate-300 font-bold uppercase tracking-widest px-2"
+			>{currentQuoteIndex + 1} / {scrapedQuotes.length}</span
+		>
+		<button
+			onclick={nextQuote}
+			class="text-[8px] font-black uppercase border-b transition-all px-1 active:bg-white active:text-black"
+			style="border-color: {accentColor}; color: {accentColor};"
+			title="View next quote"
+			>Next →</button
+		>
 	</div>
-	<div class="space-y-3 min-h-[4rem]">
-		<p class="text-lg md:text-xl font-bold leading-snug text-slate-200 font-space italic">
+
+	<!-- Quote Display -->
+	<div class="space-y-3 min-h-[4rem] glass-quote rounded-2xl mb-4">
+		<p class="text-lg md:text-xl font-bold leading-snug text-slate-100 font-space italic">
 			"{quote.text}"
 		</p>
 		<p class="text-[9px] font-black uppercase tracking-widest text-slate-400">— {quote.author}</p>
+	</div>
+
+	<!-- Action Footer -->
+	<div class="flex gap-3 justify-end opacity-50 group-hover/quote:opacity-100 transition-opacity">
+		<button
+			id="copy-btn"
+			onclick={copyQuote}
+			class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300"
+			title="Copy quote text to clipboard"
+			>Copy Text</button
+		>
+		<button
+			onclick={() => generateImage(false)}
+			class="text-[8px] font-black uppercase border border-slate-700 px-2 py-1 hover:bg-white hover:text-black transition-all text-slate-300 disabled:opacity-50"
+			disabled={isGenerating}
+			title="Generate and save quote as image"
+			>{isGenerating ? 'GEN...' : 'Save Image'}</button
+		>
 	</div>
 </div>
 

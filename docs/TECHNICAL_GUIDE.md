@@ -79,8 +79,8 @@ The project integrates **Puter.js** to provide free, unlimited AI chat capabilit
 -   **Settings**: Persisted via `localStorage` (Language, Method, Format, Size).
 
 ### 6.3. RSS Reader (`src/lib/features/news/01-RssReader.svelte`)
--   **Proxy**: Uses the centralized `microlinkFetch` utility (`src/lib/fetcher.js`) to bypass CORS for RSS feeds.
--   **Stability**: Microlink is used for robust scraping and ensures consistent content delivery, avoiding common proxy-related network errors.
+-   **Proxy**: Uses the centralized `ghpFetch` utility (`src/lib/fetcher.js`) to bypass CORS and parse RSS feeds via GHP Tools.
+-   **Stability**: GHP Tools is used for robust scraping and ensures consistent content delivery, avoiding common proxy-related network errors.
 -   **Custom Feeds**: Users can add their own RSS URLs, which are saved to `localStorage`.
 
 ## 7. Development Workflow

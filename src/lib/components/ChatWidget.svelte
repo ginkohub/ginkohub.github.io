@@ -1,8 +1,20 @@
 <script>
 	import { onMount, tick } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { marked } from 'marked';
+	import hljs from 'highlight.js';
+	import 'highlight.js/styles/github-dark.css';
 
 	let { accentColor } = $props();
+
+	// Configure marked with highlight.js
+	const renderer = new marked.Renderer();
+	renderer.code = ({ text, lang }) => {
+		const validLanguage = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
+		const highlighted = hljs.highlight(text, { language: validLanguage }).value;
+		return `<pre><code class="hljs language-${validLanguage}">${highlighted}</code></pre>`;
+	};
+	marked.setOptions({ renderer });
 
 	let messages = $state([]);
 	let input = $state('');
@@ -101,6 +113,61 @@
 		isMinimized = !isMinimized;
 	}
 </script>
+
+<style>
+	:global(.markdown-body) {
+		font-family: inherit;
+		line-height: 1.5;
+	}
+	:global(.markdown-body p) {
+		margin-bottom: 0.5rem;
+	}
+	:global(.markdown-body p:last-child) {
+		margin-bottom: 0;
+	}
+	:global(.markdown-body ul), :global(.markdown-body ol) {
+		margin-bottom: 0.5rem;
+		padding-left: 1.25rem;
+	}
+	:global(.markdown-body ul) {
+		list-style-type: disc;
+	}
+	:global(.markdown-body ol) {
+		list-style-type: decimal;
+	}
+	:global(.markdown-body code) {
+		background: rgba(255, 255, 255, 0.1);
+		padding: 0.1rem 0.2rem;
+		border-radius: 0.25rem;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+		font-size: 0.85em;
+	}
+	:global(.markdown-body pre) {
+		background: rgba(255, 255, 255, 0.05);
+		padding: 0.75rem;
+		border-radius: 0.5rem;
+		overflow-x: auto;
+		margin-bottom: 0.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+	:global(.markdown-body pre code) {
+		background: none;
+		padding: 0;
+		font-size: 0.8em;
+	}
+	:global(.markdown-body a) {
+		color: #fff;
+		text-decoration: underline;
+		opacity: 0.8;
+	}
+	:global(.markdown-body a:hover) {
+		opacity: 1;
+	}
+	:global(.markdown-body strong) {
+		color: #fff;
+		font-weight: 800;
+	}
+</style>
 
 <div class="fixed bottom-6 right-6 z-[100] font-inter">
 	{#if isMinimized}
@@ -201,13 +268,15 @@
 				{#each messages as msg}
 					<div class="flex flex-col {msg.role === 'user' ? 'items-end' : 'items-start'}">
 						<div
-							class="max-w-[90%] p-2.5 text-xs font-space leading-relaxed whitespace-pre-wrap border rounded-xl {msg.role ===
+							class="max-w-[90%] p-2.5 text-xs font-space leading-relaxed border rounded-xl prose-sm prose-invert {msg.role ===
 							'user'
 								? 'bg-slate-900 border-slate-700 text-white'
 								: 'bg-black border-slate-800 text-slate-300'}"
 							style={msg.role === 'user' ? `border-color: ${accentColor}` : ''}
 						>
-							{msg.content}
+							<div class="markdown-body">
+								{@html marked.parse(msg.content)}
+							</div>
 						</div>
 					</div>
 				{/each}

@@ -1,5 +1,5 @@
 <script>
-	import { microlinkFetch } from '$lib/fetcher.js';
+	import { ghpFetch } from '$lib/fetcher.js';
 
 	let { accentColor } = $props();
 
@@ -8,8 +8,9 @@
 	let loading = $state(false);
 	let error = $state('');
 	let mode = $state('repositories'); // 'repositories' or 'developers'
+	let selectedLang = $state('all');
 
-	let languages = [
+	const languages = [
 		'all',
 		'javascript',
 		'typescript',
@@ -22,11 +23,29 @@
 		'php',
 		'ruby'
 	];
-	let selectedLang = $state('all');
 
 	let isFallback = $state(false);
 
+	function loadPersistedState() {
+		if (typeof window !== 'undefined') {
+			const savedMode = localStorage.getItem('ginkohub_trends_mode');
+			if (savedMode) mode = savedMode;
+			const savedLang = localStorage.getItem('ginkohub_trends_lang');
+			if (savedLang) selectedLang = savedLang;
+		}
+	}
+
+	import { onMount } from 'svelte';
+	onMount(() => {
+		loadPersistedState();
+	});
+
 	async function fetchData() {
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('ginkohub_trends_mode', mode);
+			localStorage.setItem('ginkohub_trends_lang', selectedLang);
+		}
+
 		loading = true;
 		error = '';
 		isFallback = false;
@@ -34,26 +53,56 @@
 		developers = [];
 
 		try {
-			const langParam = selectedLang === 'all' ? '' : selectedLang;
 			const typePath = mode === 'repositories' ? 'trending' : 'trending/developers';
-			const targetUrl = `https://github.com/${typePath}/${langParam}?since=daily`;
+			const langPath = selectedLang === 'all' ? '' : `/${selectedLang}`;
+			const targetUrl = `https://github.com/${typePath}${langPath}?since=daily`;
 
-			// Use Microlink for robust scraping
-			const res = await microlinkFetch(targetUrl, {
-				meta: false,
-				prerender: true // Ensure content is fully rendered
-			});
+			// Use GHP Tools for direct JSON data
+			const res = await ghpFetch(targetUrl);
 
 			if (!res.success) {
 				throw new Error(res.error);
 			}
 
-			// Microlink returns the page content in res.data.html
-			const rawContent = res.data.html;
+			// GHP Tools returns the parsed data directly as an array or raw HTML in 'contents'
+			let data = res.data;
+			let rawHtml = '';
 
-			if (rawContent) {
+			if (!Array.isArray(data) && data.contents) {
+				rawHtml = data.contents;
+			} else if (typeof data === 'string') {
+				rawHtml = data;
+			}
+
+			if (Array.isArray(data) && data.length > 0) {
+				if (mode === 'repositories') {
+					repos = data.slice(0, 10).map((item) => {
+						const parts = item.name.split('/').map((s) => s.trim());
+						const author = parts[0] || 'Unknown';
+						const name = parts[1] || item.name;
+
+						return {
+							author,
+							name,
+							url: `https://github.com/${item.name.replace(/\s/g, '')}`,
+							description: item.description || 'No description provided.',
+							stars: item.stars
+						};
+					});
+				} else {
+					developers = data.slice(0, 10).map((item) => {
+						return {
+							name: item.name || item.username,
+							username: item.username || item.handle || 'unknown',
+							url: `https://github.com/${item.username || item.handle}`,
+							description: item.popularRepo ? `Pop: ${item.popularRepo}` : (item.description || 'Top Contributor')
+						};
+					});
+				}
+			} else if (rawHtml) {
+				// Fallback to manual parsing if GHP Tools didn't parse it
 				const parser = new DOMParser();
-				const doc = parser.parseFromString(rawContent, 'text/html');
+				const doc = parser.parseFromString(rawHtml, 'text/html');
 				const items = Array.from(doc.querySelectorAll('article.Box-row'));
 
 				if (items.length > 0) {
@@ -62,61 +111,39 @@
 							const titleLink = item.querySelector('h2 a');
 							const rawTitle = titleLink ? titleLink.innerText.trim() : 'Unknown / Unknown';
 							const parts = rawTitle.split('/').map((s) => s.trim());
-
 							const author = parts[0] || 'GitHub';
 							const name = parts[1] || rawTitle;
-
 							let link = titleLink ? titleLink.getAttribute('href') : '';
 							if (link && !link.startsWith('http')) link = `https://github.com${link}`;
-
 							const descEl = item.querySelector('p');
 							const description = descEl ? descEl.innerText.trim() : 'No description provided.';
-
-							// Try to find stars
 							const starEl = item.querySelector('a[href$="/stargazers"]');
 							const stars = starEl ? starEl.innerText.trim() : '';
-
-							return {
-								author,
-								name,
-								url: link,
-								description,
-								stars
-							};
+							return { author, name, url: link, description, stars };
 						});
 					} else {
 						developers = items.slice(0, 10).map((item) => {
 							const nameLink = item.querySelector('h1 a');
 							const name = nameLink ? nameLink.innerText.trim() : 'Unknown';
-
 							let link = nameLink ? nameLink.getAttribute('href') : '';
 							if (link && !link.startsWith('http')) link = `https://github.com${link}`;
-
-							// Extract username from link for avatar
 							const username = link.split('/').pop();
-
 							const descEl = item.querySelector('.f4') || item.querySelector('.Link--secondary');
 							const description = descEl ? descEl.innerText.trim() : '';
-
-							return {
-								name,
-								username,
-								url: link,
-								description
-							};
+							return { name, username, url: link, description };
 						});
 					}
 				} else {
 					throw new Error('Structural mismatch (GitHub changed?)');
 				}
 			} else {
-				throw new Error('No content returned from gateway');
+				throw new Error('No trend data returned');
 			}
 		} catch (e) {
-			console.error('Scraping error:', e);
-
-			// Fallback / Offline Mode
+			console.warn('Live sync failed, switching to offline protocol:', e.message);
+			error = ''; // Clear error to show fallback data
 			isFallback = true;
+			
 			if (mode === 'repositories') {
 				repos = [
 					{

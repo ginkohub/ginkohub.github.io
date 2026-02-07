@@ -1,33 +1,28 @@
 /**
- * Centralized data fetcher using Microlink.io API to bypass CORS
- * and provide consistent data structure.
+ * Centralized data fetcher using GHP Tools to bypass CORS
+ * and provide specialized parsing for RSS and GitHub Trends.
+ * API: https://ghp-tools.vercel.app/docs-json
  */
-export async function microlinkFetch(url, options = {}) {
-	const { timeout = 8000, ...apiOptions } = options;
+export async function ghpFetch(url, type = 'html') {
 	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort(), timeout);
+	const id = setTimeout(() => controller.abort(), 8000);
 
 	try {
+		let endpoint = 'https://ghp-tools.vercel.app/api/v1/fetch';
 		const params = new URLSearchParams();
 		params.append('url', url);
 
-		// Handle nested objects for Microlink data extraction (e.g. data.items.selector)
-		const flattenObject = (obj, prefix = '') => {
-			Object.keys(obj).forEach((key) => {
-				const value = obj[key];
-				const newKey = prefix ? `${prefix}.${key}` : key;
-				if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-					flattenObject(value, newKey);
-				} else {
-					params.append(newKey, value);
-				}
-			});
-		};
+		if (type === 'rss') {
+			endpoint = 'https://ghp-tools.vercel.app/api/v1/tools/rss';
+		} else if (type === 'meta') {
+			params.append('format', 'meta');
+		} else {
+			params.append('format', 'json');
+		}
 
-		flattenObject(apiOptions);
-
-		const targetUrl = `https://api.microlink.io?${params.toString()}`;
-		const response = await fetch(targetUrl, { signal: controller.signal });
+		const response = await fetch(`${endpoint}?${params.toString()}`, {
+			signal: controller.signal
+		});
 		clearTimeout(id);
 
 		if (!response.ok) {
@@ -38,21 +33,18 @@ export async function microlinkFetch(url, options = {}) {
 			};
 		}
 
-		const result = await response.json();
-
-		if (result.status === 'success') {
-			return {
-				success: true,
-				data: result.data,
-				status: result.status
-			};
+		let data;
+		const contentType = response.headers.get('content-type');
+		if (contentType && contentType.includes('application/json')) {
+			data = await response.json();
 		} else {
-			return {
-				success: false,
-				error: result.message || 'Transmission failed',
-				status: result.status
-			};
+			data = await response.text();
 		}
+
+		return {
+			success: true,
+			data
+		};
 	} catch (e) {
 		clearTimeout(id);
 		if (e.name === 'AbortError') {
