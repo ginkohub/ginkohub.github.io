@@ -1,7 +1,10 @@
 <script>
+	import { onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
+
 	let { accentColor } = $props();
 
-	const feedGroups = [
+	const defaultFeedGroups = [
 		{
 			name: 'Tech Media',
 			feeds: [
@@ -79,11 +82,11 @@
 				{ name: 'PHP Weekly', url: 'https://www.phpweekly.com/rss.xml' },
 				{ name: 'PostgreSQL Weekly', url: 'https://cprss.s3.amazonaws.com/postgresweekly.com.xml' },
 				{
-					name: 'Python Weekly',
-					url: 'https://us2.campaign-archive.com/feed?u=e2e180baf855ac797ef407fc7&id=9e26887fc5'
+					name: "PyCoder's Weekly",
+					url: 'https://pycoders.com/feed'
 				},
-				{ name: 'React Status', url: 'https://cprss.s3.amazonaws.com/react.statuscode.com.xml' },
-				{ name: 'Ruby Weekly', url: 'https://cprss.s3.amazonaws.com/rubyweekly.com.xml' },
+				{ name: 'React Status', url: 'https://reactstatus.com/rss' },
+				{ name: 'Ruby Weekly', url: 'https://rubyweekly.com/rss' },
 				{ name: 'Rust Weekly', url: 'https://this-week-in-rust.org/rss.xml' },
 				{ name: 'Serverless Status', url: 'https://serverless.email/rss/' },
 				{ name: 'Tailwind Weekly', url: 'https://tailwindweekly.com/rss/' },
@@ -114,10 +117,50 @@
 		}
 	];
 
-	let selectedFeed = $state(feedGroups[0].feeds[0].url);
+	// Persistence State
+	let customFeeds = $state([]);
+	let showAddModal = $state(false);
+	let newFeedName = $state('');
+	let newFeedUrl = $state('');
+
+	const feedGroups = $derived([
+		...(customFeeds.length > 0 ? [{ name: 'Custom Feeds', feeds: customFeeds }] : []),
+		...defaultFeedGroups
+	]);
+
+	let selectedFeed = $state(defaultFeedGroups[0].feeds[0].url);
 	let articles = $state([]);
 	let loading = $state(false);
 	let error = $state('');
+
+	function loadCustomFeeds() {
+		if (typeof window !== 'undefined') {
+			const saved = localStorage.getItem('ginkohub_custom_feeds');
+			if (saved) customFeeds = JSON.parse(saved);
+		}
+	}
+
+	function saveFeed() {
+		if (!newFeedName || !newFeedUrl) return;
+		try {
+			new URL(newFeedUrl); // Validate URL
+			const feed = { name: newFeedName, url: newFeedUrl, custom: true };
+			customFeeds = [...customFeeds, feed];
+			localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(customFeeds));
+			selectedFeed = newFeedUrl;
+			newFeedName = '';
+			newFeedUrl = '';
+			showAddModal = false;
+		} catch (e) {
+			alert('Invalid URL format');
+		}
+	}
+
+	function removeFeed(url) {
+		customFeeds = customFeeds.filter((f) => f.url !== url);
+		localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(customFeeds));
+		if (selectedFeed === url) selectedFeed = defaultFeedGroups[0].feeds[0].url;
+	}
 
 	async function fetchFeed() {
 		loading = true;
@@ -163,7 +206,7 @@
 				}
 
 				const items = Array.from(xmlDoc.querySelectorAll('item, entry')).slice(0, 10);
-				
+
 				if (items.length === 0) {
 					throw new Error('Feed is empty or format unsupported');
 				}
@@ -258,6 +301,10 @@
 		}
 	}
 
+	onMount(() => {
+		loadCustomFeeds();
+	});
+
 	$effect(() => {
 		selectedFeed;
 		fetchFeed();
@@ -266,7 +313,17 @@
 
 <div class="space-y-8">
 	<header class="flex flex-col md:flex-row justify-between items-center gap-4">
-		<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Data Stream</h2>
+		<div class="flex items-center gap-4">
+			<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Data Stream</h2>
+			<button
+				onclick={() => (showAddModal = true)}
+				class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all"
+				title="Add custom RSS feed"
+			>
+				+ Add Feed
+			</button>
+		</div>
+
 		<div class="relative w-full md:w-64">
 			<select
 				bind:value={selectedFeed}
@@ -288,6 +345,49 @@
 		</div>
 	</header>
 
+	{#if showAddModal}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-6"
+			in:fade
+		>
+			<div class="w-full max-w-sm border border-slate-800 bg-black p-6 space-y-6">
+				<h3 class="text-[10px] font-black text-white uppercase tracking-[0.3em]">Configure Link</h3>
+				<div class="space-y-4">
+					<div class="space-y-1">
+						<label class="text-[7px] font-bold uppercase text-slate-500">Protocol Name</label>
+						<input
+							bind:value={newFeedName}
+							placeholder="e.g. My Blog"
+							class="w-full bg-slate-900/50 border border-slate-800 p-2 text-xs text-white outline-none focus:border-white/20"
+						/>
+					</div>
+					<div class="space-y-1">
+						<label class="text-[7px] font-bold uppercase text-slate-500">Source URL</label>
+						<input
+							bind:value={newFeedUrl}
+							placeholder="https://site.com/rss"
+							class="w-full bg-slate-900/50 border border-slate-800 p-2 text-xs text-white outline-none focus:border-white/20"
+						/>
+					</div>
+				</div>
+				<div class="flex gap-2">
+					<button
+						onclick={saveFeed}
+						class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest bg-white text-black active:scale-95 transition-all"
+					>
+						Sync Source
+					</button>
+					<button
+						onclick={() => (showAddModal = false)}
+						class="px-4 py-3 text-[10px] font-black uppercase tracking-widest border border-slate-800 text-slate-500 active:scale-95 transition-all"
+					>
+						Cancel
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<div class="min-h-[400px] relative">
 		{#if loading}
 			<div class="flex flex-col items-center justify-center py-20 gap-4">
@@ -307,13 +407,23 @@
 				<span class="text-[9px] font-black uppercase text-rose-500 tracking-widest text-center px-4"
 					>{error}</span
 				>
-				<button
-					onclick={fetchFeed}
-					class="mt-2 text-[8px] font-black uppercase border border-rose-900/50 px-3 py-1 text-rose-500 hover:bg-rose-500 hover:text-black transition-all"
-					title="Retry fetching the feed"
-				>
-					Retry Protocol
-				</button>
+				<div class="flex gap-2">
+					<button
+						onclick={fetchFeed}
+						class="mt-2 text-[8px] font-black uppercase border border-rose-900/50 px-3 py-1 text-rose-500 hover:bg-rose-500 hover:text-black transition-all"
+						title="Retry fetching the feed"
+					>
+						Retry Protocol
+					</button>
+					{#if customFeeds.some((f) => f.url === selectedFeed)}
+						<button
+							onclick={() => removeFeed(selectedFeed)}
+							class="mt-2 text-[8px] font-black uppercase border border-slate-800 px-3 py-1 text-slate-500 hover:bg-rose-500 hover:text-black transition-all"
+						>
+							Purge Link
+						</button>
+					{/if}
+				</div>
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 gap-1 border border-slate-800">
@@ -353,6 +463,17 @@
 					</a>
 				{/each}
 			</div>
+
+			{#if customFeeds.some((f) => f.url === selectedFeed)}
+				<div class="flex justify-center pt-8">
+					<button
+						onclick={() => removeFeed(selectedFeed)}
+						class="text-[8px] font-black uppercase border border-slate-800 px-4 py-2 text-slate-600 hover:bg-rose-950/20 hover:text-rose-500 transition-all"
+					>
+						Unlink Custom Protocol
+					</button>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </div>
