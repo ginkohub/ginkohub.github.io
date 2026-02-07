@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { microlinkFetch } from '$lib/fetcher.js';
 
 	let { accentColor } = $props();
 
@@ -167,36 +168,20 @@
 		error = '';
 		articles = [];
 
-		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
 		try {
-			// Use AllOrigins as a CORS proxy to fetch raw XML
-			const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(selectedFeed)}`;
-			const response = await fetch(proxyUrl, { signal: controller.signal });
-			clearTimeout(timeoutId);
+			// Use Microlink for robust scraping
+			const res = await microlinkFetch(selectedFeed, {
+				meta: false,
+				prerender: true
+			});
 
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}`);
+			if (!res.success) {
+				throw new Error(res.error);
 			}
 
-			const data = await response.json();
+			const rawContent = res.data.html;
 
-			if (data.status && data.status.http_code && data.status.http_code >= 400) {
-				throw new Error(`Target Server Error: ${data.status.http_code}`);
-			}
-
-			if (data.contents) {
-				let rawContent = data.contents;
-
-				// Handle Base64 encoded responses (Data URI)
-				if (rawContent.startsWith('data:')) {
-					const base64Part = rawContent.split(',')[1];
-					if (base64Part) {
-						rawContent = atob(base64Part);
-					}
-				}
-
+			if (rawContent) {
 				const parser = new DOMParser();
 				const xmlDoc = parser.parseFromString(rawContent, 'text/xml');
 

@@ -24,43 +24,34 @@
 	];
 	let selectedLang = $state('all');
 
+	let isFallback = $state(false);
+
 	async function fetchData() {
 		loading = true;
 		error = '';
+		isFallback = false;
 		repos = [];
 		developers = [];
-
-		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 10000);
 
 		try {
 			const langParam = selectedLang === 'all' ? '' : selectedLang;
 			const typePath = mode === 'repositories' ? 'trending' : 'trending/developers';
 			const targetUrl = `https://github.com/${typePath}/${langParam}?since=daily`;
-			const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
-			const response = await fetch(proxyUrl, { signal: controller.signal });
-			clearTimeout(timeoutId);
+			// Use Microlink for robust scraping
+			const res = await microlinkFetch(targetUrl, {
+				meta: false,
+				prerender: true // Ensure content is fully rendered
+			});
 
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}`);
+			if (!res.success) {
+				throw new Error(res.error);
 			}
 
-			const data = await response.json();
+			// Microlink returns the page content in res.data.html
+			const rawContent = res.data.html;
 
-			if (data.status && data.status.http_code && data.status.http_code >= 400) {
-				throw new Error(`Target Server Error: ${data.status.http_code}`);
-			}
-
-			if (data.contents) {
-				let rawContent = data.contents;
-				if (rawContent.startsWith('data:')) {
-					const base64Part = rawContent.split(',')[1];
-					if (base64Part) {
-						rawContent = atob(base64Part);
-					}
-				}
-
+			if (rawContent) {
 				const parser = new DOMParser();
 				const doc = parser.parseFromString(rawContent, 'text/html');
 				const items = Array.from(doc.querySelectorAll('article.Box-row'));
@@ -70,59 +61,116 @@
 						repos = items.slice(0, 10).map((item) => {
 							const titleLink = item.querySelector('h2 a');
 							const rawTitle = titleLink ? titleLink.innerText.trim() : 'Unknown / Unknown';
-							const parts = rawTitle.split('/').map(s => s.trim());
-							
+							const parts = rawTitle.split('/').map((s) => s.trim());
+
 							const author = parts[0] || 'GitHub';
 							const name = parts[1] || rawTitle;
-							
+
 							let link = titleLink ? titleLink.getAttribute('href') : '';
 							if (link && !link.startsWith('http')) link = `https://github.com${link}`;
 
 							const descEl = item.querySelector('p');
 							const description = descEl ? descEl.innerText.trim() : 'No description provided.';
 
+							// Try to find stars
+							const starEl = item.querySelector('a[href$="/stargazers"]');
+							const stars = starEl ? starEl.innerText.trim() : '';
+
 							return {
 								author,
 								name,
 								url: link,
-								description
+								description,
+								stars
 							};
 						});
 					} else {
 						developers = items.slice(0, 10).map((item) => {
 							const nameLink = item.querySelector('h1 a');
 							const name = nameLink ? nameLink.innerText.trim() : 'Unknown';
-							
+
 							let link = nameLink ? nameLink.getAttribute('href') : '';
 							if (link && !link.startsWith('http')) link = `https://github.com${link}`;
 
-							// Description for devs is often in a specific div or implicit
-							// GitHub trending devs structure is volatile, let's try generic
-							// Usually inside a div with class f4 or similar
+							// Extract username from link for avatar
+							const username = link.split('/').pop();
+
 							const descEl = item.querySelector('.f4') || item.querySelector('.Link--secondary');
 							const description = descEl ? descEl.innerText.trim() : '';
 
 							return {
 								name,
+								username,
 								url: link,
 								description
 							};
 						});
 					}
 				} else {
-					throw new Error('No items found (structure changed?)');
+					throw new Error('Structural mismatch (GitHub changed?)');
 				}
 			} else {
-				throw new Error('Proxy returned no content');
+				throw new Error('No content returned from gateway');
 			}
 		} catch (e) {
-			clearTimeout(timeoutId);
-			if (e.name === 'AbortError') {
-				error = 'Connection timed out.';
-			} else {
-				error = `Trend Sync Failed: ${e.message}`;
-			}
 			console.error('Scraping error:', e);
+
+			// Fallback / Offline Mode
+			isFallback = true;
+			if (mode === 'repositories') {
+				repos = [
+					{
+						author: 'sveltejs',
+						name: 'svelte',
+						url: 'https://github.com/sveltejs/svelte',
+						description: 'Cybernetically enhanced web apps.',
+						stars: '75k'
+					},
+					{
+						author: 'bun-sh',
+						name: 'bun',
+						url: 'https://github.com/bun-sh/bun',
+						description:
+							'Incredibly fast JavaScript runtime, bundler, test runner, and package manager.',
+						stars: '72k'
+					},
+					{
+						author: 'torvalds',
+						name: 'linux',
+						url: 'https://github.com/torvalds/linux',
+						description: 'Linux kernel source tree.',
+						stars: '170k'
+					},
+					{
+						author: 'ginkohub',
+						name: 'ginkohub.github.io',
+						url: 'https://github.com/ginkohub/ginkohub.github.io',
+						description: 'The source code for this very interface.',
+						stars: '∞'
+					}
+				];
+			} else {
+				developers = [
+					{
+						name: 'Rich Harris',
+						username: 'Rich-Harris',
+						url: 'https://github.com/Rich-Harris',
+						description: 'Creator of Svelte.'
+					},
+					{
+						name: 'Evan You',
+						username: 'yyx990803',
+						url: 'https://github.com/yyx990803',
+						description: 'Creator of Vue.js.'
+					},
+					{
+						name: 'Jarred Sumner',
+						username: 'Jarred-Sumner',
+						url: 'https://github.com/Jarred-Sumner',
+						description: 'Creator of Bun.'
+					}
+				];
+			}
 		} finally {
 			loading = false;
 		}
@@ -176,6 +224,16 @@
 				class="absolute right-3 top-1/2 pointer-events-none -translate-y-1/2 text-[8px] text-slate-600"
 			>
 				▼
+			</div>
+		</div>
+
+		<div class="flex items-center gap-3 text-[8px] font-bold uppercase tracking-widest ml-auto md:ml-0">
+			<span class="text-slate-600">Source: GitHub</span>
+			<div class="flex items-center gap-1.5 px-2 py-0.5 border border-slate-800 rounded-full">
+				<div class="w-1 h-1 rounded-full {isFallback ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse"></div>
+				<span class={isFallback ? 'text-amber-500' : 'text-emerald-500'}>
+					{isFallback ? 'Offline Mode' : 'Live Sync'}
+				</span>
 			</div>
 		</div>
 	</header>
@@ -239,11 +297,16 @@
 							<p class="text-[10px] text-slate-400 line-clamp-2 mt-2 leading-relaxed">
 								{repo.description}
 							</p>
-							<div class="flex gap-3 mt-3">
+							<div class="flex gap-3 mt-3 items-center">
 								<span
 									class="text-[7px] font-black uppercase py-0.5 text-slate-600"
 									style="color: {accentColor}">Access Protocol →</span
 								>
+								{#if repo.stars}
+									<span class="text-[8px] font-mono text-slate-500 flex items-center gap-1">
+										★ {repo.stars}
+									</span>
+								{/if}
 							</div>
 						</div>
 					</a>
@@ -264,7 +327,7 @@
 								class="w-10 h-10 border border-slate-800 bg-slate-900 flex-shrink-0 overflow-hidden"
 							>
 								<img
-									src="https://github.com/{dev.name.split(' ')[0]}.png"
+									src="https://github.com/{dev.username}.png"
 									alt={dev.name}
 									class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
 									onerror={(e) => (e.currentTarget.style.display = 'none')}

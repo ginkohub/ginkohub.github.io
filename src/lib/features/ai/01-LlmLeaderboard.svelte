@@ -35,16 +35,21 @@
 
 			const data = await response.json();
 
-			models = data.map((model) => ({
-				id: model.id, // "meta-llama/Llama-2-7b"
-				name: model.modelId || model.id,
-				author: model.author || model.id.split('/')[0],
-				likes: model.likes,
-				downloads: model.downloads,
-				lastModified: new Date(model.lastModified).toLocaleDateString(),
-				pipeline: model.pipeline_tag,
-				url: `https://huggingface.co/${model.id}`
-			}));
+			models = data.map((model) => {
+				const licenseTag = model.tags?.find((t) => t.startsWith('license:'))?.replace('license:', '');
+				return {
+					id: model.id,
+					name: model.modelId || model.id,
+					author: model.author || model.id.split('/')[0],
+					likes: model.likes,
+					downloads: model.downloads,
+					lastModified: new Date(model.lastModified).toLocaleDateString(),
+					pipeline: model.pipeline_tag,
+					license: licenseTag || 'Unknown',
+					tags: model.tags?.slice(0, 3) || [],
+					url: `https://huggingface.co/${model.id}`
+				};
+			});
 		} catch (e) {
 			clearTimeout(timeoutId);
 			if (e.name === 'AbortError') {
@@ -195,14 +200,20 @@
 									{model.name.split('/').pop()}
 								</h3>
 								<div
-									class="flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+									class="flex flex-wrap items-center gap-2 mt-1 opacity-70 group-hover:opacity-100 transition-opacity"
 								>
 									<span
-										class="text-[7px] font-black uppercase text-slate-600 bg-slate-900 px-1 rounded"
+										class="text-[7px] font-black uppercase text-slate-100 bg-slate-800 px-1 rounded border border-white/10"
 									>
 										{model.pipeline}
 									</span>
-									<span class="text-[7px] text-slate-600">{model.lastModified}</span>
+									<span class="text-[7px] font-bold text-emerald-500 uppercase">
+										{model.license}
+									</span>
+									{#each model.tags.filter(t => !t.includes(':')) as tag}
+										<span class="text-[7px] text-slate-600">#{tag}</span>
+									{/each}
+									<span class="text-[7px] text-slate-700 font-mono ml-auto">{model.lastModified}</span>
 								</div>
 							</div>
 						</div>
