@@ -48,6 +48,10 @@
 
 			const data = await response.json();
 
+			if (data.status && data.status.http_code && data.status.http_code >= 400) {
+				throw new Error(`Target Server Error: ${data.status.http_code}`);
+			}
+
 			if (data.contents) {
 				let rawContent = data.contents;
 				if (rawContent.startsWith('data:')) {

@@ -9,7 +9,7 @@
 				{ name: 'Daring Fireball', url: 'https://daringfireball.net/feeds/main' },
 				{ name: 'Engadget', url: 'https://www.engadget.com/rss.xml' },
 				{ name: 'GSMArena', url: 'https://www.gsmarena.com/rss-news-reviews.php3' },
-				{ name: 'MacRumors', url: 'https://www.macrumors.com/rss/' },
+				{ name: 'MacRumors', url: 'https://feeds.macrumors.com/MacRumors-All' },
 				{ name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml' },
 				{ name: 'VentureBeat', url: 'https://venturebeat.com/feed/' },
 				{ name: 'Wired', url: 'https://www.wired.com/feed/rss' },
@@ -20,7 +20,6 @@
 		{
 			name: 'AI & Machine Learning',
 			feeds: [
-				{ name: 'Anthropic', url: 'https://www.anthropic.com/feed' },
 				{ name: 'Ahead of AI', url: 'https://magazine.sebastianraschka.com/feed' },
 				{ name: 'Cohere', url: 'https://txt.cohere.com/rss/' },
 				{ name: 'Google AI', url: 'https://blog.google/technology/ai/rss/' },
@@ -33,7 +32,7 @@
 					name: 'NVIDIA Deep Learning',
 					url: 'https://blogs.nvidia.com/blog/category/deep-learning/feed/'
 				},
-				{ name: 'OpenAI', url: 'https://openai.com/blog/rss.xml' },
+				{ name: 'OpenAI', url: 'https://openai.com/news/rss.xml' },
 				{ name: 'The Sequence', url: 'https://thesequence.substack.com/feed' }
 			]
 		},
@@ -54,7 +53,7 @@
 				{ name: 'SitePoint', url: 'https://www.sitepoint.com/feed/' },
 				{ name: 'Smashing Magazine', url: 'https://www.smashingmagazine.com/feed/' },
 				{ name: 'Stack Overflow Blog', url: 'https://stackoverflow.blog/feed/' },
-				{ name: 'Svelte Blog', url: 'https://svelte.dev/rss.xml' },
+				{ name: 'Svelte Blog', url: 'https://svelte.dev/blog/rss.xml' },
 				{ name: 'Web.dev', url: 'https://web.dev/feed.xml' }
 			]
 		},
@@ -63,7 +62,7 @@
 			name: 'Language & Ecosystem Weekly',
 			feeds: [
 				{ name: 'Android Weekly', url: 'https://androidweekly.net/rss.xml' },
-				{ name: 'Bun Blog', url: 'https://bun.com/rss.xml' },
+				{ name: 'Bun Blog', url: 'https://bun.sh/rss.xml' },
 				{ name: 'CSS Weekly', url: 'http://feeds.feedburner.com/CSS-Weekly' },
 				{ name: 'Deno News', url: 'https://buttondown.email/denonews/rss' },
 				{ name: 'ESNext News', url: 'http://feeds.feedburner.com/EsnextNews' },
@@ -139,6 +138,10 @@
 			}
 
 			const data = await response.json();
+
+			if (data.status && data.status.http_code && data.status.http_code >= 400) {
+				throw new Error(`Target Server Error: ${data.status.http_code}`);
+			}
 
 			if (data.contents) {
 				let rawContent = data.contents;
