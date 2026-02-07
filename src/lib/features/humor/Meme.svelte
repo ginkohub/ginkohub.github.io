@@ -1,5 +1,5 @@
 <script>
-	let { meme, fetchMeme, accentColor } = $props();
+	let { meme = $bindable(), fetchMeme, accentColor } = $props();
 
 	function copyMeme() {
 		navigator.clipboard.writeText(meme.url);

@@ -20,6 +20,6 @@
 
 <div class="space-y-4">
 	{#each features as feature (feature.path)}
-		<feature.component {meme} {joke} {fetchMeme} {fetchJoke} {accentColor} />
+		<feature.component bind:meme bind:joke {fetchMeme} {fetchJoke} {accentColor} />
 	{/each}
 </div>

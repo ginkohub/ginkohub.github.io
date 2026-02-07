@@ -1,5 +1,5 @@
 <script>
-	let { joke, fetchJoke, accentColor } = $props();
+	let { joke = $bindable(), fetchJoke, accentColor } = $props();
 
 	function copyJoke() {
 		const text = `${joke.setup}\n\n${joke.punchline}`;
