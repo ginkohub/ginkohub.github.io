@@ -78,6 +78,22 @@
 	let mouseX = $state(0);
 	let mouseY = $state(0);
 
+	let showWelcome = $state(false);
+	let welcomeText = $state('');
+
+	const welcomeMessages = [
+		'The digital wind blows in your favor.',
+		'Systems aligned. Welcome back.',
+		'A quiet corner of the web, just for you.',
+		'Serendipity is looking for you.',
+		'Focus found. Reality synced.',
+		'The data stream is warm today.',
+		'Harmonics stabilized.',
+		'Your presence is acknowledged.',
+		'Code and poetry, intertwined.',
+		'Drifting through the static... you found us.'
+	];
+
 	function handleMouseMove(e) {
 		mouseX = e.clientX;
 		mouseY = e.clientY;
@@ -335,6 +351,16 @@
 
 		window.addEventListener('keydown', handleGlobalKeydown);
 		window.addEventListener('mousemove', handleMouseMove);
+
+		// Random Welcome Toast
+		const randomMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+		welcomeText = randomMsg;
+		setTimeout(() => {
+			showWelcome = true;
+		}, 1000);
+		setTimeout(() => {
+			showWelcome = false;
+		}, 5000);
 	});
 
 	import { onDestroy } from 'svelte';
@@ -554,6 +580,19 @@
 			</footer>
 		</div>
 	</div>
+
+	<!-- Welcome Toast -->
+	{#if showWelcome}
+		<div
+			class="fixed bottom-6 right-6 z-50 bg-black/90 border border-slate-800 p-4 max-w-xs shadow-2xl backdrop-blur-md"
+			in:fly={{ y: 20, duration: 500 }}
+			out:fade={{ duration: 300 }}
+			style="border-left: 2px solid var(--accent-color)"
+		>
+			<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">System Message</p>
+			<p class="text-sm font-space text-white">{welcomeText}</p>
+		</div>
+	{/if}
 </div>
 
 <style>
