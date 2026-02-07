@@ -80,6 +80,17 @@
 
 	let showWelcome = $state(false);
 	let welcomeText = $state('');
+	let showBoot = $state(true);
+	let currentBootLogs = $state([]);
+
+	const bootMessages = [
+		'[OK] PROTOCOL_INIT',
+		'[OK] NEURAL_SYNC_COMPLETE',
+		'[OK] PARSING_WISDOM_STREAM',
+		'[OK] ESTABLISHING_FLÂNEUR_STATE',
+		'>> REALITY_SYNC: 100%',
+		'>> WELCOME_TO_GINKOHUB'
+	];
 
 	const welcomeMessages = [
 		'The digital wind blows in your favor.',
@@ -352,6 +363,18 @@
 		window.addEventListener('keydown', handleGlobalKeydown);
 		window.addEventListener('mousemove', handleMouseMove);
 
+		// System Boot Sequence
+		bootMessages.forEach((msg, i) => {
+			setTimeout(() => {
+				currentBootLogs = [...currentBootLogs, msg];
+			}, i * 200);
+		});
+
+		setTimeout(() => {
+			showBoot = false;
+			triggerAura(); // Trigger aura bloom as it opens
+		}, bootMessages.length * 200 + 500);
+
 		// Random Welcome Toast
 		const randomMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
 		welcomeText = randomMsg;
@@ -591,6 +614,24 @@
 		>
 			<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">System Message</p>
 			<p class="text-sm font-space text-white">{welcomeText}</p>
+		</div>
+	{/if}
+
+	<!-- Surprise Boot Sequence -->
+	{#if showBoot}
+		<div
+			class="fixed inset-0 z-[200] bg-black flex items-center justify-center"
+			out:fade={{ duration: 800 }}
+		>
+			<div class="space-y-2 font-mono text-[9px] tracking-[0.2em] text-slate-500">
+				{#each currentBootLogs as log}
+					<div in:fly={{ x: -5, duration: 200 }}>
+						<span style="color: var(--accent-color)">{log.startsWith('[OK]') ? '✔' : '>'}</span>
+						{log.replace('[OK] ', '').replace('>> ', '')}
+					</div>
+				{/each}
+				<div class="w-1 h-3 bg-white animate-pulse inline-block mt-2"></div>
+			</div>
 		</div>
 	{/if}
 </div>
