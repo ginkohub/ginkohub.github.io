@@ -211,13 +211,17 @@
 						</div>
 					</div>
 				{/each}
-				{#if isLoading}
-					<div class="flex justify-start">
-						<div class="text-[8px] uppercase text-slate-600 animate-pulse tracking-widest">
-							Processing...
-						</div>
-					</div>
-				{/if}
+								{#if isLoading}
+									<div class="flex justify-start">
+										<div class="px-3 py-2 bg-black border border-slate-800 rounded-xl rounded-tl-none">
+											<div class="flex gap-1">
+												<div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"></div>
+												<div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+												<div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+											</div>
+										</div>
+									</div>
+								{/if}
 				{#if error}
 					<div class="p-2 border border-rose-900/50 text-rose-500 text-[9px] font-mono uppercase">
 						Error: {error}
@@ -250,7 +254,7 @@
 						class="px-3 text-[9px] font-black uppercase transition-all active:scale-90 rounded-lg"
 						style="background-color: {accentColor}; color: #000;"
 					>
-						Sync
+						Send
 					</button>
 				</div>
 			</footer>
