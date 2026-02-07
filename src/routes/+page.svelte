@@ -9,6 +9,7 @@
 	const tabDescriptions = {
 		tools: 'Utility tools for developers',
 		news: 'Tech news, trends, and leaderboards',
+		ai: 'AI model benchmarks and neural metrics',
 		humor: 'Jokes and memes for a laugh',
 		words: 'Word finder and dictionary tool',
 		preview: 'Social media link previewer',
@@ -25,7 +26,7 @@
 			};
 		})
 		.sort((a, b) => {
-			const order = { about: 0, tools: 1, news: 2, humor: 3, words: 4, preview: 5, game: 6 };
+			const order = { about: 0, tools: 1, news: 2, ai: 3, humor: 4, words: 5, preview: 6, game: 7 };
 			return (order[a.label] ?? 99) - (order[b.label] ?? 99);
 		});
 
