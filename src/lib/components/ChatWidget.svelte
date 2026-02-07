@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
 	let { accentColor } = $props();
@@ -10,6 +10,21 @@
 	let error = $state('');
 	let selectedModel = $state('gpt-4o');
 	let isMinimized = $state(true);
+	let chatContainer = $state(null);
+
+	// Auto-scroll logic
+	$effect(() => {
+		if (messages.length || isLoading) {
+			tick().then(() => {
+				if (chatContainer) {
+					chatContainer.scrollTo({
+						top: chatContainer.scrollHeight,
+						behavior: 'smooth'
+					});
+				}
+			});
+		}
+	});
 
 	const systemPrompt = {
 		role: 'system',
@@ -105,7 +120,10 @@
 			</header>
 
 			<!-- Messages -->
-			<div class="h-80 overflow-y-auto p-4 space-y-4 no-scrollbar bg-black/40">
+			<div 
+				bind:this={chatContainer}
+				class="h-80 overflow-y-auto p-4 space-y-4 no-scrollbar bg-black/40"
+			>
 				{#if messages.length === 0}
 					<div class="h-full flex flex-col items-center justify-center text-slate-700 text-[9px] uppercase gap-2 py-10 opacity-50">
 						<span>Ready for transmission</span>
