@@ -9,14 +9,19 @@
 	$effect(() => {
 		const loadFeatures = async () => {
 			const loaded = await Promise.all(
-				Object.entries(featureModules).map(async ([path, moduleFunc]) => {
-					const module = await moduleFunc();
-					return {
-						path,
-						name: path.split('/').pop().replace('.svelte', ''),
-						component: module.default
-					};
-				})
+				Object.entries(featureModules)
+					.filter(([path]) => {
+						const name = path.split('/').pop() || '';
+						return /^\d/.test(name);
+					})
+					.map(async ([path, moduleFunc]) => {
+						const module = await moduleFunc();
+						return {
+							path,
+							name: path.split('/').pop().replace('.svelte', ''),
+							component: module.default
+						};
+					})
 			);
 			features = loaded.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 		};

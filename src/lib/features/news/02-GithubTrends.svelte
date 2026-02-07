@@ -1,6 +1,5 @@
 <script>
 	import { microlinkFetch } from '$lib/fetcher.js';
-	import ReaderModal from './ReaderModal.svelte';
 
 	let { accentColor } = $props();
 
@@ -9,16 +8,6 @@
 	let loading = $state(false);
 	let error = $state('');
 	let mode = $state('repositories'); // 'repositories' or 'developers'
-
-	// Reader Mode State
-	let readerUrl = $state('');
-	let showReader = $state(false);
-
-	function openReader(e, url) {
-		e.preventDefault();
-		readerUrl = url;
-		showReader = true;
-	}
 
 	let languages = [
 		'all',
@@ -45,71 +34,77 @@
 			const langParam = selectedLang === 'all' ? '' : selectedLang;
 			const typePath = mode === 'repositories' ? 'trending' : 'trending/developers';
 			const targetUrl = `https://github.com/${typePath}/${langParam}?since=daily`;
+			const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
-			// Use Microlink to scrape the page directly using CSS selectors
-			const options =
-				mode === 'repositories'
-					? {
-							data: {
-								items: {
-									selector: 'article.Box-row',
-									type: 'list',
-									attr: {
-										name: { selector: 'h2 a', text: true },
-										url: { selector: 'h2 a', attr: 'href' },
-										description: { selector: 'p', text: true }
-									}
-								}
-							}
-						}
-					: {
-							data: {
-								items: {
-									selector: 'article.Box-row',
-									type: 'list',
-									attr: {
-										name: { selector: 'h1 a', text: true },
-										url: { selector: 'h1 a', attr: 'href' },
-										description: { selector: '.f4', text: true }
-									}
-								}
-							}
-						};
+			const response = await fetch(proxyUrl);
+			const data = await response.json();
 
-			const result = await microlinkFetch(targetUrl, options);
+			if (data.contents) {
+				let rawContent = data.contents;
+				if (rawContent.startsWith('data:')) {
+					const base64Part = rawContent.split(',')[1];
+					if (base64Part) {
+						rawContent = atob(base64Part);
+					}
+				}
 
-			if (result.success && result.data) {
-				const rawItems = result.data.items || [];
-				const items = Array.isArray(rawItems) ? rawItems : [rawItems];
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(rawContent, 'text/html');
+				const items = Array.from(doc.querySelectorAll('article.Box-row'));
 
-				if (items.length > 0 && items[0] !== null) {
+				if (items.length > 0) {
 					if (mode === 'repositories') {
 						repos = items.slice(0, 10).map((item) => {
-							const title = item.name || 'Unknown / Unknown';
-							const parts = title.split('/');
+							const titleLink = item.querySelector('h2 a');
+							const rawTitle = titleLink ? titleLink.innerText.trim() : 'Unknown / Unknown';
+							const parts = rawTitle.split('/').map(s => s.trim());
+							
+							const author = parts[0] || 'GitHub';
+							const name = parts[1] || rawTitle;
+							
+							let link = titleLink ? titleLink.getAttribute('href') : '';
+							if (link && !link.startsWith('http')) link = `https://github.com${link}`;
+
+							const descEl = item.querySelector('p');
+							const description = descEl ? descEl.innerText.trim() : 'No description provided.';
+
 							return {
-								author: parts[0]?.trim() || 'GitHub',
-								name: parts[1]?.trim() || title,
-								url: item.url.startsWith('http') ? item.url : `https://github.com${item.url}`,
-								description: item.description || 'No description provided.'
+								author,
+								name,
+								url: link,
+								description
 							};
 						});
 					} else {
-						developers = items.slice(0, 10).map((item) => ({
-							name: item.name?.trim() || 'Unknown',
-							url: item.url.startsWith('http') ? item.url : `https://github.com${item.url}`,
-							description: item.description || ''
-						}));
+						developers = items.slice(0, 10).map((item) => {
+							const nameLink = item.querySelector('h1 a');
+							const name = nameLink ? nameLink.innerText.trim() : 'Unknown';
+							
+							let link = nameLink ? nameLink.getAttribute('href') : '';
+							if (link && !link.startsWith('http')) link = `https://github.com${link}`;
+
+							// Description for devs is often in a specific div or implicit
+							// GitHub trending devs structure is volatile, let's try generic
+							// Usually inside a div with class f4 or similar
+							const descEl = item.querySelector('.f4') || item.querySelector('.Link--secondary');
+							const description = descEl ? descEl.innerText.trim() : '';
+
+							return {
+								name,
+								url: link,
+								description
+							};
+						});
 					}
 				} else {
-					throw new Error('Scraping protocol failed');
+					throw new Error('No items found in page');
 				}
 			} else {
-				throw new Error('No trends found');
+				throw new Error('Proxy returned no content');
 			}
 		} catch (e) {
 			error = `Failed to extract ${mode} protocol.`;
-			console.error('Microlink Scraping error:', e);
+			console.error('Scraping error:', e);
 		} finally {
 			loading = false;
 		}
@@ -123,10 +118,6 @@
 </script>
 
 <div class="space-y-8 pt-12 border-t border-slate-800/50">
-	{#if showReader}
-		<ReaderModal url={readerUrl} onClose={() => (showReader = false)} {accentColor} />
-	{/if}
-
 	<header class="flex flex-col md:flex-row justify-between items-center gap-4">
 		<div class="flex items-center gap-4">
 			<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
@@ -185,27 +176,38 @@
 				{#each repos as repo}
 					<a
 						href={repo.url}
-						onclick={(e) => openReader(e, repo.url)}
-						class="group flex flex-col p-4 bg-black hover:bg-slate-900/50 transition-all border-b border-slate-800 last:border-0"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group flex p-4 bg-black hover:bg-slate-900/50 transition-all border-b border-slate-800 last:border-0 gap-4"
 					>
-						<div class="flex justify-between items-start mb-1">
-							<span class="text-[9px] font-black text-slate-400 font-space uppercase"
-								>{repo.author} /</span
-							>
+						<div class="flex-shrink-0 w-10 h-10 border border-slate-800 bg-slate-900 overflow-hidden">
+							<img
+								src="https://github.com/{repo.author}.png"
+								alt={repo.author}
+								class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
+								onerror={(e) => (e.currentTarget.style.display = 'none')}
+							/>
 						</div>
-						<h3
-							class="text-sm font-bold text-white group-hover:underline transition-colors font-space leading-tight"
-						>
-							{repo.name}
-						</h3>
-						<p class="text-[10px] text-slate-400 line-clamp-2 mt-2 leading-relaxed">
-							{repo.description}
-						</p>
-						<div class="flex gap-3 mt-3">
-							<span
-								class="text-[7px] font-black uppercase py-0.5 text-slate-600"
-								style="color: {accentColor}">Access Protocol →</span
+						<div class="flex flex-col min-w-0 flex-1">
+							<div class="flex justify-between items-start mb-1">
+								<span class="text-[9px] font-black text-slate-400 font-space uppercase"
+									>{repo.author} /</span
+								>
+							</div>
+							<h3
+								class="text-sm font-bold text-white group-hover:underline transition-colors font-space leading-tight"
 							>
+								{repo.name}
+							</h3>
+							<p class="text-[10px] text-slate-400 line-clamp-2 mt-2 leading-relaxed">
+								{repo.description}
+							</p>
+							<div class="flex gap-3 mt-3">
+								<span
+									class="text-[7px] font-black uppercase py-0.5 text-slate-600"
+									style="color: {accentColor}">Access Protocol →</span
+								>
+							</div>
 						</div>
 					</a>
 				{/each}
@@ -215,7 +217,8 @@
 				{#each developers as dev}
 					<a
 						href={dev.url}
-						onclick={(e) => openReader(e, dev.url)}
+						target="_blank"
+						rel="noopener noreferrer"
 						class="group flex flex-col p-4 bg-black hover:bg-slate-900/50 transition-all border-r border-b border-slate-800 last:border-0"
 					>
 						<div class="flex items-center gap-3">
