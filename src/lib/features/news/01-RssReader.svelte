@@ -125,10 +125,19 @@
 		error = '';
 		articles = [];
 
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
 		try {
 			// Use AllOrigins as a CORS proxy to fetch raw XML
 			const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(selectedFeed)}`;
-			const response = await fetch(proxyUrl);
+			const response = await fetch(proxyUrl, { signal: controller.signal });
+			clearTimeout(timeoutId);
+
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}`);
+			}
+
 			const data = await response.json();
 
 			if (data.contents) {
@@ -151,6 +160,11 @@
 				}
 
 				const items = Array.from(xmlDoc.querySelectorAll('item, entry')).slice(0, 10);
+				
+				if (items.length === 0) {
+					throw new Error('Feed is empty or format unsupported');
+				}
+
 				const feedHostname = new URL(selectedFeed).hostname;
 				const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
 
@@ -212,7 +226,12 @@
 				throw new Error('Proxy returned no content');
 			}
 		} catch (e) {
-			error = 'Failed to sync with data stream.';
+			clearTimeout(timeoutId);
+			if (e.name === 'AbortError') {
+				error = 'Connection timed out (10s limit).';
+			} else {
+				error = `Sync Error: ${e.message}`;
+			}
 			console.error('RSS Feed error:', e);
 		} finally {
 			loading = false;

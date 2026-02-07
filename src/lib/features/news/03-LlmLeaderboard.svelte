@@ -11,6 +11,9 @@
 		error = '';
 		models = [];
 
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 10000);
+
 		try {
 			// Hugging Face API
 			const params = new URLSearchParams({
@@ -21,10 +24,13 @@
 				full: 'true' // Get more details like card data
 			});
 
-			const response = await fetch(`https://huggingface.co/api/models?${params.toString()}`);
+			const response = await fetch(`https://huggingface.co/api/models?${params.toString()}`, {
+				signal: controller.signal
+			});
+			clearTimeout(timeoutId);
 
 			if (!response.ok) {
-				throw new Error(`Status: ${response.status}`);
+				throw new Error(`HTTP ${response.status}`);
 			}
 
 			const data = await response.json();
@@ -40,7 +46,12 @@
 				url: `https://huggingface.co/${model.id}`
 			}));
 		} catch (e) {
-			error = 'Failed to retrieve neural metrics.';
+			clearTimeout(timeoutId);
+			if (e.name === 'AbortError') {
+				error = 'Request timed out.';
+			} else {
+				error = `Sync Failed: ${e.message}`;
+			}
 			console.error('HF API Error:', e);
 		} finally {
 			loading = false;

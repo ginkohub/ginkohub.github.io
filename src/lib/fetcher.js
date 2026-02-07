@@ -3,6 +3,10 @@
  * and provide consistent data structure.
  */
 export async function microlinkFetch(url, options = {}) {
+	const { timeout = 8000, ...apiOptions } = options;
+	const controller = new AbortController();
+	const id = setTimeout(() => controller.abort(), timeout);
+
 	try {
 		const params = new URLSearchParams();
 		params.append('url', url);
@@ -20,10 +24,20 @@ export async function microlinkFetch(url, options = {}) {
 			});
 		};
 
-		flattenObject(options);
+		flattenObject(apiOptions);
 
 		const targetUrl = `https://api.microlink.io?${params.toString()}`;
-		const response = await fetch(targetUrl);
+		const response = await fetch(targetUrl, { signal: controller.signal });
+		clearTimeout(id);
+
+		if (!response.ok) {
+			return {
+				success: false,
+				error: `HTTP Error ${response.status}`,
+				status: 'error'
+			};
+		}
+
 		const result = await response.json();
 
 		if (result.status === 'success') {
@@ -40,6 +54,14 @@ export async function microlinkFetch(url, options = {}) {
 			};
 		}
 	} catch (e) {
+		clearTimeout(id);
+		if (e.name === 'AbortError') {
+			return {
+				success: false,
+				error: 'Request timed out (8s limit)',
+				details: 'Server took too long to respond'
+			};
+		}
 		return {
 			success: false,
 			error: 'Network error or invalid target',

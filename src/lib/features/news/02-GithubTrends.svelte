@@ -30,13 +30,22 @@
 		repos = [];
 		developers = [];
 
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 10000);
+
 		try {
 			const langParam = selectedLang === 'all' ? '' : selectedLang;
 			const typePath = mode === 'repositories' ? 'trending' : 'trending/developers';
 			const targetUrl = `https://github.com/${typePath}/${langParam}?since=daily`;
 			const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
-			const response = await fetch(proxyUrl);
+			const response = await fetch(proxyUrl, { signal: controller.signal });
+			clearTimeout(timeoutId);
+
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}`);
+			}
+
 			const data = await response.json();
 
 			if (data.contents) {
@@ -97,13 +106,18 @@
 						});
 					}
 				} else {
-					throw new Error('No items found in page');
+					throw new Error('No items found (structure changed?)');
 				}
 			} else {
 				throw new Error('Proxy returned no content');
 			}
 		} catch (e) {
-			error = `Failed to extract ${mode} protocol.`;
+			clearTimeout(timeoutId);
+			if (e.name === 'AbortError') {
+				error = 'Connection timed out.';
+			} else {
+				error = `Trend Sync Failed: ${e.message}`;
+			}
 			console.error('Scraping error:', e);
 		} finally {
 			loading = false;
