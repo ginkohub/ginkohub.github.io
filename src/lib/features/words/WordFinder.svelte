@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
 
 	// -- State (Runes) --
 	let words = $state([]);
@@ -102,7 +103,26 @@
 	}
 
 	onMount(async () => {
-		// Initial load handled by $effect
+		const saved = localStorage.getItem('ginkohub_word_settings');
+		if (saved) {
+			try {
+				const s = JSON.parse(saved);
+				language = s.language ?? 'english';
+				mode = s.mode ?? 'prefix';
+				format = s.format ?? 'lower';
+				fontSize = s.fontSize ?? 'medium';
+				limit = s.limit ?? 200;
+			} catch (e) {
+				console.error('Failed to load settings', e);
+			}
+		}
+	});
+
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			const settings = { language, mode, format, fontSize, limit };
+			localStorage.setItem('ginkohub_word_settings', JSON.stringify(settings));
+		}
 	});
 
 	let timeout;
@@ -204,77 +224,112 @@
 				<!-- Modal Overlay -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div use:portal class="modal-overlay" onclick={() => (showSettings = false)}>
+				<div use:portal class="modal-overlay" onclick={() => (showSettings = false)} in:fade={{ duration: 200 }}>
 					<div
 						class="settings-modal shadow-2xl"
 						onclick={(e) => e.stopPropagation()}
 						style="border-color: var(--accent-color)"
+						in:fly={{ y: 20, duration: 300 }}
 					>
 						<div class="modal-header font-space">
-							<span>Configuration</span>
+							<span class="tracking-[0.2em]">System Configuration</span>
 							<button
 								class="close-btn"
-								style="border-color: var(--accent-color)"
 								onclick={() => (showSettings = false)}
 								title="Close settings"
 								>CLOSE</button
 							>
 						</div>
 
-						<div class="setting-item">
-							<span class="setting-label">Language</span>
-							<select bind:value={language}>
-								<option value="english">English</option>
-								<option value="indonesian">Indonesian</option>
-							</select>
-						</div>
+						<div class="space-y-6">
+							<!-- Language Selection -->
+							<div class="setting-item">
+								<span class="setting-label">Lexicon Language</span>
+								<div class="grid grid-cols-2 gap-2">
+									{#each ['english', 'indonesian'] as lang}
+										<button
+											onclick={() => (language = lang)}
+											class="py-2 text-[9px] font-black uppercase tracking-widest border transition-all
+											{language === lang ? 'bg-white text-black border-white' : 'border-slate-800 text-slate-500 hover:border-slate-600'}"
+										>
+											{lang}
+										</button>
+									{/each}
+								</div>
+							</div>
 
-						<div class="setting-item">
-							<span class="setting-label">Method</span>
-							<div class="radio-group">
-								<label><input type="radio" bind:group={mode} value="prefix" /> Prefix</label>
-								<label><input type="radio" bind:group={mode} value="soundex" /> Soundex</label>
+							<!-- Search Method -->
+							<div class="setting-item">
+								<span class="setting-label">Search Algorithm</span>
+								<div class="grid grid-cols-2 gap-2">
+									{#each [{ id: 'prefix', label: 'Exact Prefix' }, { id: 'soundex', label: 'Soundex (Phonetic)' }] as m}
+										<button
+											onclick={() => (mode = m.id)}
+											class="py-2 text-[9px] font-black uppercase tracking-widest border transition-all
+											{mode === m.id ? 'bg-white text-black border-white' : 'border-slate-800 text-slate-500 hover:border-slate-600'}"
+										>
+											{m.label}
+										</button>
+									{/each}
+								</div>
+							</div>
+
+							<!-- Case Format -->
+							<div class="setting-item">
+								<span class="setting-label">Casing Protocol</span>
+								<div class="grid grid-cols-3 gap-2">
+									{#each [{ id: 'lower', label: 'abc' }, { id: 'upper', label: 'ABC' }, { id: 'title', label: 'Abc' }] as f}
+										<button
+											onclick={() => (format = f.id)}
+											class="py-2 text-[9px] font-black uppercase tracking-widest border transition-all
+											{format === f.id ? 'bg-white text-black border-white' : 'border-slate-800 text-slate-500 hover:border-slate-600'}"
+										>
+											{f.label}
+										</button>
+									{/each}
+								</div>
+							</div>
+
+							<!-- Size and Limit Row -->
+							<div class="grid grid-cols-2 gap-4">
+								<div class="setting-item">
+									<span class="setting-label">Display Size</span>
+									<select
+										bind:value={fontSize}
+										class="w-full bg-slate-950 border border-slate-800 p-2 text-[10px] font-bold uppercase text-slate-300 outline-none focus:border-white/20"
+									>
+										<option value="small">Small</option>
+										<option value="medium">Medium</option>
+										<option value="large">Large</option>
+									</select>
+								</div>
+								<div class="setting-item">
+									<span class="setting-label">Return Limit</span>
+									<select
+										bind:value={limit}
+										class="w-full bg-slate-950 border border-slate-800 p-2 text-[10px] font-bold uppercase text-slate-300 outline-none focus:border-white/20"
+									>
+										<option value={50}>50</option>
+										<option value={100}>100</option>
+										<option value={200}>200</option>
+										<option value={500}>500</option>
+									</select>
+								</div>
 							</div>
 						</div>
 
-						<div class="setting-item">
-							<span class="setting-label">Format</span>
-							<div class="radio-group">
-								<label><input type="radio" bind:group={format} value="lower" /> abc</label>
-								<label><input type="radio" bind:group={format} value="upper" /> ABC</label>
-								<label><input type="radio" bind:group={format} value="title" /> Abc</label>
-							</div>
-						</div>
-
-						<div class="setting-row">
-							<div class="setting-item flex-1">
-								<span class="setting-label">Size</span>
-								<select bind:value={fontSize}>
-									<option value="small">Small</option>
-									<option value="medium">Medium</option>
-									<option value="large">Large</option>
-								</select>
-							</div>
-							<div class="setting-item flex-1">
-								<span class="setting-label">Limit</span>
-								<select bind:value={limit}>
-									<option value={50}>50</option>
-									<option value={100}>100</option>
-									<option value={200}>200</option>
-									<option value={500}>500</option>
-								</select>
-							</div>
-						</div>
-
-						<div class="setting-footer pt-4 border-t border-slate-800 mt-4">
+						<div class="setting-footer pt-6 border-t border-slate-800 mt-8 space-y-3">
 							<button
-								class="w-full py-2 text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 active:brightness-90 transition-all"
-								style="background-color: var(--accent-color)"
+								class="w-full py-3 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all"
+								style="background-color: var(--accent-color); color: #000;"
 								onclick={reloadDatabase}
-								title="Reload the word dictionary database"
+								title="Force cache refresh and reload dictionary"
 							>
-								Reload Dictionary
+								Initialize Database Reload
 							</button>
+							<p class="text-[7px] text-slate-600 uppercase text-center tracking-widest">
+								Configuration is persisted in local sector
+							</p>
 						</div>
 					</div>
 				</div>
@@ -392,8 +447,8 @@
 	.modal-overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.4);
-		backdrop-filter: blur(2px);
+		background: rgba(0, 0, 0, 0.8);
+		backdrop-filter: blur(8px);
 		z-index: 999;
 		display: flex;
 		align-items: center;
@@ -403,23 +458,22 @@
 
 	.settings-modal {
 		background: var(--bg);
-		border: 1px solid var(--primary);
-		padding: 1.5rem;
+		border: 1px solid var(--border);
+		padding: 2rem;
 		width: 100%;
-		max-width: 360px;
+		max-width: 400px;
 		max-height: 90vh;
 		overflow-y: auto;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 	}
 
 	.modal-header {
 		font-weight: 900;
 		text-transform: uppercase;
-		font-size: 12px;
-		margin-bottom: 1.5rem;
+		font-size: 11px;
+		margin-bottom: 2rem;
 		color: var(--primary);
 		border-bottom: 1px solid var(--border);
-		padding-bottom: 0.5rem;
+		padding-bottom: 0.75rem;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -428,53 +482,28 @@
 	.close-btn {
 		font-size: 9px;
 		font-weight: 900;
-		border-bottom: 1px solid var(--primary);
 		cursor: pointer;
-		color: var(--primary);
+		color: var(--secondary);
+		transition: color 0.2s;
+	}
+
+	.close-btn:hover {
+		color: white;
 	}
 
 	.setting-item {
-		margin-bottom: 1.25rem;
+		margin-bottom: 1.5rem;
 		color: var(--primary);
 	}
 
 	.setting-label {
 		display: block;
-		font-size: 9px;
+		font-size: 8px;
 		font-weight: 800;
 		text-transform: uppercase;
 		color: var(--secondary);
-		margin-bottom: 0.5rem;
-	}
-
-	.radio-group {
-		display: flex;
-		gap: 1rem;
-		font-size: 12px;
-		font-weight: 600;
-	}
-
-	.radio-group label {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		cursor: pointer;
-	}
-
-	.setting-row {
-		display: flex;
-		gap: 1rem;
-	}
-
-	select {
-		width: 100%;
-		background: var(--hover);
-		border: 1px solid var(--border);
-		padding: 0.4rem;
-		font-size: 12px;
-		font-weight: 600;
-		color: var(--primary);
-		outline: none;
+		margin-bottom: 0.75rem;
+		letter-spacing: 0.1em;
 	}
 
 	.word-grid {
