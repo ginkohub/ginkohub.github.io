@@ -443,29 +443,52 @@
 			</header>
 
 			<!-- Modular Navigation -->
-			<nav
-				class="flex flex-wrap justify-center w-full border-b border-slate-800 mb-5"
-			>
-				{#each tabs as tab}
-					<button
-						onclick={() => {
-							activeTabLabel = tab.label;
-						}}
-						class="min-w-[80px] px-4 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
-						{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
-						title={tab.description}
-					>
-						{tab.label}
-						{#if activeTabLabel === tab.label}
-							<div
-								class="absolute bottom-0 left-0 w-full h-[2px] animate-pulse-slow"
-								style="background-color: var(--accent-color)"
-								in:fade={{ duration: 200 }}
-							></div>
-						{/if}
-					</button>
-				{/each}
-			</nav>
+			<div class="w-full mb-5 border-b border-slate-800">
+				<!-- Row 1: Primary Content -->
+				<nav class="flex flex-wrap justify-center w-full">
+					{#each tabs.filter((t) => !['tools', 'game', 'preview'].includes(t.label)) as tab}
+						<button
+							onclick={() => {
+								activeTabLabel = tab.label;
+							}}
+							class="min-w-[80px] px-4 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
+							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+							title={tab.description}
+						>
+							{tab.label}
+							{#if activeTabLabel === tab.label}
+								<div
+									class="absolute bottom-0 left-0 w-full h-[2px] animate-pulse-slow"
+									style="background-color: var(--accent-color)"
+									in:fade={{ duration: 200 }}
+								></div>
+							{/if}
+						</button>
+					{/each}
+				</nav>
+				<!-- Row 2: Utilities & Experiments -->
+				<nav class="flex flex-wrap justify-center w-full border-t border-slate-800/30 bg-white/5">
+					{#each tabs.filter((t) => ['tools', 'game', 'preview'].includes(t.label)) as tab}
+						<button
+							onclick={() => {
+								activeTabLabel = tab.label;
+							}}
+							class="min-w-[80px] px-4 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
+							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+							title={tab.description}
+						>
+							{tab.label}
+							{#if activeTabLabel === tab.label}
+								<div
+									class="absolute bottom-0 left-0 w-full h-[2px] animate-pulse-slow"
+									style="background-color: var(--accent-color)"
+									in:fade={{ duration: 200 }}
+								></div>
+							{/if}
+						</button>
+					{/each}
+				</nav>
+			</div>
 
 			<!-- Dynamic Content -->
 			<div class="w-full min-h-[250px] pb-24">
