@@ -79,20 +79,20 @@
 					<span class="text-[10px] font-black uppercase tracking-widest text-white">Neural Node</span>
 					<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
 				</div>
-				<div class="flex gap-2">
+				<div class="flex gap-3">
 					<button
 						onclick={clearChat}
-						class="text-[8px] font-black uppercase text-slate-500 hover:text-rose-500 transition-colors"
-						title="Clear logs"
+						class="text-xs text-slate-500 hover:text-rose-500 transition-colors"
+						title="Clear conversation history"
 					>
-						Purge
+						🗑️
 					</button>
 					<button
 						onclick={toggleMinimize}
-						class="text-[8px] font-black uppercase text-slate-500 hover:text-white transition-colors"
-						title="Minimize"
+						class="text-sm font-bold text-slate-500 hover:text-white transition-colors leading-none"
+						title="Close chat"
 					>
-						Minimize
+						✕
 					</button>
 				</div>
 			</header>
