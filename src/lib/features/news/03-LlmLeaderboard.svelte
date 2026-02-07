@@ -22,7 +22,7 @@
 			});
 
 			const response = await fetch(`https://huggingface.co/api/models?${params.toString()}`);
-			
+
 			if (!response.ok) {
 				throw new Error(`Status: ${response.status}`);
 			}
@@ -39,7 +39,6 @@
 				pipeline: model.pipeline_tag,
 				url: `https://huggingface.co/${model.id}`
 			}));
-
 		} catch (e) {
 			error = 'Failed to retrieve neural metrics.';
 			console.error('HF API Error:', e);
@@ -54,7 +53,9 @@
 	});
 
 	function formatNumber(num) {
-		return new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(num);
+		return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(
+			num
+		);
 	}
 </script>
 
@@ -91,7 +92,7 @@
 				</button>
 			</div>
 		</div>
-		
+
 		<div class="text-[8px] font-bold text-slate-600 uppercase tracking-widest">
 			Source: Hugging Face API
 		</div>
@@ -111,7 +112,9 @@
 		{:else}
 			<div class="border border-slate-800 bg-black">
 				<!-- Header Row -->
-				<div class="grid grid-cols-12 gap-2 p-3 border-b border-slate-800 text-[7px] font-black uppercase tracking-widest text-slate-500">
+				<div
+					class="grid grid-cols-12 gap-2 p-3 border-b border-slate-800 text-[7px] font-black uppercase tracking-widest text-slate-500"
+				>
 					<div class="col-span-1 text-center">#</div>
 					<div class="col-span-7">Model</div>
 					<div class="col-span-2 text-right">Likes</div>
@@ -127,7 +130,10 @@
 					>
 						<!-- Rank -->
 						<div class="col-span-1 text-center">
-							<span class="text-xs font-black font-space" style="color: {index < 3 ? accentColor : '#64748b'}">
+							<span
+								class="text-xs font-black font-space"
+								style="color: {index < 3 ? accentColor : '#64748b'}"
+							>
 								{index + 1}
 							</span>
 						</div>
@@ -135,24 +141,34 @@
 						<!-- Model Info -->
 						<div class="col-span-7 flex items-center gap-3">
 							<!-- Author Logo -->
-							<div class="flex-shrink-0 w-8 h-8 border border-slate-800 bg-slate-900 overflow-hidden rounded">
-								<img 
-									src="https://github.com/{model.author}.png" 
-									alt="{model.author}"
+							<div
+								class="flex-shrink-0 w-8 h-8 border border-slate-800 bg-slate-900 overflow-hidden rounded"
+							>
+								<img
+									src="https://cdn-thumbnails.huggingface.co/social-thumbnails/models/{model.id}.png"
+									alt={model.author}
 									class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-									onerror={(e) => e.target.style.display = 'none'} 
+									onerror={(e) => (e.target.style.display = 'none')}
 								/>
 							</div>
-							
+
 							<div class="flex flex-col justify-center min-w-0">
 								<div class="flex items-center gap-2 mb-0.5">
-									<span class="text-[8px] font-bold text-slate-400 uppercase truncate">{model.author} /</span>
+									<span class="text-[8px] font-bold text-slate-400 uppercase truncate"
+										>{model.author} /</span
+									>
 								</div>
-								<h3 class="text-sm font-bold text-slate-200 group-hover:text-white group-hover:underline transition-colors font-space truncate">
+								<h3
+									class="text-sm font-bold text-slate-200 group-hover:text-white group-hover:underline transition-colors font-space truncate"
+								>
 									{model.name.split('/').pop()}
 								</h3>
-								<div class="flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-									<span class="text-[7px] font-black uppercase text-slate-600 bg-slate-900 px-1 rounded">
+								<div
+									class="flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+								>
+									<span
+										class="text-[7px] font-black uppercase text-slate-600 bg-slate-900 px-1 rounded"
+									>
 										{model.pipeline}
 									</span>
 									<span class="text-[7px] text-slate-600">{model.lastModified}</span>
