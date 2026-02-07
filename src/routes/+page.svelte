@@ -77,6 +77,7 @@
 	let sessionStartTime = $state(Date.now());
 	let mouseX = $state(0);
 	let mouseY = $state(0);
+	let motes = $state([]);
 
 	let showWelcome = $state(false);
 	let welcomeText = $state('');
@@ -384,6 +385,25 @@
 		setTimeout(() => {
 			showWelcome = false;
 		}, 5000);
+
+		// Initialize Data Motes
+		motes = Array.from({ length: 20 }, (_, i) => ({
+			id: i,
+			x: Math.random() * 100,
+			y: Math.random() * 100,
+			duration: 15 + Math.random() * 20,
+			delay: Math.random() * 10
+		}));
+
+		// Random Identity Glitch
+		const glitchInterval = setInterval(() => {
+			if (Math.random() > 0.8) {
+				isGlitching = true;
+				setTimeout(() => (isGlitching = false), 200);
+			}
+		}, 8000);
+
+		return () => clearInterval(glitchInterval);
 	});
 
 	import { onDestroy } from 'svelte';
@@ -422,6 +442,19 @@
 		
 		<!-- Scanline Effect -->
 		<div class="absolute inset-0 z-10 pointer-events-none opacity-[0.03] bg-scanline"></div>
+
+		<!-- Data Motes -->
+		{#each motes as mote (mote.id)}
+			<div
+				class="absolute w-[2px] h-[2px] bg-white rounded-full opacity-0 animate-float pointer-events-none z-0"
+				style="
+					left: {mote.x}%;
+					top: {mote.y}%;
+					animation-duration: {mote.duration}s;
+					animation-delay: {mote.delay}s;
+				"
+			></div>
+		{/each}
 
 		<!-- Interactive Grid -->
 		<div
@@ -492,15 +525,16 @@
 				</button>
 			</div>
 
-			<!-- Identity -->
-			<header class="mb-8 text-center">
-				<h1
-					class="text-2xl font-bold tracking-tight text-white mb-1 font-space active:scale-95 transition-transform"
-				>
-					GinkoHub
-				</h1>
-				<button
-					onclick={() => {
+				<!-- Identity -->
+				<header class="mb-8 text-center">
+					<h1
+						class="text-2xl font-bold tracking-tight text-white mb-1 font-space active:scale-95 transition-transform {isGlitching
+							? 'animate-glitch'
+							: ''}"
+					>
+						GinkoHub
+					</h1>
+					<button					onclick={() => {
 						if (!showAura) {
 							triggerAura();
 							shufflePersona();
@@ -817,6 +851,31 @@
 		);
 		background-size: 100% 8px;
 		animation: scanline 8s linear infinite;
+	}
+
+	@keyframes float {
+		0% {
+			transform: translate(0, 0);
+			opacity: 0;
+		}
+		25% {
+			opacity: 0.3;
+		}
+		50% {
+			transform: translate(20px, -20px);
+			opacity: 0.1;
+		}
+		75% {
+			opacity: 0.3;
+		}
+		100% {
+			transform: translate(-10px, 10px);
+			opacity: 0;
+		}
+	}
+
+	.animate-float {
+		animation: float infinite ease-in-out;
 	}
 
 </style>
