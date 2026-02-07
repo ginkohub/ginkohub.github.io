@@ -446,7 +446,7 @@
 			<div class="w-full mb-5 border-b border-slate-800">
 				<!-- Row 1: Primary Content -->
 				<nav class="flex flex-wrap justify-center w-full">
-					{#each tabs.filter((t) => !['tools', 'game', 'preview'].includes(t.label)) as tab}
+					{#each tabs.filter((t) => !['words', 'tools', 'game', 'preview'].includes(t.label)) as tab}
 						<button
 							onclick={() => {
 								activeTabLabel = tab.label;
@@ -468,7 +468,7 @@
 				</nav>
 				<!-- Row 2: Utilities & Experiments -->
 				<nav class="flex flex-wrap justify-center w-full border-t border-slate-800/30 bg-white/5">
-					{#each tabs.filter((t) => ['tools', 'game', 'preview'].includes(t.label)) as tab}
+					{#each tabs.filter((t) => ['words', 'tools', 'game', 'preview'].includes(t.label)) as tab}
 						<button
 							onclick={() => {
 								activeTabLabel = tab.label;
