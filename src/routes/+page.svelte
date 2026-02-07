@@ -427,7 +427,7 @@
 
 			<!-- Modular Navigation -->
 			<nav
-				class="tab-scroll-indicator flex w-full border-b border-slate-800 mb-10 overflow-x-auto no-scrollbar scroll-smooth"
+				class="tab-scroll-indicator flex w-full border-b border-slate-800 mb-5 overflow-x-auto no-scrollbar scroll-smooth"
 			>
 				<div class="flex">
 					{#each tabs as tab}
@@ -453,9 +453,9 @@
 
 			<!-- Dynamic Content -->
 			<div class="w-full min-h-[250px] pb-24">
-				{#if activeTabLabel && tabs.find(t => t.label === activeTabLabel)?.description}
-					<div class="text-xs text-slate-400 text-center mb-4 px-2">
-						{tabs.find(t => t.label === activeTabLabel).description}
+				{#if activeTabLabel && tabs.find((t) => t.label === activeTabLabel)?.description}
+					<div class="text-base text-center mb-6 px-2">
+						{tabs.find((t) => t.label === activeTabLabel).description}
 					</div>
 				{/if}
 				{#if ActiveTabComponent}
@@ -670,3 +670,4 @@
 		transition: opacity 0.3s ease;
 	}
 </style>
+
