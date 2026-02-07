@@ -428,29 +428,27 @@
 
 			<!-- Modular Navigation -->
 			<nav
-				class="tab-scroll-indicator flex w-full border-b border-slate-800 mb-5 overflow-x-auto no-scrollbar scroll-smooth"
+				class="flex flex-wrap justify-center w-full border-b border-slate-800 mb-5"
 			>
-				<div class="flex">
-					{#each tabs as tab}
-						<button
-							onclick={() => {
-								activeTabLabel = tab.label;
-							}}
-							class="flex-1 min-w-[80px] py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
-							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
-							title={tab.description}
-						>
-							{tab.label}
-							{#if activeTabLabel === tab.label}
-								<div
-									class="absolute bottom-0 left-0 w-full h-[2px] animate-pulse-slow"
-									style="background-color: var(--accent-color)"
-									in:fade={{ duration: 200 }}
-								></div>
-							{/if}
-						</button>
-					{/each}
-				</div>
+				{#each tabs as tab}
+					<button
+						onclick={() => {
+							activeTabLabel = tab.label;
+						}}
+						class="min-w-[80px] px-4 py-3 font-bold uppercase tracking-widest text-[9px] transition-colors duration-300 relative active:bg-slate-900
+						{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
+						title={tab.description}
+					>
+						{tab.label}
+						{#if activeTabLabel === tab.label}
+							<div
+								class="absolute bottom-0 left-0 w-full h-[2px] animate-pulse-slow"
+								style="background-color: var(--accent-color)"
+								in:fade={{ duration: 200 }}
+							></div>
+						{/if}
+					</button>
+				{/each}
 			</nav>
 
 			<!-- Dynamic Content -->
@@ -657,19 +655,5 @@
 		}
 	}
 
-	/* New CSS for tab scroll indicator */
-	.tab-scroll-indicator::after {
-		content: '';
-		position: absolute;
-		right: 0;
-		top: 0;
-		bottom: 0;
-		width: 40px; /* Adjust width as needed */
-		/* Gradient from transparent to near-black, ensuring it's visible over tabs */
-		background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 70%);
-		pointer-events: none;
-		z-index: 10; /* Ensure it's above the tabs */
-		transition: opacity 0.3s ease;
-	}
 </style>
 
