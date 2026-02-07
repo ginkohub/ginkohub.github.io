@@ -439,9 +439,6 @@
 							{activeTabLabel === tab.label ? 'text-white' : 'text-slate-400 hover:text-slate-200'}"
 						>
 							{tab.label}
-							{#if tab.description}
-								<div class="text-[7px] font-normal opacity-70 mt-0.5">{tab.description}</div>
-							{/if}
 							{#if activeTabLabel === tab.label}
 								<div
 									class="absolute bottom-0 left-0 w-full h-[2px] animate-pulse-slow"
@@ -456,6 +453,11 @@
 
 			<!-- Dynamic Content -->
 			<div class="w-full min-h-[250px] pb-24">
+				{#if activeTabLabel && tabs.find(t => t.label === activeTabLabel)?.description}
+					<div class="text-xs text-slate-400 text-center mb-4 px-2">
+						{tabs.find(t => t.label === activeTabLabel).description}
+					</div>
+				{/if}
 				{#if ActiveTabComponent}
 					<ActiveTabComponent
 						{data}
