@@ -32,6 +32,21 @@
 	let activeTabLabel = $state('about');
 	let ActiveTabComponent = $state(null);
 
+	// Load active tab from localStorage on mount
+	onMount(() => {
+		const savedTab = localStorage.getItem('ginkohub_active_tab');
+		if (savedTab && tabs.some((t) => t.label === savedTab)) {
+			activeTabLabel = savedTab;
+		}
+	});
+
+	// Persist active tab to localStorage
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('ginkohub_active_tab', activeTabLabel);
+		}
+	});
+
 	// Dynamically load the component when tab changes
 	$effect(() => {
 		const tab = tabs.find((t) => t.label === activeTabLabel);
