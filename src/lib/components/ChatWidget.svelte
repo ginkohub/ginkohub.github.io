@@ -67,8 +67,6 @@
 	{:else}
 		<div
 			class="w-80 md:w-96 bg-black border border-slate-800 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col transition-all overflow-hidden backdrop-blur-xl rounded-2xl"
-			in:fly={{ y: 20, duration: 300 }}
-			out:fade={{ duration: 200 }}
 		>
 			<!-- Header -->
 			<header
