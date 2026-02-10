@@ -44,7 +44,13 @@
 			"placeholder": "TYPE SOMETHING...",
 			"summon": "Summon Ginko AI",
 			"cancel": "Cancel Process",
-			"sync": "SYNC"
+			"sync": "SYNC",
+			"welcome": [
+				"Yo! I'm Ginko. Need a chat, a new theme, or some fireworks? I got you! 🤖",
+				"Bored? Ask me to change the theme or play a game with you!",
+				"I'm listening. Tell me to 'shuffle the identity' if you want a surprise.",
+				"System online. Ready to assist with code, news, or just random vibes."
+			]
 		}
 	},
 	"id": {
@@ -92,7 +98,13 @@
 			"placeholder": "KETIK SESUATU...",
 			"summon": "Panggil Ginko AI",
 			"cancel": "Batalkan Proses",
-			"sync": "SINKRON"
+			"sync": "SINKRON",
+			"welcome": [
+				"Yo! Gw Ginko. Butuh temen ngobrol, ganti tema, atau kembang api? Panggil aja! 🤖",
+				"Bosen? Suruh gw ganti warna tema atau main game yuk!",
+				"Sistem siap. Bilang 'acak identitas' kalo lu mau kejutan.",
+				"Ada yang bisa gw bantu? Gw bisa bacain berita atau cariin meme buat lu."
+			]
 		}
 	}
 }

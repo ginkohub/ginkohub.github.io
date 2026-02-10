@@ -1,13 +1,13 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { appState } from '$lib/state/appState.svelte';
 	import { i18n } from '$lib/state/i18n.svelte';
 
 	let typedText = $state('');
 	let fullText = $derived(i18n.t('intro.body'));
-	let interval;
+	let interval: any;
 
-	function startTyping(text) {
+	function startTyping(text: string) {
 		clearInterval(interval);
 		typedText = '';
 		let i = 0;

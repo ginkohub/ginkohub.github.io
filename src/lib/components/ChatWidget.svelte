@@ -28,6 +28,16 @@
 	onMount(() => {
 		const savedPrompt = localStorage.getItem('ginkohub_system_prompt');
 		if (savedPrompt) systemContent = savedPrompt;
+
+		// Show random welcome bubble on every load
+		setTimeout(() => {
+			const messages = i18n.t('ai.welcome');
+			const randomMessage = Array.isArray(messages)
+				? messages[Math.floor(Math.random() * messages.length)]
+				: messages;
+			notification = { text: randomMessage };
+			startCleanup();
+		}, 3000); // 3s delay
 	});
 
 	function toggleInput() {

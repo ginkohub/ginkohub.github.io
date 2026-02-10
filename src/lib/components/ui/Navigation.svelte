@@ -21,7 +21,7 @@
                     --swing-delay: ${i * 0.2}s;
                 `
 					: ''}
-				class="min-w-[70px] md:min-w-[80px] px-3 py-4 md:px-4 md:py-3 font-bold uppercase tracking-widest text-[10px] md:text-[9px] transition-all duration-300 relative active:bg-slate-900
+				class="min-w-[60px] md:min-w-[70px] px-2 py-2 md:px-3 md:py-1.5 font-black uppercase tracking-widest text-[9px] md:text-[8.5px] transition-all duration-300 relative active:bg-slate-900
                 {appState.activeTabLabel === tab.label
 					? 'text-white'
 					: 'text-slate-400 hover:text-slate-200'}
@@ -53,7 +53,7 @@
                     --swing-delay: ${i * 0.15}s;
                 `
 					: ''}
-				class="min-w-[70px] md:min-w-[80px] px-3 py-4 md:px-4 md:py-3 font-bold uppercase tracking-widest text-[10px] md:text-[9px] transition-all duration-300 relative active:bg-slate-900
+				class="min-w-[60px] md:min-w-[70px] px-2 py-2 md:px-3 md:py-1.5 font-black uppercase tracking-widest text-[9px] md:text-[8.5px] transition-all duration-300 relative active:bg-slate-900
                 {appState.activeTabLabel === tab.label
 					? 'text-white'
 					: 'text-slate-400 hover:text-slate-200'}
