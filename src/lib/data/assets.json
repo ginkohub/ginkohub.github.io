@@ -1,0 +1,54 @@
+{
+	"personas": [
+		"Cyber Flâneur",
+		"Digital Observer",
+		"Web Tinkerer",
+		"Logic Voyager",
+		"Information Gatherer",
+		"Internet Surfer",
+		"System Architect",
+		"Data Mystic",
+		"Code Alchemist",
+		"Pixel Dreamer",
+		"Virtual Nomad",
+		"Syntax Weaver",
+		"Binary Poet",
+		"Neural Navigator",
+		"Reality Glitcher",
+		"Ghost in the Shell",
+		"Protocol Phantom",
+		"Void Walker",
+		"Silicon Sage",
+		"Bit Explorer"
+	],
+	"accents": [
+		{ "name": "emerald", "hex": "#10b981" },
+		{ "name": "sky", "hex": "#0ea5e9" },
+		{ "name": "violet", "hex": "#8b5cf6" },
+		{ "name": "rose", "hex": "#f43f5e" },
+		{ "name": "amber", "hex": "#f59e0b" }
+	],
+	"backgrounds": {
+		"morning": [
+			"https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=60&fm=webp"
+		],
+		"day": [
+			"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1200&q=60&fm=webp"
+		],
+		"evening": [
+			"https://images.unsplash.com/photo-1475113548554-5a36f1f523d6?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=60&fm=webp"
+		],
+		"night": [
+			"https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=60&fm=webp",
+			"https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1200&q=60&fm=webp"
+		]
+	}
+}

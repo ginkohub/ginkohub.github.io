@@ -1,0 +1,98 @@
+{
+	"en": {
+		"nav": {
+			"intro": "Intro",
+			"about": "About",
+			"wisdom": "Wisdom",
+			"github": "GitHub",
+			"tools": "Tools",
+			"news": "News",
+			"ai": "AI Lab",
+			"humor": "Humor",
+			"words": "Words",
+			"preview": "Preview",
+			"game": "Arcade"
+		},
+		"intro": {
+			"title": "Welcome,",
+			"status": "Initiating Connection",
+			"body": "Welcome to GinkoHub. This is your digital sanctuary—a space for reflection, creation, and quiet exploration in the noise of the network. Take your time, wander through the tabs, and enjoy the flâneur's journey.",
+			"button": "Begin Exploration",
+			"protocol": "Digital Flâneur Protocol v1.0"
+		},
+		"common": {
+			"loading": "Loading...",
+			"error": "Error",
+			"success": "Success",
+			"search": "Search",
+			"refresh": "Refresh",
+			"cancel": "Cancel",
+			"confirm": "Confirm",
+			"copy": "Copy",
+			"copied": "Copied!",
+			"done": "Done",
+			"edit": "Edit",
+			"back": "Back",
+			"next": "Next",
+			"prev": "Prev"
+		},
+		"footer": {
+			"made_with": "Made with ❤️ by Google Gemini 3 Pro",
+			"copyright": "© {year} GINKOHUB"
+		},
+		"ai": {
+			"placeholder": "TYPE SOMETHING...",
+			"summon": "Summon Ginko AI",
+			"cancel": "Cancel Process",
+			"sync": "SYNC"
+		}
+	},
+	"id": {
+		"nav": {
+			"intro": "Intro",
+			"about": "Tentang",
+			"wisdom": "Kebijaksanaan",
+			"github": "GitHub",
+			"tools": "Alat",
+			"news": "Berita",
+			"ai": "Lab AI",
+			"humor": "Humor",
+			"words": "Kata",
+			"preview": "Pratinjau",
+			"game": "Arkade"
+		},
+		"intro": {
+			"title": "Selamat Datang,",
+			"status": "Memulai Koneksi",
+			"body": "Selamat datang di GinkoHub. Ini adalah tempat perlindungan digital Anda—sebuah ruang untuk refleksi, kreasi, dan eksplorasi tenang di tengah kebisingan jaringan. Luangkan waktu Anda, jelajahi setiap tab, dan nikmati perjalanan sang flâneur.",
+			"button": "Mulai Eksplorasi",
+			"protocol": "Protokol Digital Flâneur v1.0"
+		},
+		"common": {
+			"loading": "Memuat...",
+			"error": "Kesalahan",
+			"success": "Berhasil",
+			"search": "Cari",
+			"refresh": "Segarkan",
+			"cancel": "Batal",
+			"confirm": "Konfirmasi",
+			"copy": "Salin",
+			"copied": "Tersalin!",
+			"done": "Selesai",
+			"edit": "Ubah",
+			"back": "Kembali",
+			"next": "Lanjut",
+			"prev": "Sebelumnnya"
+		},
+		"footer": {
+			"made_with": "Dibuat dengan ❤️ oleh Google Gemini 3 Pro",
+			"copyright": "© {year} GINKOHUB"
+		},
+		"ai": {
+			"placeholder": "KETIK SESUATU...",
+			"summon": "Panggil Ginko AI",
+			"cancel": "Batalkan Proses",
+			"sync": "SINKRON"
+		}
+	}
+}

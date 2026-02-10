@@ -1,0 +1,78 @@
+[
+	{
+		"name": "JavaScript Ecosystem",
+		"feeds": [
+			{ "name": "Astro Blog", "url": "https://astro.build/rss.xml" },
+			{ "name": "Bun Blog", "url": "https://bun.sh/rss.xml" },
+			{ "name": "Deno News", "url": "https://deno.com/feed" },
+			{ "name": "Next.js Blog", "url": "https://nextjs.org/feed.xml" },
+			{ "name": "Node.js Blog", "url": "https://nodejs.org/en/feed/blog.xml" },
+			{ "name": "React Blog", "url": "https://react.dev/feed.xml" },
+			{ "name": "Svelte Blog", "url": "https://svelte.dev/blog/rss.xml" },
+			{ "name": "TypeScript Blog", "url": "https://devblogs.microsoft.com/typescript/feed/" },
+			{ "name": "Vue.js Blog", "url": "https://blog.vuejs.org/feed.rss" }
+		]
+	},
+	{
+		"name": "Python & Data Science",
+		"feeds": [
+			{ "name": "Django News", "url": "https://www.djangoproject.com/rss/weblog/" },
+			{ "name": "Julia Blog", "url": "https://julialang.org/feed.xml" },
+			{ "name": "Python Releases", "url": "https://pythoninsider.blogspot.com/feeds/posts/default" }
+		]
+	},
+	{
+		"name": "Systems & Low-Level",
+		"feeds": [
+			{ "name": "C++ (Standard)", "url": "https://isocpp.org/blog/rss" },
+			{ "name": "Go Blog", "url": "https://go.dev/blog/feed.atom" },
+			{ "name": "Rust Blog", "url": "https://blog.rust-lang.org/feed.xml" },
+			{ "name": "Zig News", "url": "https://ziglang.org/news/index.xml" }
+		]
+	},
+	{
+		"name": "Mobile & Native",
+		"feeds": [
+			{ "name": "Dart Announcements", "url": "https://medium.com/feed/dartlang" },
+			{ "name": "Flutter News", "url": "https://medium.com/feed/flutter" },
+			{ "name": "Kotlin Blog", "url": "https://blog.jetbrains.com/kotlin/feed/" },
+			{ "name": "Swift.org", "url": "https://www.swift.org/atom.xml" }
+		]
+	},
+	{
+		"name": "Enterprise & Web",
+		"feeds": [
+			{ "name": "C# (.NET Blog)", "url": "https://devblogs.microsoft.com/dotnet/feed/" },
+			{ "name": "Java (OpenJDK)", "url": "https://inside.java/feed.xml" },
+			{ "name": "Laravel News", "url": "https://feed.laravel-news.com/" },
+			{ "name": "PHP Releases", "url": "https://www.php.net/releases/feed.php" },
+			{ "name": "Rails News", "url": "https://rubyonrails.org/feed.xml" },
+			{ "name": "Ruby News", "url": "https://www.ruby-lang.org/en/feeds/news.rss" },
+			{ "name": "Spring Blog", "url": "https://spring.io/blog.atom" }
+		]
+	},
+	{
+		"name": "Intelligence (AI)",
+		"feeds": [
+			{
+				"name": "Anthropic Blog",
+				"url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml"
+			},
+			{ "name": "Google AI", "url": "https://blog.google/technology/ai/rss/" },
+			{ "name": "Hugging Face", "url": "https://huggingface.co/blog/feed.xml" },
+			{ "name": "LMSYS (Chatbot Arena)", "url": "https://lmsys.org/rss.xml" },
+			{ "name": "Microsoft AI", "url": "https://blogs.microsoft.com/ai/feed/" },
+			{ "name": "OpenAI Blog", "url": "https://openai.com/news/rss.xml" }
+		]
+	},
+	{
+		"name": "Information Stream",
+		"feeds": [
+			{ "name": "Ars Technica", "url": "https://arstechnica.com/feed/" },
+			{ "name": "GSMArena", "url": "https://www.gsmarena.com/rss-news-reviews.php3" },
+			{ "name": "Hacker News", "url": "https://hnrss.org/frontpage" },
+			{ "name": "The Verge", "url": "https://www.theverge.com/rss/index.xml" },
+			{ "name": "Wired", "url": "https://www.wired.com/feed/rss" }
+		]
+	}
+]
