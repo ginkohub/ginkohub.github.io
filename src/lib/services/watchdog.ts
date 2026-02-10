@@ -2,10 +2,16 @@
  * Puter Session Utilities & Watchdog
  */
 
+declare global {
+	interface Window {
+		puter: any;
+	}
+}
+
 /**
  * Clears Puter-related local data WITHOUT reloading the page.
  */
-export function softPurgePuterSession() {
+export function softPurgePuterSession(): void {
 	if (typeof window === 'undefined') return;
 
 	console.warn('Puter Service: Soft purging local session data...');
@@ -37,7 +43,7 @@ export function softPurgePuterSession() {
  * Performs a "Nuclear Reset" on all Puter-related local data and reloads the page.
  * Useful for stuck sessions, 401 errors, or quota limits.
  */
-export function purgePuterSession() {
+export function purgePuterSession(): void {
 	if (typeof window === 'undefined') return;
 
 	console.warn('Puter Service: Purging session and clearing fingerprint...');
@@ -64,7 +70,7 @@ export function purgePuterSession() {
 /**
  * Monitors the Puter.js SDK for authentication errors.
  */
-export function initWatchdog() {
+export function initWatchdog(): void {
 	if (typeof window === 'undefined') return;
 
 	const checkPuter = async () => {

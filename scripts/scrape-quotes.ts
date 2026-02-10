@@ -7,11 +7,16 @@ const AUTHOR_ID = '875661.Jalal_ad_Din_Muhammad_ar_Rumi';
 const PAGES_TO_SCRAPE = 10;
 const OUTPUT_PATH = path.join(process.cwd(), 'static/data/quotes.json');
 
-async function fetchPage(page) {
+interface ScrapedQuote {
+	text: string;
+	author: string;
+}
+
+async function fetchPage(page: number): Promise<ScrapedQuote[]> {
 	const url = `https://www.goodreads.com/author/quotes/${AUTHOR_ID}?page=${page}`;
 	console.log(`🔍 Fetching Page ${page}: ${url}`);
 
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve) => {
 		const options = {
 			headers: {
 				'User-Agent':
@@ -34,13 +39,13 @@ async function fetchPage(page) {
 				let data = '';
 				res.on('data', (chunk) => (data += chunk));
 				res.on('end', () => {
-					const scrapedQuotes = [];
+					const scrapedQuotes: ScrapedQuote[] = [];
 					// Target the quote container
 					const quoteRegex = /<div class="quoteText">([\s\S]*?)<\/div>/g;
 					let match;
 
 					while ((match = quoteRegex.exec(data)) !== null) {
-						let containerHtml = match[1];
+						const containerHtml = match[1];
 
 						// Extract the quote text
 						const quoteMatch = containerHtml.match(/&ldquo;([\s\S]*?)&rdquo;/);
@@ -84,7 +89,7 @@ async function fetchPage(page) {
 
 async function run() {
 	try {
-		let allQuotes = [];
+		let allQuotes: ScrapedQuote[] = [];
 		for (let i = 1; i <= PAGES_TO_SCRAPE; i++) {
 			const pageQuotes = await fetchPage(i);
 			allQuotes = [...allQuotes, ...pageQuotes];
@@ -92,7 +97,7 @@ async function run() {
 		}
 
 		// De-duplicate based on the quote text
-		const seen = new Set();
+		const seen = new Set<string>();
 		const uniqueQuotes = allQuotes.filter((item) => {
 			const duplicate = seen.has(item.text);
 			seen.add(item.text);
@@ -110,7 +115,7 @@ async function run() {
 		} else {
 			console.log('\n⚠️ No quotes found.');
 		}
-	} catch (error) {
+	} catch (error: any) {
 		console.error('\n❌ Fatal Error:', error.message);
 	}
 }

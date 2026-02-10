@@ -1,3 +1,9 @@
+export interface HologramSettings {
+	scanlineGap?: number;
+	glitchLines?: number;
+	baseColor?: string;
+}
+
 export const config = {
 	defaults: {
 		scanlineGap: 4,
@@ -9,7 +15,12 @@ export const config = {
 	]
 };
 
-export function drawHologram(ctx, width, height, settings = {}) {
+export function drawHologram(
+	ctx: CanvasRenderingContext2D,
+	width: number,
+	height: number,
+	settings: HologramSettings = {}
+): void {
 	const gap = settings.scanlineGap ?? config.defaults.scanlineGap;
 	const glitches = settings.glitchLines ?? config.defaults.glitchLines;
 	const color = settings.baseColor ?? 'rgba(0, 255, 255, 0.1)';

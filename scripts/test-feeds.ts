@@ -1,9 +1,9 @@
 /**
  * Utility script to test all RSS feeds in tech-feeds.json
- * Run with: bun scripts/test-feeds.js
+ * Run with: bun scripts/test-feeds.ts
  */
 
-import feeds from '../src/lib/data/tech-feeds.json' with { type: 'json' };
+import feeds from '../src/lib/data/tech-feeds.json';
 
 const API_BASE = 'https://ghp-tools.vercel.app/api/v1/tools/rss?url=';
 
@@ -12,7 +12,7 @@ async function testFeeds() {
 
 	let total = 0;
 	let success = 0;
-	let failed = [];
+	const failed: Array<{ name: string; url: string; error: string }> = [];
 
 	for (const group of feeds) {
 		console.log(`\nGroup: ${group.name}`);
@@ -22,7 +22,7 @@ async function testFeeds() {
 
 			try {
 				const response = await fetch(`${API_BASE}${encodeURIComponent(feed.url)}`);
-				const data = await response.json();
+				const data = (await response.json()) as any;
 
 				if (response.ok && data.items) {
 					console.log('OK');
@@ -39,7 +39,7 @@ async function testFeeds() {
 						failed.push({ name: feed.name, url: feed.url, error: data.error || 'Network Error' });
 					}
 				}
-			} catch (e) {
+			} catch (e: any) {
 				console.log('ERROR');
 				failed.push({ name: feed.name, url: feed.url, error: e.message });
 			}

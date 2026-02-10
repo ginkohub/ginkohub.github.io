@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import type { PageServerLoad } from './$types';
 
-/** @type {import('./$types').PageServerLoad} */
-export async function load() {
+export const load: PageServerLoad = async () => {
 	let quotes = [];
 
 	// Try to read from the manually scraped file first
@@ -28,4 +28,4 @@ export async function load() {
 	return {
 		quotes: quotes
 	};
-}
+};

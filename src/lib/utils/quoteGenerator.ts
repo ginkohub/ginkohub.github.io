@@ -1,7 +1,8 @@
-import { drawGlass, config as glassConfig } from './quote-styles/glass.js';
-import { drawCyber, config as cyberConfig } from './quote-styles/cyber.js';
-import { drawHologram, config as hologramConfig } from './quote-styles/hologram.js';
-import { drawMinimalist } from './quote-styles/minimalist.js';
+import { drawGlass, config as glassConfig } from './quote-styles/glass';
+import { drawCyber, config as cyberConfig } from './quote-styles/cyber';
+import { drawHologram, config as hologramConfig } from './quote-styles/hologram';
+import { drawMinimalist } from './quote-styles/minimalist';
+import type { Quote } from '$lib/types';
 
 export const styleConfigs = {
 	glass: {
@@ -40,11 +41,31 @@ export const styles = [
 	{ id: 'hologram', name: 'Hologram' }
 ];
 
-export const aligns = [
+export const aligns: Array<{ id: 'left' | 'center' | 'right'; name: string; icon: string }> = [
 	{ id: 'left', name: 'LEFT', icon: '⫷' },
 	{ id: 'center', name: 'CENTER', icon: '〓' },
 	{ id: 'right', name: 'RIGHT', icon: '⫸' }
 ];
+
+interface GenerateQuoteArgs {
+	quote: Quote;
+	accentColor: string;
+	bgImage?: string;
+	customBg?: string;
+	selectedStyle: string;
+	selectedFont: string;
+	selectedAlign: 'left' | 'center' | 'right';
+	selectedAuthorFont?: string;
+	selectedAuthorAlign?: 'left' | 'center' | 'right';
+	bgOpacity: number;
+	manualFontSize: number;
+	textOffsetX: number;
+	textOffsetY: number;
+	grayscaleMode: boolean;
+	customColor?: string;
+	customAuthorColor?: string;
+	styleSettings?: any;
+}
 
 /**
  * Generates a PNG data URL for a quote.
@@ -67,12 +88,12 @@ export async function generateQuoteImage({
 	customColor,
 	customAuthorColor,
 	styleSettings = {}
-}) {
+}: GenerateQuoteArgs): Promise<string> {
 	const font = fonts.find((f) => f.id === selectedFont) || fonts[0];
 	const authorFont = fonts.find((f) => f.id === (selectedAuthorFont || selectedFont)) || font;
 	try {
-		await document.fonts.load(`bold italic 64px ${font.css}`);
-		if (selectedAuthorFont) await document.fonts.load(`bold 32px ${authorFont.css}`);
+		await (document as any).fonts.load(`bold italic 64px ${font.css}`);
+		if (selectedAuthorFont) await (document as any).fonts.load(`bold 32px ${authorFont.css}`);
 	} catch (e) {
 		console.warn('Font load failed, using fallback');
 	}
@@ -149,6 +170,7 @@ export async function generateQuoteImage({
 	ctx.textAlign = 'right';
 	ctx.fillStyle = selectedStyle === 'impact' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)';
 	ctx.font = '900 18px Inter, sans-serif';
+	// @ts-ignore
 	ctx.letterSpacing = '4px';
 	ctx.fillText('GINKOHUB.GITHUB.IO', 1040, 1040);
 
@@ -169,7 +191,7 @@ export async function generateQuoteImage({
 	const fullText = `"${quote.text}"`;
 	const maxWidth = 800;
 
-	function getLines(fs) {
+	function getLines(fs: number) {
 		ctx.font = `${fontConfig} ${fs}px ${font.css}, sans-serif`;
 		const words = fullText.split(' ');
 		let lines = [];
@@ -208,7 +230,7 @@ export async function generateQuoteImage({
 	});
 
 	// 5. Author
-	ctx.textAlign = selectedAuthorAlign || selectedAlign;
+	ctx.textAlign = (selectedAuthorAlign || selectedAlign) as CanvasTextAlign;
 	const authorY = Math.min(startY + lines.length * lineHeight + 80, 940);
 	let authorX = drawX; // Default to same as quote
 

@@ -1,3 +1,9 @@
+export interface CyberSettings {
+	borderWidth?: number;
+	showCorners?: boolean;
+	frameColor?: string;
+}
+
 export const config = {
 	defaults: {
 		borderWidth: 4,
@@ -11,7 +17,13 @@ export const config = {
 	]
 };
 
-export function drawCyber(ctx, width, height, accentColor, settings = {}) {
+export function drawCyber(
+	ctx: CanvasRenderingContext2D,
+	width: number,
+	height: number,
+	accentColor: string,
+	settings: CyberSettings = {}
+): void {
 	const weight = settings.borderWidth ?? config.defaults.borderWidth;
 	const corners = settings.showCorners ?? config.defaults.showCorners;
 	const color = settings.frameColor ?? accentColor;

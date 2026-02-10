@@ -1,3 +1,9 @@
+export interface GlassSettings {
+	glassBlur?: number;
+	glassRound?: number;
+	baseColor?: string;
+}
+
 export const config = {
 	defaults: {
 		bgOpacity: 25,
@@ -10,10 +16,15 @@ export const config = {
 	]
 };
 
-export function drawGlass(ctx, width, height, settings = {}) {
+export function drawGlass(
+	ctx: CanvasRenderingContext2D,
+	width: number,
+	height: number,
+	settings: GlassSettings = {}
+): void {
 	const blur = settings.glassBlur ?? config.defaults.glassBlur;
 	const round = settings.glassRound ?? config.defaults.glassRound;
-	let color = settings.baseColor ?? '#ffffff';
+	const color = settings.baseColor ?? '#ffffff';
 
 	// Ensure transparency if a hex color is picked
 	if (color.startsWith('#')) {
@@ -31,6 +42,7 @@ export function drawGlass(ctx, width, height, settings = {}) {
 	ctx.lineWidth = 2;
 
 	ctx.beginPath();
+	// @ts-ignore - roundRect is available in modern browsers but may not be in all TS envs
 	ctx.roundRect(100, 100, width - 200, height - 200, round);
 	ctx.fill();
 	ctx.stroke();

@@ -8,7 +8,7 @@
 		"build": "bun --bun vite build",
 		"preview": "bun --bun vite preview",
 		"prepare": "svelte-kit sync || echo ''",
-		"scrape": "bun scripts/scrape-quotes.js",
+		"scrape": "bun scripts/scrape-quotes.ts",
 		"check": "bun svelte-kit sync && bun svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "bun svelte-kit sync && bun svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
