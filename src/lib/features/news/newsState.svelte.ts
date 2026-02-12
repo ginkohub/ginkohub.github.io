@@ -13,14 +13,17 @@ interface Article {
 	date: string;
 	snippet: string;
 	image: string;
+	sourceName: string;
+	sourceUrl: string;
 }
 
 class NewsState {
 	customFeeds = $state<Feed[]>([]);
-	selectedFeed = $state<string>(defaultFeedGroups[0].feeds[0].url);
+	selectedFeeds = $state<string[]>([]); // Changed to array for multi-select
 	articles = $state<Article[]>([]);
 	loading = $state<boolean>(false);
 	error = $state<string>('');
+	lastUpdated = $state<number>(0);
 
 	constructor() {
 		if (typeof window !== 'undefined') {
@@ -39,12 +42,71 @@ class NewsState {
 		return this.feedGroups.flatMap((g) => g.feeds);
 	}
 
+	get filteredArticles() {
+		if (this.selectedFeeds.length === 0) return this.articles;
+		return this.articles.filter((a) => this.selectedFeeds.includes(a.sourceUrl));
+	}
+
 	loadPersistedState() {
 		const savedFeeds = localStorage.getItem('ginkohub_custom_feeds');
 		if (savedFeeds) this.customFeeds = JSON.parse(savedFeeds);
 
-		const savedActiveFeed = localStorage.getItem('ginkohub_active_feed');
-		if (savedActiveFeed) this.selectedFeed = savedActiveFeed;
+		const savedSelectedFeeds = localStorage.getItem('ginkohub_selected_feeds');
+		if (savedSelectedFeeds) {
+			this.selectedFeeds = JSON.parse(savedSelectedFeeds);
+		} else {
+			// Default to first 5 feeds if nothing saved
+			this.selectedFeeds = this.allFeeds.slice(0, 5).map((f) => f.url);
+		}
+
+		const savedArticles = localStorage.getItem('ginkohub_cached_articles');
+		if (savedArticles) {
+			try {
+				this.articles = JSON.parse(savedArticles);
+			} catch (e) {
+				console.error('Failed to parse cached articles', e);
+				this.articles = [];
+			}
+		}
+
+		const savedLastUpdated = localStorage.getItem('ginkohub_news_last_updated');
+		if (savedLastUpdated) this.lastUpdated = parseInt(savedLastUpdated);
+	}
+
+	saveArticles() {
+		if (typeof window === 'undefined') return;
+		// Keep only last 200 articles to save space
+		const toSave = this.articles.slice(0, 200);
+		localStorage.setItem('ginkohub_cached_articles', JSON.stringify(toSave));
+		this.lastUpdated = Date.now();
+		localStorage.setItem('ginkohub_news_last_updated', this.lastUpdated.toString());
+	}
+
+	saveSelectedFeeds() {
+		if (typeof window === 'undefined') return;
+		localStorage.setItem('ginkohub_selected_feeds', JSON.stringify(this.selectedFeeds));
+	}
+
+	toggleFeed(url: string) {
+		if (this.selectedFeeds.includes(url)) {
+			this.selectedFeeds = this.selectedFeeds.filter((u) => u !== url);
+		} else {
+			this.selectedFeeds = [...this.selectedFeeds, url];
+			// Fetch if no articles for this feed in cache
+			if (!this.articles.some((a) => a.sourceUrl === url)) {
+				this.fetchFeed(url);
+			}
+		}
+		this.saveSelectedFeeds();
+	}
+
+	selectAll(select: boolean = true) {
+		if (select) {
+			this.selectedFeeds = this.allFeeds.map((f) => f.url);
+		} else {
+			this.selectedFeeds = [];
+		}
+		this.saveSelectedFeeds();
 	}
 
 	addFeed(name: string, url: string) {
@@ -54,9 +116,12 @@ class NewsState {
 			this.customFeeds = [...this.customFeeds, feed];
 			localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(this.customFeeds));
 
-			// Auto switch to new feed
-			this.selectedFeed = url;
-			localStorage.setItem('ginkohub_active_feed', this.selectedFeed);
+			// Auto select the new feed
+			if (!this.selectedFeeds.includes(url)) {
+				this.selectedFeeds = [...this.selectedFeeds, url];
+				this.saveSelectedFeeds();
+			}
+			this.fetchFeed(url);
 
 			return { success: true, message: `Feed '${name}' added successfully.` };
 		} catch (e) {
@@ -67,52 +132,102 @@ class NewsState {
 	removeFeed(url: string) {
 		this.customFeeds = this.customFeeds.filter((f) => f.url !== url);
 		localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(this.customFeeds));
-		if (this.selectedFeed === url) {
-			this.selectedFeed = defaultFeedGroups[0].feeds[0].url;
-			localStorage.setItem('ginkohub_active_feed', this.selectedFeed);
-		}
+		// Remove articles from this feed
+		this.articles = this.articles.filter((a) => a.sourceUrl !== url);
+		this.selectedFeeds = this.selectedFeeds.filter((u) => u !== url);
+		this.saveSelectedFeeds();
+		this.saveArticles();
 	}
 
-	nextFeed() {
-		const currentIndex = this.allFeeds.findIndex((f) => f.url === this.selectedFeed);
-		const nextIndex = (currentIndex + 1) % this.allFeeds.length;
-		this.selectedFeed = this.allFeeds[nextIndex].url;
-	}
-
-	prevFeed() {
-		const currentIndex = this.allFeeds.findIndex((f) => f.url === this.selectedFeed);
-		const prevIndex = (currentIndex - 1 + this.allFeeds.length) % this.allFeeds.length;
-		this.selectedFeed = this.allFeeds[prevIndex].url;
-	}
+	// Legacy navigation methods - can be kept for UI convenience or removed
+	nextFeed() {}
+	prevFeed() {}
 
 	setSelectedFeed(urlOrName: string) {
-		// Try to find by URL first, then by name
 		const feed = this.allFeeds.find(
 			(f) => f.url === urlOrName || f.name.toLowerCase().includes(urlOrName.toLowerCase())
 		);
 		if (feed) {
-			this.selectedFeed = feed.url;
+			if (!this.selectedFeeds.includes(feed.url)) {
+				this.toggleFeed(feed.url);
+			}
 			return { success: true, name: feed.name };
 		}
 		return { success: false };
 	}
 
-	async fetchFeed() {
-		if (!this.selectedFeed) return;
-
-		if (typeof window !== 'undefined') {
-			localStorage.setItem('ginkohub_active_feed', this.selectedFeed);
-		}
-
+	async refreshAll() {
+		if (this.loading) return;
 		this.loading = true;
 		this.error = '';
 
+		// We only refresh the selected feeds to be efficient
+		const feedsToRefresh =
+			this.selectedFeeds.length > 0
+				? this.allFeeds.filter((f) => this.selectedFeeds.includes(f.url))
+				: this.allFeeds;
+
+		let newArticlesCount = 0;
+
+		const batchSize = 3;
+		for (let i = 0; i < feedsToRefresh.length; i += batchSize) {
+			const batch = feedsToRefresh.slice(i, i + batchSize);
+			await Promise.all(
+				batch.map(async (feed) => {
+					try {
+						const fetched = await this.fetchFeedData(feed);
+						if (fetched.length > 0) {
+							this.mergeArticles(fetched);
+							newArticlesCount += fetched.length;
+						}
+					} catch (e) {
+						console.error(`Error fetching ${feed.name}:`, e);
+					}
+				})
+			);
+		}
+
+		this.saveArticles();
+		this.loading = false;
+		return newArticlesCount;
+	}
+
+	private mergeArticles(newArticles: Article[]) {
+		const existingLinks = new Set(this.articles.map((a) => a.link));
+		const uniqueNew = newArticles.filter((a) => !existingLinks.has(a.link));
+
+		if (uniqueNew.length > 0) {
+			this.articles = [...uniqueNew, ...this.articles].sort((a, b) => {
+				const dateA = a.date === 'LATEST' ? new Date().getTime() : new Date(a.date).getTime();
+				const dateB = b.date === 'LATEST' ? new Date().getTime() : new Date(b.date).getTime();
+				return dateB - dateA;
+			});
+		}
+	}
+
+	async fetchFeed(url: string) {
+		const feed = this.allFeeds.find((f) => f.url === url);
+		if (!feed) return;
+
+		this.loading = true;
 		try {
-			let res = await ghpFetch(this.selectedFeed, 'rss');
+			const fetched = await this.fetchFeedData(feed);
+			this.mergeArticles(fetched);
+			this.saveArticles();
+		} catch (e) {
+			console.error(e);
+		} finally {
+			this.loading = false;
+		}
+	}
+
+	private async fetchFeedData(feed: Feed): Promise<Article[]> {
+		try {
+			let res = await ghpFetch(feed.url, 'rss');
+			let rawArticles: any[] = [];
 
 			if (!res.success || !res.data?.items) {
-				console.log('Specialized RSS parser failed, attempting raw XML fallback...');
-				const rawRes = await ghpFetch(this.selectedFeed, 'html');
+				const rawRes = await ghpFetch(feed.url, 'html');
 				if (rawRes.success) {
 					const xmlString =
 						rawRes.data.contents || (typeof rawRes.data === 'string' ? rawRes.data : '');
@@ -120,51 +235,46 @@ class NewsState {
 					if (xmlString) {
 						const parser = new DOMParser();
 						const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+						rawArticles = Array.from(xmlDoc.querySelectorAll('entry, item'));
 
-						const entries = Array.from(xmlDoc.querySelectorAll('entry, item'));
-						if (entries.length > 0) {
-							const feedHostname = new URL(this.selectedFeed).hostname;
-							const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
+						const feedHostname = new URL(feed.url).hostname;
+						const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
 
-							this.articles = entries.slice(0, 10).map((entry) => {
-								const title = entry.querySelector('title')?.textContent || 'Untitled';
-								const link =
-									entry.querySelector('link[rel="alternate"]')?.getAttribute('href') ||
-									entry.querySelector('link')?.getAttribute('href') ||
-									entry.querySelector('link')?.textContent ||
-									'';
-								const pubDate =
-									entry.querySelector('published, updated, pubDate')?.textContent || '';
-								const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'LATEST';
-								const desc =
-									entry.querySelector('summary, content, description')?.textContent || '';
-								const snippet = desc
-									? desc.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
-									: 'Access protocol...';
+						return rawArticles.slice(0, 15).map((entry) => {
+							const title = entry.querySelector('title')?.textContent || 'Untitled';
+							const link =
+								entry.querySelector('link[rel="alternate"]')?.getAttribute('href') ||
+								entry.querySelector('link')?.getAttribute('href') ||
+								entry.querySelector('link')?.textContent ||
+								'';
+							const pubDate = entry.querySelector('published, updated, pubDate')?.textContent || '';
+							const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'LATEST';
+							const desc = entry.querySelector('summary, content, description')?.textContent || '';
+							const snippet = desc
+								? desc.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
+								: 'Access protocol...';
 
-								return {
-									title: this.fixEncoding(title),
-									link,
-									date,
-									snippet,
-									image: fallbackImage
-								};
-							});
-							this.loading = false;
-							return;
-						}
+							return {
+								title: this.fixEncoding(title),
+								link,
+								date,
+								snippet,
+								image: fallbackImage,
+								sourceName: feed.name,
+								sourceUrl: feed.url
+							};
+						});
 					}
 				}
-				throw new Error(res.error || 'Feed format unsupported');
+				return [];
 			}
 
 			const data = res.data;
-
 			if (data && data.items && Array.isArray(data.items)) {
-				const feedHostname = new URL(this.selectedFeed).hostname;
+				const feedHostname = new URL(feed.url).hostname;
 				const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
 
-				this.articles = data.items.slice(0, 10).map((item: any) => {
+				return data.items.slice(0, 15).map((item: any) => {
 					const title = this.fixEncoding(item.title || 'Untitled Protocol');
 					const link = item.link;
 					const pubDate = item.published || item.created || item.pubDate;
@@ -193,18 +303,16 @@ class NewsState {
 						link,
 						date,
 						snippet,
-						image: image || fallbackImage
+						image: image || fallbackImage,
+						sourceName: feed.name,
+						sourceUrl: feed.url
 					};
 				});
-			} else {
-				throw new Error('Feed is empty or format unsupported');
 			}
+			return [];
 		} catch (e) {
-			const err = e as Error;
-			this.error = `Sync Error: ${err.message}`;
-			console.error('RSS Feed error:', e);
-		} finally {
-			this.loading = false;
+			console.error(`RSS Fetch Error [${feed.name}]:`, e);
+			return [];
 		}
 	}
 

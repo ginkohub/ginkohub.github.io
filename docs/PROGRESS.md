@@ -26,6 +26,12 @@
 
 ### 4. Robustness & Recovery
 
+- **RSS Unified Reader & Caching (New - Feb 2026)**:
+  - Implemented a unified news stream that aggregates articles from multiple selected feeds.
+  - Added persistent `localStorage` caching for articles with full deduplication logic (via article links).
+  - Created a 'Neural Protocol Directory' (compact chip-based selector) for multi-feed management.
+  - Implemented smart background synchronization (auto-refresh if cache > 1 hour).
+  - Added bulk actions (Link/Unlink All) and manual refresh with visual feedback.
 - **Flaky Scroll Fix**: Replaced timing-based scrolling with event-driven `tick()` logic.
 - **Link Preview Stability**: Fixed a critical `TypeError` where preview components crashed when metadata was null. Implemented graceful fallback UI for all preview platforms (Twitter, Facebook, Discord, WhatsApp, LinkedIn).
 - **Code Integrity**: Verified production-level build and executed `svelte-check` using `tsconfig.json`.
