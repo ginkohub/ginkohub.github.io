@@ -24,6 +24,8 @@
 					toolbar_bg: '#f1f3f6',
 					enable_publishing: false,
 					hide_top_toolbar: true,
+					hide_legend: true,
+					hide_side_toolbar: true,
 					save_image: false,
 					container_id: containerId,
 					backgroundColor: 'rgba(0, 0, 0, 0)',
@@ -46,67 +48,104 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Stock Selection Dropdown -->
-	<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-		<div class="relative w-full md:w-64 group">
+	<!-- Stock Selection & Summary -->
+	<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+		<div class="relative w-full md:w-72 group">
 			<label
 				for="stock-select"
-				class="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1 block"
+				class="mb-1 block text-[8px] font-black uppercase tracking-[0.3em] text-slate-500"
 			>
-				Select Market Entity
+				Neural Market Entity
 			</label>
 			<div class="relative">
 				<select
 					id="stock-select"
 					value={stockState.selectedSymbol}
 					onchange={(e) => stockState.setSelectedSymbol(e.target.value)}
-					class="w-full bg-black border border-slate-800 p-3 text-xs font-mono font-bold text-white focus:outline-none focus:border-white/20 appearance-none cursor-pointer transition-all hover:bg-slate-900"
+					class="w-full appearance-none border border-slate-800 bg-black p-3 font-mono text-xs font-bold text-white transition-all hover:bg-slate-900 focus:border-white/20 focus:outline-none"
 				>
-					{#each stockState.indices as stock}
+					{#each stockState.assets as stock}
 						<option value={stock.symbol}>
-							{stock.symbol.split(':')[1]} - {stock.name}
+							{stock.symbol.includes(':') ? stock.symbol.split(':')[1] : stock.symbol} - {stock.name}
 						</option>
 					{/each}
 				</select>
-				<div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+				<div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
 					▼
 				</div>
 			</div>
 		</div>
 
-		<div class="px-4 py-2 border border-slate-800/50 bg-white/5 hidden md:block">
-			<span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block"
-				>Active Exchange</span
-			>
-			<span class="text-[10px] font-bold text-slate-200">
-				{stockState.selectedSymbol.split(':')[0] === 'IDX'
-					? 'Bursa Efek Indonesia'
-					: 'Global Markets'}
-			</span>
+		<div
+			class="flex w-full items-center justify-between border border-slate-800/50 bg-white/5 p-3 md:w-auto md:min-w-[200px]"
+		>
+			<div class="flex flex-col">
+				<span class="text-[7px] font-black uppercase tracking-widest text-slate-500"
+					>Active Asset</span
+				>
+				<span class="text-[10px] font-bold text-slate-200">{stockState.selectedAsset.name}</span>
+			</div>
+			<div class="flex flex-col items-end pl-6">
+				<span class="text-[7px] font-black uppercase tracking-widest text-slate-500">Exchange</span>
+				<span class="text-[9px] font-black text-emerald-500"
+					>{stockState.selectedAsset.exchange}</span
+				>
+			</div>
 		</div>
 	</div>
 
 	<!-- Chart Area -->
-	<div class="relative h-[450px] border border-slate-800 bg-black">
-		<div id={containerId} class="w-full h-full"></div>
-
-		<!-- Overlay for aesthetic -->
+	<div class="group relative h-[500px] border border-slate-800 bg-black">
+		<!-- Aesthetic Overlay -->
 		<div
-			class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-5 z-10"
+			class="pointer-events-none absolute left-0 top-0 z-10 h-full w-full opacity-5"
 			style="background-image: radial-gradient(circle at 50% 50%, {accentColor} 0%, transparent 70%);"
 		></div>
+
+		<div id={containerId} class="h-full w-full"></div>
+
+		<!-- Live Indicator -->
+		<div
+			class="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-black/60 px-2 py-1 backdrop-blur-md border border-white/5"
+		>
+			<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+			<span class="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-500"
+				>Live Neural Stream</span
+			>
+		</div>
 	</div>
 
-	<div class="p-4 border border-slate-800 bg-white/5 flex items-center justify-between">
-		<div class="flex flex-col">
-			<span class="text-[7px] font-black uppercase text-slate-500 tracking-[0.2em]"
-				>Global Markets</span
+	<!-- Market Insights Placeholder -->
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+		<div class="p-4 border border-slate-800 bg-white/5 space-y-1">
+			<span class="text-[7px] font-black uppercase text-slate-500 tracking-widest"
+				>Market Phase</span
 			>
-			<span class="text-[10px] font-bold text-slate-300">Synchronized with Neural Trading Hub</span>
+			<div class="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">
+				Accumulation Detected
+			</div>
 		</div>
-		<div class="flex items-center gap-2">
-			<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-			<span class="text-[8px] font-black uppercase text-emerald-500">Market Open</span>
+		<div class="p-4 border border-slate-800 bg-white/5 space-y-1">
+			<span class="text-[7px] font-black uppercase text-slate-500 tracking-widest"
+				>Volatility Index</span
+			>
+			<div class="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">
+				Low - Stable Link
+			</div>
+		</div>
+		<div class="p-4 border border-slate-800 bg-white/5 space-y-1">
+			<span class="text-[7px] font-black uppercase text-slate-500 tracking-widest"
+				>Trade execution</span
+			>
+			<div class="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">
+				Optimal Connectivity
+			</div>
 		</div>
 	</div>
 </div>
+
+<style>
+	:global(.tradingview-widget-container) {
+		background-color: transparent !important;
+	}
+</style>

@@ -163,50 +163,76 @@ class MarketState {
 	}
 
 	private async fetchInitialData() {
-		const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${JSON.stringify(this.symbols)}`;
-		const res = await ghpFetch(url);
+		const symbolsJson = JSON.stringify(this.symbols);
+		const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${symbolsJson}`;
 
-		if (res.success && res.data) {
-			const data = Array.isArray(res.data) ? res.data : [];
-			data.forEach((item: any) => {
-				const symbol = item.symbol.replace('USDT', '');
-				const index = this.assets.findIndex((a) => a.symbol === symbol);
-				if (index !== -1) {
-					this.assets[index] = {
-						symbol,
-						pair: item.symbol,
-						price: parseFloat(item.lastPrice),
-						change24h: parseFloat(item.priceChangePercent),
-						high24h: parseFloat(item.highPrice),
-						low24h: parseFloat(item.lowPrice),
-						volume: parseFloat(item.quoteVolume)
-					};
+		let data: any[] = [];
+
+		try {
+			// Try proxy first
+			const res = await ghpFetch(url);
+			if (res.success && Array.isArray(res.data)) {
+				data = res.data;
+			} else {
+				// Fallback to direct fetch (might work on some browsers/extensions)
+				const directRes = await fetch(url);
+				if (directRes.ok) {
+					data = await directRes.json();
 				}
-			});
+			}
+
+			if (data && data.length > 0) {
+				data.forEach((item: any) => {
+					const symbol = item.symbol.replace('USDT', '');
+					const index = this.assets.findIndex((a) => a.symbol === symbol);
+					if (index !== -1) {
+						this.assets[index] = {
+							symbol,
+							pair: item.symbol,
+							price: parseFloat(item.lastPrice) || 0,
+							change24h: parseFloat(item.priceChangePercent) || 0,
+							high24h: parseFloat(item.highPrice) || 0,
+							low24h: parseFloat(item.lowPrice) || 0,
+							volume: parseFloat(item.quoteVolume) || 0
+						};
+					}
+				});
+			}
+		} catch (e) {
+			console.warn('Initial market fetch failed', e);
 		}
 	}
 
 	private connectWebSocket() {
 		if (this.ws) this.ws.close();
 
-		// Connect to Binance stream for real-time prices
+		// Use the combined stream endpoint which is more stable for multiple symbols
 		const streamNames = this.symbols.map((s) => `${s.toLowerCase()}@ticker`).join('/');
-		this.ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamNames}`);
+		this.ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streamNames}`);
 
 		this.ws.onmessage = (event) => {
-			const data = JSON.parse(event.data);
-			const symbol = data.s.replace('USDT', '');
+			try {
+				const msg = JSON.parse(event.data);
+				// Combined streams are wrapped in { stream, data }
+				const data = msg.data || msg;
 
-			const index = this.assets.findIndex((a) => a.symbol === symbol);
-			if (index !== -1) {
-				this.assets[index] = {
-					...this.assets[index],
-					price: parseFloat(data.c),
-					change24h: parseFloat(data.P),
-					high24h: parseFloat(data.h),
-					low24h: parseFloat(data.l),
-					volume: parseFloat(data.q)
-				};
+				if (!data.s) return; // Not a ticker message
+
+				const symbol = data.s.replace('USDT', '');
+				const index = this.assets.findIndex((a) => a.symbol === symbol);
+
+				if (index !== -1) {
+					this.assets[index] = {
+						...this.assets[index],
+						price: parseFloat(data.c),
+						change24h: parseFloat(data.P),
+						high24h: parseFloat(data.h),
+						low24h: parseFloat(data.l),
+						volume: parseFloat(data.q)
+					};
+				}
+			} catch (e) {
+				console.error('WS Message parsing failed', e);
 			}
 		};
 
