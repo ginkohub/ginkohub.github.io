@@ -58,6 +58,12 @@
 - [x] **New Tab: Market (Complete - Feb 2026)**:
   - Integrated real-time crypto price charts powered by TradingView and Binance.
   - Added live price ticker with 24h change and volume metrics.
+  - Implemented **Dynamic Bidirectional Currency Converter** with Svelte 5 reactive state.
+  - Bypassed CORS issues using centralized proxy (`ghpFetch`) and direct fetch fallbacks.
   - Implemented `market_skills` for AI-driven chart navigation and price querying.
+- [x] **New Tab: Stock (Complete - Feb 2026)**:
+  - Added global stock market monitoring (NASDAQ, NYSE, IDX/IHSG).
+  - High-performance chart rendering with minimal UI (hidden toolbars/settings).
+  - AI-integrated symbol switching via `stock_skills`.
 - [ ] **New Tab: Gallery**: Auto-scanning gallery for AI-generated art.
 - [ ] **Advanced News Filtering**: AI-powered categorization of RSS headlines.
