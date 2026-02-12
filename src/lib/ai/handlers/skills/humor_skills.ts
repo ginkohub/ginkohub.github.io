@@ -32,6 +32,6 @@ export const handler =
 	async ({ action, channel }: HumorArgs): Promise<string> => {
 		if (state.setTab) state.setTab('humor');
 		const validChannel = channel || 'memes';
-		humorState.setMemeChannel(validChannel);
+		humorState.fetchMeme(validChannel);
 		return `Humor stream refreshed (Source: r/${validChannel})`;
 	};

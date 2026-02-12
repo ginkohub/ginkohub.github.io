@@ -26,12 +26,18 @@
 
 ### 4. Robustness & Recovery
 
-- **RSS Unified Reader & Caching (New - Feb 2026)**:
-  - Implemented a unified news stream that aggregates articles from multiple selected feeds.
-  - Added persistent `localStorage` caching for articles with full deduplication logic (via article links).
-  - Created a 'Neural Protocol Directory' (compact chip-based selector) for multi-feed management.
-  - Implemented smart background synchronization (auto-refresh if cache > 1 hour).
-  - Added bulk actions (Link/Unlink All) and manual refresh with visual feedback.
+- **RSS Unified Reader & Caching (Major Update - Feb 2026)**:
+  - Implemented a unified news stream aggregating articles from 100+ sources.
+  - Added persistent `localStorage` caching with link-based deduplication.
+  - Implemented multi-select feed management via a compact 'News Source Directory' (chip-based UI).
+  - Added granular controls: Pagination (10 per page), Filter (All/New/Old), and per-category group toggles.
+  - Advanced Read/Unread system: Toggleable individual states, pulsing red 'NEW' badges, and dimmed 'ARCHIVED' articles.
+  - Scoped actions: 'Mark Page Read' and 'Mark Page Unread' buttons for targeted management.
+  - Smart background sync: Auto-refresh only when cache exceeds 1 hour.
+- **Humor System Enhancements**:
+  - Added aesthetic Meme Channel selector with glowing rose accents.
+  - Expanded sources to include General, Dank, Wholesome, Dev, and Software Gore channels.
+  - Fixed AI humor skills to correctly interface with the updated fetch logic.
 - **Flaky Scroll Fix**: Replaced timing-based scrolling with event-driven `tick()` logic.
 - **Link Preview Stability**: Fixed a critical `TypeError` where preview components crashed when metadata was null. Implemented graceful fallback UI for all preview platforms (Twitter, Facebook, Discord, WhatsApp, LinkedIn).
 - **Code Integrity**: Verified production-level build and executed `svelte-check` using `tsconfig.json`.

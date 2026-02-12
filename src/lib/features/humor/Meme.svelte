@@ -57,15 +57,18 @@
 					>
 				</div>
 			{/if}
-			<div class="flex border border-slate-800 p-0.5 bg-black">
+			<div
+				class="border border-slate-800 flex items-center gap-1 bg-black/40 border border-white/5 p-0.5"
+			>
+				<span class="text-[6px] font-black text-slate-600 uppercase px-1">Src</span>
 				{#each channels as channel}
 					<button
 						onclick={() => humorState.fetchMeme(channel.id)}
 						class="px-2 py-1 text-[7px] font-black uppercase transition-all {humorState.selectedChannel ===
 						channel.id
-							? 'bg-white text-black'
-							: 'text-slate-500 hover:text-slate-300'}"
-						title="Switch to {channel.name} channel"
+							? 'bg-white text-black shadow-[0_0_10px_rgba(255,255,255,0.3)]'
+							: 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}"
+						title="Switch frequency: r/{channel.id}"
 					>
 						{channel.name}
 					</button>

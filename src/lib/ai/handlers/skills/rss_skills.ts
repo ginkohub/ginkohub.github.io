@@ -7,18 +7,19 @@ export interface RssArgs {
 		| 'switch_feed'
 		| 'fetch_headlines'
 		| 'refresh'
-		| 'next_feed'
-		| 'prev_feed'
 		| 'add_feed'
 		| 'list_feeds'
-		| 'delete_feed';
+		| 'delete_feed'
+		| 'mark_all_read'
+		| 'filter_unread'
+		| 'filter_all';
 	source?: string;
 	name?: string;
 }
 
 export const config: ToolConfig = {
 	name: 'rss_skills',
-	description: 'Manage RSS feeds, switch news sources, navigate feeds, and fetch latest headlines.',
+	description: 'Manage news sources, filter articles, and fetch latest headlines.',
 	parameters: {
 		type: 'object',
 		properties: {
@@ -28,21 +29,22 @@ export const config: ToolConfig = {
 					'switch_feed',
 					'fetch_headlines',
 					'refresh',
-					'next_feed',
-					'prev_feed',
 					'add_feed',
 					'list_feeds',
-					'delete_feed'
+					'delete_feed',
+					'mark_all_read',
+					'filter_unread',
+					'filter_all'
 				],
-				description: 'The action to perform on the RSS/News system.'
+				description: 'The action to perform on the News system.'
 			},
 			source: {
 				type: 'string',
-				description: 'The name of the RSS source or the URL to add/fetch/delete.'
+				description: 'The name of the news source or the URL to add/fetch/delete.'
 			},
 			name: {
 				type: 'string',
-				description: 'The custom name for the feed when using add_feed (e.g., "My Tech News").'
+				description: 'The custom name for the source when using add_feed (e.g., "My Tech News").'
 			}
 		},
 		required: ['action']
@@ -58,54 +60,65 @@ export const handler =
 		try {
 			if (action === 'list_feeds') {
 				const feeds = newsState.allFeeds.map((f) => f.name).join(', ');
-				return `Available RSS Sources: ${feeds}`;
+				const activeCount = newsState.selectedFeeds.length;
+				return `Available Sources: ${feeds}. currently active: ${activeCount || 'All'}`;
 			}
 
 			if (action === 'switch_feed') {
-				if (!source) return 'Error: source name required to switch feed.';
+				if (!source) return 'Error: source name required to toggle source.';
 				const result = newsState.setSelectedFeed(source);
-				if (result.success) return `Switched news stream to: ${result.name}`;
-				return `RSS source "${source}" not found in system directory.`;
-			}
-
-			if (action === 'next_feed') {
-				newsState.nextFeed();
-				return `Switched to NEXT feed source.`;
-			}
-
-			if (action === 'prev_feed') {
-				newsState.prevFeed();
-				return `Switched to PREVIOUS feed source.`;
+				if (result.success) return `Toggled news source: ${result.name}`;
+				return `News source "${source}" not found in system directory.`;
 			}
 
 			if (action === 'add_feed') {
 				if (!source || !source.startsWith('http'))
-					return 'Error: Valid RSS URL required to add feed.';
-				const feedName = name || 'Neural Feed';
+					return 'Error: Valid RSS URL required to add source.';
+				const feedName = name || 'Neural Source';
 				newsState.addFeed(feedName, source);
-				return `Feed '${feedName}' connected to neural stream.`;
+				return `Source '${feedName}' connected to neural stream.`;
 			}
 
 			if (action === 'delete_feed') {
-				if (!source) return 'Error: source required to delete feed.';
+				if (!source) return 'Error: source required to delete.';
 				const feed = newsState.allFeeds.find(
 					(f) => f.url === source || f.name.toLowerCase().includes(source.toLowerCase())
 				);
-				if (!feed) return `Error: Could not find feed matching "${source}" to delete.`;
-				if (!feed.custom) return 'Error: System feeds cannot be deleted, only custom ones.';
+				if (!feed) return `Error: Could not find source matching "${source}" to delete.`;
+				if (!feed.custom) return 'Error: System sources cannot be deleted, only custom ones.';
 
 				const feedName = feed.name;
 				newsState.removeFeed(feed.url);
-				return `Feed '${feedName}' has been disconnected from your stream.`;
+				return `Source '${feedName}' has been disconnected from your stream.`;
 			}
 
 			if (action === 'refresh') {
-				newsState.fetchFeed();
-				return 'Refreshing news stream...';
+				newsState.refreshAll();
+				return 'Refreshing news stream from active sources...';
+			}
+
+			if (action === 'mark_all_read') {
+				newsState.markAllAsRead();
+				return 'All articles marked as read.';
+			}
+
+			if (action === 'filter_unread') {
+				newsState.setFilterMode('new');
+				return 'Filtering to show only NEW articles.';
+			}
+
+			if (action === 'filter_all') {
+				newsState.setFilterMode('all');
+				return 'Showing all articles.';
 			}
 
 			if (action === 'fetch_headlines') {
-				const targetUrl = source || newsState.selectedFeed;
+				// Use the first selected feed if no source provided
+				const targetUrl =
+					source ||
+					(newsState.selectedFeeds.length > 0
+						? newsState.selectedFeeds[0]
+						: newsState.allFeeds[0].url);
 				const res = await ghpFetch(targetUrl, 'rss');
 				if (!res.success) return `RSS Fetch failed: ${res.error}`;
 
@@ -113,10 +126,10 @@ export const handler =
 					?.slice(0, 5)
 					.map((i: any) => i.title)
 					.join(' | ');
-				return `Latest Headlines: ${items}`;
+				return `Latest Headlines from ${source || 'primary source'}: ${items}`;
 			}
 		} catch (e: any) {
-			return `RSS Skill Error: ${e.message}`;
+			return `News Skill Error: ${e.message}`;
 		}
 		return 'Action ignored.';
 	};

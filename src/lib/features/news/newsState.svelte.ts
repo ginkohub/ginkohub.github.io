@@ -15,12 +15,16 @@ interface Article {
 	image: string;
 	sourceName: string;
 	sourceUrl: string;
+	isNew?: boolean;
 }
 
 class NewsState {
 	customFeeds = $state<Feed[]>([]);
 	selectedFeeds = $state<string[]>([]); // Changed to array for multi-select
 	articles = $state<Article[]>([]);
+	filterMode = $state<'all' | 'new' | 'old'>('all');
+	currentPage = $state<number>(1);
+	pageSize = $state<number>(10);
 	loading = $state<boolean>(false);
 	error = $state<string>('');
 	lastUpdated = $state<number>(0);
@@ -43,8 +47,98 @@ class NewsState {
 	}
 
 	get filteredArticles() {
-		if (this.selectedFeeds.length === 0) return this.articles;
-		return this.articles.filter((a) => this.selectedFeeds.includes(a.sourceUrl));
+		let filtered = this.articles;
+		if (this.selectedFeeds.length > 0) {
+			filtered = filtered.filter((a) => this.selectedFeeds.includes(a.sourceUrl));
+		}
+
+		if (this.filterMode === 'new') {
+			filtered = filtered.filter((a) => a.isNew);
+		} else if (this.filterMode === 'old') {
+			filtered = filtered.filter((a) => !a.isNew);
+		}
+
+		return filtered;
+	}
+
+	get paginatedArticles() {
+		const start = (this.currentPage - 1) * this.pageSize;
+		return this.filteredArticles.slice(start, start + this.pageSize);
+	}
+
+	get totalPages() {
+		return Math.ceil(this.filteredArticles.length / this.pageSize) || 1;
+	}
+
+	get hasNewArticles() {
+		return this.articles.some((a) => a.isNew);
+	}
+
+	get hasReadOnPage() {
+		return this.paginatedArticles.some((a) => !a.isNew);
+	}
+
+	get hasNewOnPage() {
+		return this.paginatedArticles.some((a) => a.isNew);
+	}
+
+	setFilterMode(mode: 'all' | 'new' | 'old') {
+		this.filterMode = mode;
+		this.currentPage = 1;
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('ginkohub_news_filter_mode', mode);
+		}
+	}
+
+	nextPage() {
+		if (this.currentPage < this.totalPages) this.currentPage++;
+	}
+
+	prevPage() {
+		if (this.currentPage > 1) this.currentPage--;
+	}
+
+	goToPage(page: number) {
+		if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+	}
+
+	markAsRead(link: string) {
+		const index = this.articles.findIndex((a) => a.link === link);
+		if (index !== -1) {
+			this.articles[index] = { ...this.articles[index], isNew: !this.articles[index].isNew };
+			this.saveArticles();
+		}
+	}
+
+	markAllAsRead() {
+		if (!this.hasNewArticles) return;
+		this.articles = this.articles.map((a) => ({ ...a, isNew: false }));
+		this.saveArticles();
+	}
+
+	markPageAsRead() {
+		const pageArticles = this.paginatedArticles;
+		const linksToMark = new Set(pageArticles.filter((a) => a.isNew).map((a) => a.link));
+		if (linksToMark.size === 0) return;
+
+		this.articles = this.articles.map((a) =>
+			linksToMark.has(a.link) ? { ...a, isNew: false } : a
+		);
+		this.saveArticles();
+	}
+
+	markPageAsUread() {
+		const pageArticles = this.paginatedArticles;
+		const linksToMark = new Set(pageArticles.filter((a) => !a.isNew).map((a) => a.link));
+		if (linksToMark.size === 0) return;
+
+		this.articles = this.articles.map((a) => (linksToMark.has(a.link) ? { ...a, isNew: true } : a));
+		this.saveArticles();
+	}
+
+	markAllAsUnread() {
+		this.articles = this.articles.map((a) => ({ ...a, isNew: true }));
+		this.saveArticles();
 	}
 
 	loadPersistedState() {
@@ -58,6 +152,9 @@ class NewsState {
 			// Default to first 5 feeds if nothing saved
 			this.selectedFeeds = this.allFeeds.slice(0, 5).map((f) => f.url);
 		}
+
+		const savedFilterMode = localStorage.getItem('ginkohub_news_filter_mode');
+		if (savedFilterMode) this.filterMode = savedFilterMode as 'all' | 'new' | 'old';
 
 		const savedArticles = localStorage.getItem('ginkohub_cached_articles');
 		if (savedArticles) {
@@ -97,6 +194,7 @@ class NewsState {
 				this.fetchFeed(url);
 			}
 		}
+		this.currentPage = 1;
 		this.saveSelectedFeeds();
 	}
 
@@ -106,9 +204,26 @@ class NewsState {
 		} else {
 			this.selectedFeeds = [];
 		}
+		this.currentPage = 1;
 		this.saveSelectedFeeds();
 	}
 
+	toggleCategory(categoryName: string, select: boolean = true) {
+		const group = this.feedGroups.find((g) => g.name === categoryName);
+		if (!group) return;
+
+		const urls = group.feeds.map((f) => f.url);
+		if (select) {
+			// Add only unique urls
+			const newUrls = urls.filter((url) => !this.selectedFeeds.includes(url));
+			this.selectedFeeds = [...this.selectedFeeds, ...newUrls];
+		} else {
+			// Remove urls
+			this.selectedFeeds = this.selectedFeeds.filter((url) => !urls.includes(url));
+		}
+		this.currentPage = 1;
+		this.saveSelectedFeeds();
+	}
 	addFeed(name: string, url: string) {
 		try {
 			new URL(url); // Validate URL
@@ -194,7 +309,9 @@ class NewsState {
 
 	private mergeArticles(newArticles: Article[]) {
 		const existingLinks = new Set(this.articles.map((a) => a.link));
-		const uniqueNew = newArticles.filter((a) => !existingLinks.has(a.link));
+		const uniqueNew = newArticles
+			.filter((a) => !existingLinks.has(a.link))
+			.map((a) => ({ ...a, isNew: true }));
 
 		if (uniqueNew.length > 0) {
 			this.articles = [...uniqueNew, ...this.articles].sort((a, b) => {
