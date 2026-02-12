@@ -25,7 +25,9 @@ export const config: ToolConfig = {
 					'humor',
 					'words',
 					'preview',
-					'game'
+					'game',
+					'market',
+					'stock'
 				],
 				description: 'The tab name to navigate to.'
 			},

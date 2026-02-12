@@ -25,6 +25,8 @@
 		wisdom: 'Poetic wisdom and quote generator',
 		github: 'GitHub repository and developer trends',
 		tools: 'Utility tools for developers',
+		market: 'Live crypto charts and neural market feeds',
+		stock: 'Global stock market indices and equity trends',
 		news: 'Tech news and specialized data streams',
 		ai: 'AI model benchmarks and neural metrics',
 		humor: 'Jokes and memes for a laugh',
@@ -46,15 +48,17 @@
 			const order = {
 				intro: 0,
 				about: 1,
-				wisdom: 2,
-				github: 3,
-				tools: 4,
-				news: 5,
-				ai: 6,
-				humor: 7,
-				words: 8,
-				preview: 9,
-				game: 10
+				news: 2,
+				market: 3,
+				stock: 4,
+				humor: 5,
+				wisdom: 6,
+				github: 7,
+				tools: 8,
+				ai: 9,
+				words: 10,
+				preview: 11,
+				game: 12
 			};
 			return (order[a.label] ?? 99) - (order[b.label] ?? 99);
 		});
@@ -188,7 +192,7 @@
 		class="relative z-10 w-full min-h-screen {appState.isShaking ? 'animate-shake' : ''}"
 		style="will-change: transform;"
 	>
-		<div class="max-w-xl mx-auto flex flex-col items-center px-6">
+		<div class="max-w-xl mx-auto flex flex-col items-center px-6 py-6">
 			<MainHeader {fireworksSystem} />
 
 			<Navigation {tabs} />

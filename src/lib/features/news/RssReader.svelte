@@ -319,7 +319,7 @@
 
 		<div class="ml-auto flex items-center gap-4">
 			<span class="text-[7px] font-black uppercase text-slate-600 tracking-[0.2em]">
-				Displaying {newsState.filteredArticles.length} / {newsState.articles.length} Articles
+				{newsState.filteredArticles.length} / {newsState.articles.length}
 			</span>
 		</div>
 	</div>

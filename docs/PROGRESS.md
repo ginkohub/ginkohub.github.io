@@ -55,5 +55,9 @@
 
 ### 3. Content Expansion
 
+- [x] **New Tab: Market (Complete - Feb 2026)**:
+  - Integrated real-time crypto price charts powered by TradingView and Binance.
+  - Added live price ticker with 24h change and volume metrics.
+  - Implemented `market_skills` for AI-driven chart navigation and price querying.
 - [ ] **New Tab: Gallery**: Auto-scanning gallery for AI-generated art.
 - [ ] **Advanced News Filtering**: AI-powered categorization of RSS headlines.

@@ -11,7 +11,9 @@
 			"humor": "Humor",
 			"words": "Words",
 			"preview": "Preview",
-			"game": "Arcade"
+			"game": "Arcade",
+			"market": "Market",
+			"stock": "Stock"
 		},
 		"intro": {
 			"title": "Welcome,",
@@ -65,7 +67,9 @@
 			"humor": "Humor",
 			"words": "Kata",
 			"preview": "Pratinjau",
-			"game": "Arkade"
+			"game": "Arkade",
+			"market": "Pasar",
+			"stock": "Saham"
 		},
 		"intro": {
 			"title": "Selamat Datang,",
