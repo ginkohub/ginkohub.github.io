@@ -2,6 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import { newsState } from './newsState.svelte';
 	import LazyImage from '$lib/components/ui/LazyImage.svelte';
+	import { refreshAll } from '$app/navigation';
 
 	let { accentColor } = $props();
 
@@ -50,12 +51,14 @@
 			}
 		};
 	}
+
+	console.log(newsState.maxRecentDays);
 </script>
 
 {#if showAddModal}
 	<div
 		use:portal
-		class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-6"
+		class="fixed inset-0 z-100 flex items-center justify-center bg-black/90 backdrop-blur-md p-6"
 		in:fade
 	>
 		<div class="w-full max-w-sm border border-slate-800 bg-black p-6 space-y-6 shadow-2xl">
@@ -230,7 +233,7 @@
 					></div>
 
 					<span class="text-[7px] font-black uppercase tracking-tighter text-slate-500"
-						>Syncing...</span
+						>{newsState.loadState.loaded}/{newsState.loadState.total} Sync</span
 					>
 				</div>
 			{/if}
@@ -245,6 +248,27 @@
 		</div>
 
 		<div class="flex items-stretch gap-2 w-full md:w-auto">
+			<div class="relative flex items-center">
+				<span class="absolute left-2 text-[6px] font-black text-slate-500 uppercase z-10"
+					>Limit</span
+				>
+				<select
+					value={newsState.maxRecentDays}
+					onchange={(e) => {
+						newsState.maxRecentDays = Number(e.target.value);
+						newsState.refreshAll();
+						console.log(newsState.maxRecentDays);
+					}}
+					class="bg-slate-900 border border-slate-800 text-white text-[8px] font-black uppercase tracking-widest pl-10 pr-6 py-1.5 outline-none focus:border-white/20 appearance-none cursor-pointer hover:bg-slate-800 transition-all"
+				>
+					{#each [1, 3, 7, 30] as i}
+						<option value={i} selected={i === newsState.maxRecentDays}
+							>{i} Day{#if i !== 1}s{/if}</option
+						>
+					{/each}
+				</select>
+			</div>
+
 			<button
 				onclick={() => (showSettings = true)}
 				class="flex-1 md:flex-none flex items-center justify-between gap-4 px-4 py-2 bg-black border border-slate-800 text-slate-300 hover:border-white/30 transition-all group"

@@ -18,6 +18,11 @@ interface Article {
 	isNew?: boolean;
 }
 
+interface LoadState {
+	total: number;
+	loaded: number;
+}
+
 class NewsState {
 	customFeeds = $state<Feed[]>([]);
 	selectedFeeds = $state<string[]>([]); // Changed to array for multi-select
@@ -26,8 +31,10 @@ class NewsState {
 	currentPage = $state<number>(1);
 	pageSize = $state<number>(10);
 	loading = $state<boolean>(false);
+	loadState = $state<LoadState>({ total: 0, loaded: 0 });
 	error = $state<string>('');
 	lastUpdated = $state<number>(0);
+	maxRecentDays = $state<number>(7);
 
 	constructor() {
 		if (typeof window !== 'undefined') {
@@ -172,8 +179,11 @@ class NewsState {
 
 	saveArticles() {
 		if (typeof window === 'undefined') return;
-		// Keep only last 200 articles to save space
-		const toSave = this.articles.slice(0, 200);
+		// Keep only last 7 days
+		const toSave = this.articles.filter((a) => {
+			const daySince = (Date.now() - new Date(a.date).getTime()) / (1000 * 60 * 60 * 24);
+			return daySince < this.maxRecentDays;
+		});
 		localStorage.setItem('ginkohub_cached_articles', JSON.stringify(toSave));
 		this.lastUpdated = Date.now();
 		localStorage.setItem('ginkohub_news_last_updated', this.lastUpdated.toString());
@@ -224,6 +234,7 @@ class NewsState {
 		this.currentPage = 1;
 		this.saveSelectedFeeds();
 	}
+
 	addFeed(name: string, url: string) {
 		try {
 			new URL(url); // Validate URL
@@ -284,6 +295,8 @@ class NewsState {
 
 		let newArticlesCount = 0;
 
+		this.loadState.total = feedsToRefresh.length;
+
 		const batchSize = 3;
 		for (let i = 0; i < feedsToRefresh.length; i += batchSize) {
 			const batch = feedsToRefresh.slice(i, i + batchSize);
@@ -295,6 +308,7 @@ class NewsState {
 							this.mergeArticles(fetched);
 							newArticlesCount += fetched.length;
 						}
+						this.loadState.loaded = i;
 					} catch (e) {
 						console.error(`Error fetching ${feed.name}:`, e);
 					}
