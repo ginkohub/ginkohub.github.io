@@ -35,6 +35,7 @@ class NewsState {
 	error = $state<string>('');
 	lastUpdated = $state<number>(0);
 	maxRecentDays = $state<number>(7);
+	maxSavedArticles = $state<number>(200);
 
 	constructor() {
 		if (typeof window !== 'undefined') {
@@ -179,11 +180,7 @@ class NewsState {
 
 	saveArticles() {
 		if (typeof window === 'undefined') return;
-		// Keep only last 7 days
-		const toSave = this.articles.filter((a) => {
-			const daySince = (Date.now() - new Date(a.date).getTime()) / (1000 * 60 * 60 * 24);
-			return daySince < this.maxRecentDays;
-		});
+		const toSave = this.articles.slice(0, this.maxSavedArticles);
 		localStorage.setItem('ginkohub_cached_articles', JSON.stringify(toSave));
 		this.lastUpdated = Date.now();
 		localStorage.setItem('ginkohub_news_last_updated', this.lastUpdated.toString());
@@ -322,6 +319,11 @@ class NewsState {
 	}
 
 	private mergeArticles(newArticles: Article[]) {
+		// Keep only articles that are less or equal to maxRecentDays old
+		this.articles = this.articles.filter((a) => {
+			const daySince = (Date.now() - new Date(a.date).getTime()) / (1000 * 60 * 60 * 24);
+			return daySince <= this.maxRecentDays;
+		});
 		const existingLinks = new Set(this.articles.map((a) => a.link));
 		const uniqueNew = newArticles
 			.filter((a) => !existingLinks.has(a.link))
