@@ -322,7 +322,7 @@ class NewsState {
 		// Keep only articles that are less or equal to maxRecentDays old
 		this.articles = this.articles.filter((a) => {
 			const daySince = (Date.now() - new Date(a.date).getTime()) / (1000 * 60 * 60 * 24);
-			return daySince <= this.maxRecentDays;
+			return daySince <= this.maxRecentDays || a.date === 'Today';
 		});
 		const existingLinks = new Set(this.articles.map((a) => a.link));
 		const uniqueNew = newArticles
@@ -331,8 +331,8 @@ class NewsState {
 
 		if (uniqueNew.length > 0) {
 			this.articles = [...uniqueNew, ...this.articles].sort((a, b) => {
-				const dateA = a.date === 'LATEST' ? new Date().getTime() : new Date(a.date).getTime();
-				const dateB = b.date === 'LATEST' ? new Date().getTime() : new Date(b.date).getTime();
+				const dateA = a.date === 'Today' ? new Date().getTime() : new Date(a.date).getTime();
+				const dateB = b.date === 'Today' ? new Date().getTime() : new Date(b.date).getTime();
 				return dateB - dateA;
 			});
 		}
@@ -381,7 +381,7 @@ class NewsState {
 								entry.querySelector('link')?.textContent ||
 								'';
 							const pubDate = entry.querySelector('published, updated, pubDate')?.textContent || '';
-							const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'LATEST';
+							const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'Today';
 							const desc = entry.querySelector('summary, content, description')?.textContent || '';
 							const snippet = desc
 								? desc.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
@@ -411,7 +411,7 @@ class NewsState {
 					const title = this.fixEncoding(item.title || 'Untitled Protocol');
 					const link = item.link;
 					const pubDate = item.published || item.created || item.pubDate;
-					const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'LATEST';
+					const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'Today';
 
 					const desc = item.description || item.summary || item.content || '';
 					const snippet = desc

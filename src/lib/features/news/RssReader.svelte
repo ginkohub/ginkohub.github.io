@@ -226,18 +226,6 @@
 		<div class="flex items-center gap-4">
 			<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Data Stream</h2>
 
-			{#if newsState.loading}
-				<div class="flex items-center gap-2 animate-pulse">
-					<div
-						class="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_5px_rgba(255,255,255,0.5)]"
-					></div>
-
-					<span class="text-[7px] font-black uppercase tracking-tighter text-slate-500"
-						>{newsState.loadState.loaded}/{newsState.loadState.total} Sync</span
-					>
-				</div>
-			{/if}
-
 			<button
 				onclick={() => (showAddModal = true)}
 				class="text-[8px] font-black uppercase border border-slate-800 px-2 py-1 hover:bg-white hover:text-black transition-all"
@@ -341,8 +329,18 @@
 			</button>
 		{/if}
 
+		{#if newsState.loading}
+			<div class="ml-auto flex items-center gap-2 animate-pulse">
+				<div class="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_5px_rgba(255,255,255,0.5)]"></div>
+
+				<span class="text-[9px] font-black uppercase tracking-tighter text-slate-500"
+					>{newsState.loadState.loaded} / {newsState.loadState.total} Sync</span
+				>
+			</div>
+		{/if}
+
 		<div class="ml-auto flex items-center gap-4">
-			<span class="text-[7px] font-black uppercase text-slate-600 tracking-[0.2em]">
+			<span class="text-[9px] font-black uppercase text-slate-600 tracking-[0.2em]">
 				{newsState.filteredArticles.length} / {newsState.articles.length}
 			</span>
 		</div>
@@ -467,7 +465,7 @@
 										e.stopPropagation();
 										newsState.markAsRead(article.link);
 									}}
-									class="text-[7px] font-black uppercase tracking-widest px-2 py-0.5 border border-white/10 hover:border-white/40 hover:bg-white/5 transition-all"
+									class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 border border-white/10 hover:border-white/40 hover:bg-white/5 transition-all"
 									title={article.isNew ? 'Mark as Read' : 'Mark as Unread'}
 								>
 									{article.isNew ? 'READ' : 'UNREAD'}
@@ -516,6 +514,18 @@
 					>
 						NEXT
 					</button>
+
+					{#if newsState.hasNewOnPage}
+						<div class="ml-auto flex items-end gap-2">
+							<button
+								onclick={() => newsState.markPageAsRead()}
+								class="px-3 py-1.5 border border-slate-800 text-slate-500 hover:text-white transition-all text-[8px] font-black uppercase tracking-widest bg-slate-900/50 hover:border-slate-600"
+								title="Clear NEW indicators on this page"
+							>
+								Page Read
+							</button>
+						</div>
+					{/if}
 				</div>
 			{/if}
 		{/if}
