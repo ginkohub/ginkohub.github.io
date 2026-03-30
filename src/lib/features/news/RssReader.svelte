@@ -348,7 +348,7 @@
 		</div>
 	</div>
 
-	<div class="min-h-[400px] relative">
+	<div class="min-h-400px relative">
 		{#if newsState.loading && newsState.filteredArticles.length === 0}
 			<div class="flex flex-col items-center justify-center py-20 gap-4">
 				<div
@@ -414,7 +414,7 @@
 					</div>
 				{/if}
 
-				{#each newsState.paginatedArticles as article}
+				{#each newsState.paginatedArticles as article (article.link)}
 					<a
 						href={article.link}
 						target="_blank"
@@ -428,9 +428,7 @@
 						<!-- Sharp Thumbnail -->
 
 						{#if article.image}
-							<div
-								class="flex-shrink-0 w-12 h-12 border border-white/5 bg-slate-950 overflow-hidden"
-							>
+							<div class="shrink-0 w-12 h-12 border border-white/5 bg-slate-950 overflow-hidden">
 								<LazyImage
 									src={article.image}
 									alt=""
