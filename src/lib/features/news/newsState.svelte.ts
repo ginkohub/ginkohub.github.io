@@ -2,466 +2,480 @@ import { ghpFetch } from '$lib/fetcher';
 import defaultFeedGroups from '$lib/data/tech-feeds.json';
 
 interface Feed {
-	name: string;
-	url: string;
-	custom?: boolean;
+  name: string;
+  url: string;
+  custom?: boolean;
 }
 
 interface Article {
-	title: string;
-	link: string;
-	date: string;
-	snippet: string;
-	image: string;
-	sourceName: string;
-	sourceUrl: string;
-	isNew?: boolean;
+  title: string;
+  link: string;
+  date: string;
+  snippet: string;
+  image: string;
+  sourceName: string;
+  sourceUrl: string;
+  isNew?: boolean;
 }
 
 interface LoadState {
-	total: number;
-	loaded: number;
+  total: number;
+  loaded: number;
 }
 
 class NewsState {
-	customFeeds = $state<Feed[]>([]);
-	selectedFeeds = $state<string[]>([]); // Changed to array for multi-select
-	articles = $state<Article[]>([]);
-	filterMode = $state<'all' | 'new' | 'old'>('all');
-	currentPage = $state<number>(1);
-	pageSize = $state<number>(10);
-	loading = $state<boolean>(false);
-	loadState = $state<LoadState>({ total: 0, loaded: 0 });
-	error = $state<string>('');
-	lastUpdated = $state<number>(0);
-	maxRecentDays = $state<number>(7);
-	maxSavedArticles = $state<number>(200);
+  customFeeds = $state<Feed[]>([]);
+  selectedFeeds = $state<string[]>([]); // Changed to array for multi-select
+  articles = $state<Article[]>([]);
+  filterMode = $state<'all' | 'new' | 'old'>('all');
+  currentPage = $state<number>(1);
+  pageSize = $state<number>(10);
+  loading = $state<boolean>(false);
+  loadState = $state<LoadState>({ total: 0, loaded: 0 });
+  error = $state<string>('');
+  lastUpdated = $state<number>(0);
+  maxRecentDays = $state<number>(7);
+  maxSavedArticles = $state<number>(200);
 
-	constructor() {
-		if (typeof window !== 'undefined') {
-			this.loadPersistedState();
-		}
-	}
+  constructor() {
+    if (typeof window !== 'undefined') {
+      this.loadPersistedState();
+    }
+  }
 
-	get feedGroups() {
-		return [
-			...(this.customFeeds.length > 0 ? [{ name: 'Custom Feeds', feeds: this.customFeeds }] : []),
-			...defaultFeedGroups
-		];
-	}
+  get feedGroups() {
+    return [
+      ...(this.customFeeds.length > 0 ? [{ name: 'Custom Feeds', feeds: this.customFeeds }] : []),
+      ...defaultFeedGroups
+    ];
+  }
 
-	get allFeeds(): Feed[] {
-		return this.feedGroups.flatMap((g) => g.feeds);
-	}
+  get allFeeds(): Feed[] {
+    return this.feedGroups.flatMap((g) => g.feeds);
+  }
 
-	get filteredArticles() {
-		let filtered = this.articles;
-		if (this.selectedFeeds.length > 0) {
-			filtered = filtered.filter((a) => this.selectedFeeds.includes(a.sourceUrl));
-		}
+  get filteredArticles() {
+    let filtered = this.articles;
+    if (this.selectedFeeds.length > 0) {
+      filtered = filtered.filter((a) => this.selectedFeeds.includes(a.sourceUrl));
+    }
 
-		if (this.filterMode === 'new') {
-			filtered = filtered.filter((a) => a.isNew);
-		} else if (this.filterMode === 'old') {
-			filtered = filtered.filter((a) => !a.isNew);
-		}
+    if (this.filterMode === 'new') {
+      filtered = filtered.filter((a) => a.isNew);
+    } else if (this.filterMode === 'old') {
+      filtered = filtered.filter((a) => !a.isNew);
+    }
 
-		return filtered;
-	}
+    return filtered;
+  }
 
-	get paginatedArticles() {
-		const start = (this.currentPage - 1) * this.pageSize;
-		return this.filteredArticles.slice(start, start + this.pageSize);
-	}
+  get paginatedArticles() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredArticles.slice(start, start + this.pageSize);
+  }
 
-	get totalPages() {
-		return Math.ceil(this.filteredArticles.length / this.pageSize) || 1;
-	}
+  get totalPages() {
+    return Math.ceil(this.filteredArticles.length / this.pageSize) || 1;
+  }
 
-	get hasNewArticles() {
-		return this.articles.some((a) => a.isNew);
-	}
+  get hasNewArticles() {
+    return this.articles.some((a) => a.isNew);
+  }
 
-	get hasReadOnPage() {
-		return this.paginatedArticles.some((a) => !a.isNew);
-	}
+  get hasReadOnPage() {
+    return this.paginatedArticles.some((a) => !a.isNew);
+  }
 
-	get hasNewOnPage() {
-		return this.paginatedArticles.some((a) => a.isNew);
-	}
+  get hasNewOnPage() {
+    return this.paginatedArticles.some((a) => a.isNew);
+  }
 
-	setFilterMode(mode: 'all' | 'new' | 'old') {
-		this.filterMode = mode;
-		this.currentPage = 1;
-		if (typeof window !== 'undefined') {
-			localStorage.setItem('ginkohub_news_filter_mode', mode);
-		}
-	}
+  setFilterMode(mode: 'all' | 'new' | 'old') {
+    this.filterMode = mode;
+    this.currentPage = 1;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ginkohub_news_filter_mode', mode);
+    }
+  }
 
-	nextPage() {
-		if (this.currentPage < this.totalPages) this.currentPage++;
-	}
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
 
-	prevPage() {
-		if (this.currentPage > 1) this.currentPage--;
-	}
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
 
-	goToPage(page: number) {
-		if (page >= 1 && page <= this.totalPages) this.currentPage = page;
-	}
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+  }
 
-	markAsRead(link: string) {
-		const index = this.articles.findIndex((a) => a.link === link);
-		if (index !== -1) {
-			this.articles[index] = { ...this.articles[index], isNew: !this.articles[index].isNew };
-			this.saveArticles();
-		}
-	}
+  markAsRead(link: string) {
+    const index = this.articles.findIndex((a) => a.link === link);
+    if (index !== -1) {
+      this.articles[index] = { ...this.articles[index], isNew: !this.articles[index].isNew };
+      this.saveArticles();
+    }
+  }
 
-	markAllAsRead() {
-		if (!this.hasNewArticles) return;
-		this.articles = this.articles.map((a) => ({ ...a, isNew: false }));
-		this.saveArticles();
-	}
+  markAllAsRead() {
+    if (!this.hasNewArticles) return;
+    this.articles = this.articles.map((a) => ({ ...a, isNew: false }));
+    this.saveArticles();
+  }
 
-	markPageAsRead() {
-		const pageArticles = this.paginatedArticles;
-		const linksToMark = new Set(pageArticles.filter((a) => a.isNew).map((a) => a.link));
-		if (linksToMark.size === 0) return;
+  markPageAsRead() {
+    const pageArticles = this.paginatedArticles;
+    const linksToMark = new Set(pageArticles.filter((a) => a.isNew).map((a) => a.link));
+    if (linksToMark.size === 0) return;
 
-		this.articles = this.articles.map((a) =>
-			linksToMark.has(a.link) ? { ...a, isNew: false } : a
-		);
-		this.saveArticles();
-	}
+    this.articles = this.articles.map((a) =>
+      linksToMark.has(a.link) ? { ...a, isNew: false } : a
+    );
+    this.saveArticles();
+  }
 
-	markPageAsUread() {
-		const pageArticles = this.paginatedArticles;
-		const linksToMark = new Set(pageArticles.filter((a) => !a.isNew).map((a) => a.link));
-		if (linksToMark.size === 0) return;
+  markPageAsUread() {
+    const pageArticles = this.paginatedArticles;
+    const linksToMark = new Set(pageArticles.filter((a) => !a.isNew).map((a) => a.link));
+    if (linksToMark.size === 0) return;
 
-		this.articles = this.articles.map((a) => (linksToMark.has(a.link) ? { ...a, isNew: true } : a));
-		this.saveArticles();
-	}
+    this.articles = this.articles.map((a) => (linksToMark.has(a.link) ? { ...a, isNew: true } : a));
+    this.saveArticles();
+  }
 
-	markAllAsUnread() {
-		this.articles = this.articles.map((a) => ({ ...a, isNew: true }));
-		this.saveArticles();
-	}
+  markAllAsUnread() {
+    this.articles = this.articles.map((a) => ({ ...a, isNew: true }));
+    this.saveArticles();
+  }
 
-	loadPersistedState() {
-		const savedFeeds = localStorage.getItem('ginkohub_custom_feeds');
-		if (savedFeeds) this.customFeeds = JSON.parse(savedFeeds);
+  loadPersistedState() {
+    const savedFeeds = localStorage.getItem('ginkohub_custom_feeds');
+    if (savedFeeds) this.customFeeds = JSON.parse(savedFeeds);
 
-		const savedSelectedFeeds = localStorage.getItem('ginkohub_selected_feeds');
-		if (savedSelectedFeeds) {
-			this.selectedFeeds = JSON.parse(savedSelectedFeeds);
-		} else {
-			// Default to first 5 feeds if nothing saved
-			this.selectedFeeds = this.allFeeds.slice(0, 5).map((f) => f.url);
-		}
+    const savedSelectedFeeds = localStorage.getItem('ginkohub_selected_feeds');
+    if (savedSelectedFeeds) {
+      this.selectedFeeds = JSON.parse(savedSelectedFeeds);
+    } else {
+      // Default to first 5 feeds if nothing saved
+      this.selectedFeeds = this.allFeeds.slice(0, 5).map((f) => f.url);
+    }
 
-		const savedFilterMode = localStorage.getItem('ginkohub_news_filter_mode');
-		if (savedFilterMode) this.filterMode = savedFilterMode as 'all' | 'new' | 'old';
+    const savedFilterMode = localStorage.getItem('ginkohub_news_filter_mode');
+    if (savedFilterMode) this.filterMode = savedFilterMode as 'all' | 'new' | 'old';
 
-		const savedArticles = localStorage.getItem('ginkohub_cached_articles');
-		if (savedArticles) {
-			try {
-				this.articles = JSON.parse(savedArticles);
-			} catch (e) {
-				console.error('Failed to parse cached articles', e);
-				this.articles = [];
-			}
-		}
+    const savedArticles = localStorage.getItem('ginkohub_cached_articles');
+    if (savedArticles) {
+      try {
+        this.articles = JSON.parse(savedArticles);
+      } catch (e) {
+        console.error('Failed to parse cached articles', e);
+        this.articles = [];
+      }
+    }
 
-		const savedLastUpdated = localStorage.getItem('ginkohub_news_last_updated');
-		if (savedLastUpdated) this.lastUpdated = parseInt(savedLastUpdated);
-	}
+    const savedLastUpdated = localStorage.getItem('ginkohub_news_last_updated');
+    if (savedLastUpdated) this.lastUpdated = parseInt(savedLastUpdated);
 
-	saveArticles() {
-		if (typeof window === 'undefined') return;
-		const toSave = this.articles.slice(0, this.maxSavedArticles);
-		localStorage.setItem('ginkohub_cached_articles', JSON.stringify(toSave));
-		this.lastUpdated = Date.now();
-		localStorage.setItem('ginkohub_news_last_updated', this.lastUpdated.toString());
-	}
+    const maxSavedArticles = localStorage.getItem('ginkohub_max_saved');
+    if (maxSavedArticles) this.maxSavedArticles = parseInt(maxSavedArticles);
 
-	saveSelectedFeeds() {
-		if (typeof window === 'undefined') return;
-		localStorage.setItem('ginkohub_selected_feeds', JSON.stringify(this.selectedFeeds));
-	}
+    const maxRecentDays = localStorage.getItem('ginkohub_max_recent_day');
+    if (maxRecentDays) this.maxRecentDays = parseInt(maxRecentDays);
+  }
 
-	toggleFeed(url: string) {
-		if (this.selectedFeeds.includes(url)) {
-			this.selectedFeeds = this.selectedFeeds.filter((u) => u !== url);
-		} else {
-			this.selectedFeeds = [...this.selectedFeeds, url];
-			// Fetch if no articles for this feed in cache
-			if (!this.articles.some((a) => a.sourceUrl === url)) {
-				this.fetchFeed(url);
-			}
-		}
-		this.currentPage = 1;
-		this.saveSelectedFeeds();
-	}
+  saveFilter = () => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('ginkohub_max_saved', this.maxSavedArticles.toString());
+    localStorage.setItem('ginkohub_max_recent_day', this.maxRecentDays.toString());
+  };
 
-	selectAll(select: boolean = true) {
-		if (select) {
-			this.selectedFeeds = this.allFeeds.map((f) => f.url);
-		} else {
-			this.selectedFeeds = [];
-		}
-		this.currentPage = 1;
-		this.saveSelectedFeeds();
-	}
+  saveArticles() {
+    if (typeof window === 'undefined') return;
+    const toSave = this.articles.slice(0, this.maxSavedArticles);
+    localStorage.setItem('ginkohub_cached_articles', JSON.stringify(toSave));
+    this.lastUpdated = Date.now();
+    localStorage.setItem('ginkohub_news_last_updated', this.lastUpdated.toString());
+  }
 
-	toggleCategory(categoryName: string, select: boolean = true) {
-		const group = this.feedGroups.find((g) => g.name === categoryName);
-		if (!group) return;
+  saveSelectedFeeds() {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('ginkohub_selected_feeds', JSON.stringify(this.selectedFeeds));
+  }
 
-		const urls = group.feeds.map((f) => f.url);
-		if (select) {
-			// Add only unique urls
-			const newUrls = urls.filter((url) => !this.selectedFeeds.includes(url));
-			this.selectedFeeds = [...this.selectedFeeds, ...newUrls];
-		} else {
-			// Remove urls
-			this.selectedFeeds = this.selectedFeeds.filter((url) => !urls.includes(url));
-		}
-		this.currentPage = 1;
-		this.saveSelectedFeeds();
-	}
+  toggleFeed(url: string) {
+    if (this.selectedFeeds.includes(url)) {
+      this.selectedFeeds = this.selectedFeeds.filter((u) => u !== url);
+    } else {
+      this.selectedFeeds = [...this.selectedFeeds, url];
+      // Fetch if no articles for this feed in cache
+      if (!this.articles.some((a) => a.sourceUrl === url)) {
+        this.fetchFeed(url);
+      }
+    }
+    this.currentPage = 1;
+    this.saveSelectedFeeds();
+  }
 
-	addFeed(name: string, url: string) {
-		try {
-			new URL(url); // Validate URL
-			const feed: Feed = { name, url, custom: true };
-			this.customFeeds = [...this.customFeeds, feed];
-			localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(this.customFeeds));
+  selectAll(select: boolean = true) {
+    if (select) {
+      this.selectedFeeds = this.allFeeds.map((f) => f.url);
+    } else {
+      this.selectedFeeds = [];
+    }
+    this.currentPage = 1;
+    this.saveSelectedFeeds();
+  }
 
-			// Auto select the new feed
-			if (!this.selectedFeeds.includes(url)) {
-				this.selectedFeeds = [...this.selectedFeeds, url];
-				this.saveSelectedFeeds();
-			}
-			this.fetchFeed(url);
+  toggleCategory(categoryName: string, select: boolean = true) {
+    const group = this.feedGroups.find((g) => g.name === categoryName);
+    if (!group) return;
 
-			return { success: true, message: `Feed '${name}' added successfully.` };
-		} catch (e) {
-			return { success: false, message: 'Invalid URL format' };
-		}
-	}
+    const urls = group.feeds.map((f) => f.url);
+    if (select) {
+      // Add only unique urls
+      const newUrls = urls.filter((url) => !this.selectedFeeds.includes(url));
+      this.selectedFeeds = [...this.selectedFeeds, ...newUrls];
+    } else {
+      // Remove urls
+      this.selectedFeeds = this.selectedFeeds.filter((url) => !urls.includes(url));
+    }
+    this.currentPage = 1;
+    this.saveSelectedFeeds();
+  }
 
-	removeFeed(url: string) {
-		this.customFeeds = this.customFeeds.filter((f) => f.url !== url);
-		localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(this.customFeeds));
-		// Remove articles from this feed
-		this.articles = this.articles.filter((a) => a.sourceUrl !== url);
-		this.selectedFeeds = this.selectedFeeds.filter((u) => u !== url);
-		this.saveSelectedFeeds();
-		this.saveArticles();
-	}
+  addFeed(name: string, url: string) {
+    try {
+      new URL(url); // Validate URL
+      const feed: Feed = { name, url, custom: true };
+      this.customFeeds = [...this.customFeeds, feed];
+      localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(this.customFeeds));
 
-	// Legacy navigation methods - can be kept for UI convenience or removed
-	nextFeed() {}
-	prevFeed() {}
+      // Auto select the new feed
+      if (!this.selectedFeeds.includes(url)) {
+        this.selectedFeeds = [...this.selectedFeeds, url];
+        this.saveSelectedFeeds();
+      }
+      this.fetchFeed(url);
 
-	setSelectedFeed(urlOrName: string) {
-		const feed = this.allFeeds.find(
-			(f) => f.url === urlOrName || f.name.toLowerCase().includes(urlOrName.toLowerCase())
-		);
-		if (feed) {
-			if (!this.selectedFeeds.includes(feed.url)) {
-				this.toggleFeed(feed.url);
-			}
-			return { success: true, name: feed.name };
-		}
-		return { success: false };
-	}
+      return { success: true, message: `Feed '${name}' added successfully.` };
+    } catch (e) {
+      return { success: false, message: 'Invalid URL format' };
+    }
+  }
 
-	async refreshAll() {
-		if (this.loading) return;
-		this.loading = true;
-		this.error = '';
+  removeFeed(url: string) {
+    this.customFeeds = this.customFeeds.filter((f) => f.url !== url);
+    localStorage.setItem('ginkohub_custom_feeds', JSON.stringify(this.customFeeds));
+    // Remove articles from this feed
+    this.articles = this.articles.filter((a) => a.sourceUrl !== url);
+    this.selectedFeeds = this.selectedFeeds.filter((u) => u !== url);
+    this.saveSelectedFeeds();
+    this.saveArticles();
+  }
 
-		// We only refresh the selected feeds to be efficient
-		const feedsToRefresh =
-			this.selectedFeeds.length > 0
-				? this.allFeeds.filter((f) => this.selectedFeeds.includes(f.url))
-				: this.allFeeds;
+  // Legacy navigation methods - can be kept for UI convenience or removed
+  nextFeed() { }
+  prevFeed() { }
 
-		let newArticlesCount = 0;
+  setSelectedFeed(urlOrName: string) {
+    const feed = this.allFeeds.find(
+      (f) => f.url === urlOrName || f.name.toLowerCase().includes(urlOrName.toLowerCase())
+    );
+    if (feed) {
+      if (!this.selectedFeeds.includes(feed.url)) {
+        this.toggleFeed(feed.url);
+      }
+      return { success: true, name: feed.name };
+    }
+    return { success: false };
+  }
 
-		this.loadState.total = feedsToRefresh.length;
+  async refreshAll() {
+    if (this.loading) return;
+    this.loading = true;
+    this.error = '';
 
-		const batchSize = 3;
-		for (let i = 0; i < feedsToRefresh.length; i += batchSize) {
-			const batch = feedsToRefresh.slice(i, i + batchSize);
-			await Promise.all(
-				batch.map(async (feed) => {
-					try {
-						const fetched = await this.fetchFeedData(feed);
-						if (fetched.length > 0) {
-							this.mergeArticles(fetched);
-							newArticlesCount += fetched.length;
-						}
-						this.loadState.loaded = i;
-					} catch (e) {
-						console.error(`Error fetching ${feed.name}:`, e);
-					}
-				})
-			);
-		}
+    // We only refresh the selected feeds to be efficient
+    const feedsToRefresh =
+      this.selectedFeeds.length > 0
+        ? this.allFeeds.filter((f) => this.selectedFeeds.includes(f.url))
+        : this.allFeeds;
 
-		this.saveArticles();
-		this.loading = false;
-		return newArticlesCount;
-	}
+    let newArticlesCount = 0;
 
-	private mergeArticles(newArticles: Article[]) {
-		// Keep only articles that are less or equal to maxRecentDays old
-		this.articles = this.articles.filter((a) => {
-			const daySince = (Date.now() - new Date(a.date).getTime()) / (1000 * 60 * 60 * 24);
-			return daySince <= this.maxRecentDays || a.date === 'Today';
-		});
-		const existingLinks = new Set(this.articles.map((a) => a.link));
-		const uniqueNew = newArticles
-			.filter((a) => !existingLinks.has(a.link))
-			.map((a) => ({ ...a, isNew: true }));
+    this.loadState.total = feedsToRefresh.length;
 
-		if (uniqueNew.length > 0) {
-			this.articles = [...uniqueNew, ...this.articles].sort((a, b) => {
-				const dateA = a.date === 'Today' ? new Date().getTime() : new Date(a.date).getTime();
-				const dateB = b.date === 'Today' ? new Date().getTime() : new Date(b.date).getTime();
-				return dateB - dateA;
-			});
-		}
-	}
+    const batchSize = 3;
+    for (let i = 0; i < feedsToRefresh.length; i += batchSize) {
+      const batch = feedsToRefresh.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map(async (feed) => {
+          try {
+            const fetched = await this.fetchFeedData(feed);
+            if (fetched.length > 0) {
+              this.mergeArticles(fetched);
+              newArticlesCount += fetched.length;
+            }
+            this.loadState.loaded = i;
+          } catch (e) {
+            console.error(`Error fetching ${feed.name}:`, e);
+          }
+        })
+      );
+    }
 
-	async fetchFeed(url: string) {
-		const feed = this.allFeeds.find((f) => f.url === url);
-		if (!feed) return;
+    this.saveArticles();
+    this.loading = false;
+    return newArticlesCount;
+  }
 
-		this.loading = true;
-		try {
-			const fetched = await this.fetchFeedData(feed);
-			this.mergeArticles(fetched);
-			this.saveArticles();
-		} catch (e) {
-			console.error(e);
-		} finally {
-			this.loading = false;
-		}
-	}
+  private mergeArticles(newArticles: Article[]) {
+    // Keep only articles that are less or equal to maxRecentDays old
+    this.articles = this.articles.filter((a) => {
+      const daySince = (Date.now() - new Date(a.date).getTime()) / (1000 * 60 * 60 * 24);
+      return daySince <= this.maxRecentDays || a.date === 'Today';
+    });
+    const existingLinks = new Set(this.articles.map((a) => a.link));
+    const uniqueNew = newArticles
+      .filter((a) => !existingLinks.has(a.link))
+      .map((a) => ({ ...a, isNew: true }));
 
-	private async fetchFeedData(feed: Feed): Promise<Article[]> {
-		try {
-			let res = await ghpFetch(feed.url, 'rss');
-			let rawArticles: any[] = [];
+    if (uniqueNew.length > 0) {
+      this.articles = [...uniqueNew, ...this.articles].sort((a, b) => {
+        const dateA = a.date === 'Today' ? new Date().getTime() : new Date(a.date).getTime();
+        const dateB = b.date === 'Today' ? new Date().getTime() : new Date(b.date).getTime();
+        return dateB - dateA;
+      });
+    }
+  }
 
-			if (!res.success || !res.data?.items) {
-				const rawRes = await ghpFetch(feed.url, 'html');
-				if (rawRes.success) {
-					const xmlString =
-						rawRes.data.contents || (typeof rawRes.data === 'string' ? rawRes.data : '');
+  async fetchFeed(url: string) {
+    const feed = this.allFeeds.find((f) => f.url === url);
+    if (!feed) return;
 
-					if (xmlString) {
-						const parser = new DOMParser();
-						const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-						rawArticles = Array.from(xmlDoc.querySelectorAll('entry, item'));
+    this.loading = true;
+    try {
+      const fetched = await this.fetchFeedData(feed);
+      this.mergeArticles(fetched);
+      this.saveArticles();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this.loading = false;
+    }
+  }
 
-						const feedHostname = new URL(feed.url).hostname;
-						const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
+  private async fetchFeedData(feed: Feed): Promise<Article[]> {
+    try {
+      let res = await ghpFetch(feed.url, 'rss');
+      let rawArticles: any[] = [];
 
-						return rawArticles.slice(0, 15).map((entry) => {
-							const title = entry.querySelector('title')?.textContent || 'Untitled';
-							const link =
-								entry.querySelector('link[rel="alternate"]')?.getAttribute('href') ||
-								entry.querySelector('link')?.getAttribute('href') ||
-								entry.querySelector('link')?.textContent ||
-								'';
-							const pubDate = entry.querySelector('published, updated, pubDate')?.textContent || '';
-							const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'Today';
-							const desc = entry.querySelector('summary, content, description')?.textContent || '';
-							const snippet = desc
-								? desc.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
-								: 'Access protocol...';
+      if (!res.success || !res.data?.items) {
+        const rawRes = await ghpFetch(feed.url, 'html');
+        if (rawRes.success) {
+          const xmlString =
+            rawRes.data.contents || (typeof rawRes.data === 'string' ? rawRes.data : '');
 
-							return {
-								title: this.fixEncoding(title),
-								link,
-								date,
-								snippet,
-								image: fallbackImage,
-								sourceName: feed.name,
-								sourceUrl: feed.url
-							};
-						});
-					}
-				}
-				return [];
-			}
+          if (xmlString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            rawArticles = Array.from(xmlDoc.querySelectorAll('entry, item'));
 
-			const data = res.data;
-			if (data && data.items && Array.isArray(data.items)) {
-				const feedHostname = new URL(feed.url).hostname;
-				const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
+            const feedHostname = new URL(feed.url).hostname;
+            const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
 
-				return data.items.slice(0, 15).map((item: any) => {
-					const title = this.fixEncoding(item.title || 'Untitled Protocol');
-					const link = item.link;
-					const pubDate = item.published || item.created || item.pubDate;
-					const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'Today';
+            return rawArticles.slice(0, 15).map((entry) => {
+              const title = entry.querySelector('title')?.textContent || 'Untitled';
+              const link =
+                entry.querySelector('link[rel="alternate"]')?.getAttribute('href') ||
+                entry.querySelector('link')?.getAttribute('href') ||
+                entry.querySelector('link')?.textContent ||
+                '';
+              const pubDate = entry.querySelector('published, updated, pubDate')?.textContent || '';
+              const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'Today';
+              const desc = entry.querySelector('summary, content, description')?.textContent || '';
+              const snippet = desc
+                ? desc.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
+                : 'Access protocol...';
 
-					const desc = item.description || item.summary || item.content || '';
-					const snippet = desc
-						? desc.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
-						: 'Access protocol for full content extraction...';
+              return {
+                title: this.fixEncoding(title),
+                link,
+                date,
+                snippet,
+                image: fallbackImage,
+                sourceName: feed.name,
+                sourceUrl: feed.url
+              };
+            });
+          }
+        }
+        return [];
+      }
 
-					let image = null;
-					if (item.media && item.media.thumbnail && item.media.thumbnail.url) {
-						image = item.media.thumbnail.url;
-					} else if (item.enclosures && item.enclosures.length > 0) {
-						const imgEnc = item.enclosures.find((e: any) => e.type && e.type.startsWith('image'));
-						if (imgEnc) image = imgEnc.url;
-					}
+      const data = res.data;
+      if (data && data.items && Array.isArray(data.items)) {
+        const feedHostname = new URL(feed.url).hostname;
+        const fallbackImage = `https://www.google.com/s2/favicons?domain=${feedHostname}&sz=64`;
 
-					if (!image && desc) {
-						const imgMatch = desc.match(/<img[^>]+src="([^">]+)"/);
-						if (imgMatch) image = imgMatch[1];
-					}
+        return data.items.slice(0, 15).map((item: any) => {
+          const title = this.fixEncoding(item.title || 'Untitled Protocol');
+          const link = item.link;
+          const pubDate = item.published || item.created || item.pubDate;
+          const date = pubDate ? new Date(pubDate).toISOString().split('T')[0] : 'Today';
 
-					return {
-						title,
-						link,
-						date,
-						snippet,
-						image: image || fallbackImage,
-						sourceName: feed.name,
-						sourceUrl: feed.url
-					};
-				});
-			}
-			return [];
-		} catch (e) {
-			console.error(`RSS Fetch Error [${feed.name}]:`, e);
-			return [];
-		}
-	}
+          const desc = item.description || item.summary || item.content || '';
+          const snippet = desc
+            ? desc.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
+            : 'Access protocol for full content extraction...';
 
-	fixEncoding(str: string) {
-		if (!str) return str;
-		if (!/[âÃ¤Ã¶Ã¼Ãâââ]/.test(str)) {
-			return str;
-		}
-		try {
-			return decodeURIComponent(
-				Array.from(str, (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
-			);
-		} catch {
-			return str;
-		}
-	}
+          let image = null;
+          if (item.media && item.media.thumbnail && item.media.thumbnail.url) {
+            image = item.media.thumbnail.url;
+          } else if (item.enclosures && item.enclosures.length > 0) {
+            const imgEnc = item.enclosures.find((e: any) => e.type && e.type.startsWith('image'));
+            if (imgEnc) image = imgEnc.url;
+          }
+
+          if (!image && desc) {
+            const imgMatch = desc.match(/<img[^>]+src="([^">]+)"/);
+            if (imgMatch) image = imgMatch[1];
+          }
+
+          return {
+            title,
+            link,
+            date,
+            snippet,
+            image: image || fallbackImage,
+            sourceName: feed.name,
+            sourceUrl: feed.url
+          };
+        });
+      }
+      return [];
+    } catch (e) {
+      console.error(`RSS Fetch Error [${feed.name}]:`, e);
+      return [];
+    }
+  }
+
+  fixEncoding(str: string) {
+    if (!str) return str;
+    if (!/[âÃ¤Ã¶Ã¼Ãâââ]/.test(str)) {
+      return str;
+    }
+    try {
+      return decodeURIComponent(
+        Array.from(str, (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
+      );
+    } catch {
+      return str;
+    }
+  }
+
+
 }
 
 export const newsState = new NewsState();

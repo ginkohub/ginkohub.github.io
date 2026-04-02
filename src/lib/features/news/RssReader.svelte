@@ -2,7 +2,6 @@
 	import { fade } from 'svelte/transition';
 	import { newsState } from './newsState.svelte';
 	import LazyImage from '$lib/components/ui/LazyImage.svelte';
-	import { refreshAll } from '$app/navigation';
 
 	let { accentColor } = $props();
 
@@ -236,27 +235,6 @@
 		</div>
 
 		<div class="flex items-stretch gap-2 w-full md:w-auto">
-			<div class="relative flex items-center">
-				<span class="absolute left-2 text-[6px] font-black text-slate-500 uppercase z-10"
-					>Limit</span
-				>
-				<select
-					value={newsState.maxRecentDays}
-					onchange={(e) => {
-						newsState.maxRecentDays = Number(e.target.value);
-						newsState.refreshAll();
-						console.log(newsState.maxRecentDays);
-					}}
-					class="bg-slate-900 border border-slate-800 text-white text-[8px] font-black uppercase tracking-widest pl-10 pr-6 py-1.5 outline-none focus:border-white/20 appearance-none cursor-pointer hover:bg-slate-800 transition-all"
-				>
-					{#each [1, 3, 7, 30] as i}
-						<option value={i} selected={i === newsState.maxRecentDays}
-							>{i} Day{#if i !== 1}s{/if}</option
-						>
-					{/each}
-				</select>
-			</div>
-
 			<button
 				onclick={() => (showSettings = true)}
 				class="flex-1 md:flex-none flex items-center justify-between gap-4 px-4 py-2 bg-black border border-slate-800 text-slate-300 hover:border-white/30 transition-all group"
@@ -328,6 +306,37 @@
 				Page Unread
 			</button>
 		{/if}
+
+		<div class="relative flex items-center">
+			<span class="absolute left-2 text-[6px] font-black text-slate-500 uppercase z-10">Limit</span>
+			<select
+				value={newsState.maxRecentDays}
+				onchange={(e) => {
+					newsState.maxRecentDays = Number(e.target.value);
+					newsState.refreshAll();
+					console.log(newsState.maxRecentDays);
+				}}
+				class="bg-slate-900 border border-slate-800 text-white text-[8px] font-black uppercase tracking-widest pl-10 pr-6 py-1.5 outline-none focus:border-white/20 appearance-none cursor-pointer hover:bg-slate-800 transition-all"
+			>
+				{#each [1, 3, 7, 30] as i}
+					<option value={i} selected={i === newsState.maxRecentDays}
+						>{i} Day{#if i !== 1}s{/if}</option
+					>
+				{/each}
+			</select>
+		</div>
+
+		<div class="relative flex items-center">
+			<span class="absolute left-2 text-[6px] font-black text-slate-500 uppercase z-10">#</span>
+			<input
+				class="w-20 bg-slate-900 border border-slate-800 text-white text-[8px] font-black uppercase tracking-widest pl-6 pr-2 py-1.5 outline-none focus:border-white/20 hover:bg-slate-800 transition-all appearance-none"
+				name="maxSavedArticles"
+				type="number"
+				max="500"
+				bind:value={newsState.maxSavedArticles}
+				onchange={newsState.saveFilter}
+			/>
+		</div>
 
 		{#if newsState.loading}
 			<div class="ml-auto flex items-center gap-2 animate-pulse">
@@ -515,7 +524,7 @@
 						NEXT
 					</button>
 
-					{#if newsState.hasNewOnPage}
+					{#if newsState.hasNewOnPage && !newsState.loading}
 						<div class="ml-auto flex items-end gap-2">
 							<button
 								onclick={() => newsState.markPageAsRead()}
