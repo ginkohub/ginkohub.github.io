@@ -14,7 +14,10 @@ const config: Config = {
 			fallback: '404.html',
 			precompress: false,
 			strict: true
-		})
+		}),
+		prerender: {
+			handleMissingId: 'ignore'
+		}
 	}
 };
 
