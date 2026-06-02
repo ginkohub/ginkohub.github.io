@@ -93,9 +93,6 @@ class AppState {
 		this.isGlitching = true;
 		setTimeout(() => {
 			this.persona = newPersona;
-			if (typeof document !== 'undefined') {
-				document.title = `GinkoHub • ${newPersona}`;
-			}
 		}, 50);
 		setTimeout(() => (this.isGlitching = false), 300);
 	}

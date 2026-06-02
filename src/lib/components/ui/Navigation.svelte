@@ -10,10 +10,15 @@
 	<!-- Row 1: Primary Content -->
 	<nav class="flex flex-wrap justify-center w-full">
 		{#each tabs.filter((t) => !['words', 'tools', 'game', 'preview', 'wisdom', 'github', 'ai'].includes(t.label)) as tab, i}
-			<button
-				onclick={() => {
-					appState.activeTabLabel = tab.label;
+			<a
+				href="#/{tab.label}"
+				onclick={(e) => {
+					e.preventDefault();
+					import('$app/navigation').then(({ goto }) => {
+						goto('#/' + tab.label, { noScroll: true, keepFocus: true });
+					});
 				}}
+				data-sveltekit-noscroll
 				style={appState.isOverloaded
 					? `
                     --hang-angle: ${-8 + ((i * 5) % 20)}deg;
@@ -21,7 +26,7 @@
                     --swing-delay: ${i * 0.2}s;
                 `
 					: ''}
-				class="min-w-[60px] md:min-w-[70px] px-2 py-2 md:px-3 md:py-1.5 font-black uppercase tracking-widest text-[9px] md:text-[8.5px] transition-all duration-300 relative active:bg-slate-900
+				class="min-w-[60px] md:min-w-[70px] px-2 py-2 md:px-3 md:py-1.5 font-black uppercase tracking-widest text-[9px] md:text-[8.5px] transition-all duration-300 relative active:bg-slate-900 flex items-center justify-center
                 {appState.activeTabLabel === tab.label
 					? 'text-white'
 					: 'text-slate-400 hover:text-slate-200'}
@@ -36,16 +41,21 @@
 						in:fade={{ duration: 200 }}
 					></div>
 				{/if}
-			</button>
+			</a>
 		{/each}
 	</nav>
 	<!-- Row 2: Utilities & Experiments -->
 	<nav class="flex flex-wrap justify-center w-full border-t border-slate-800/30 bg-white/5">
 		{#each tabs.filter( (t) => ['words', 'tools', 'game', 'preview', 'wisdom', 'github', 'ai'].includes(t.label) ) as tab, i}
-			<button
-				onclick={() => {
-					appState.activeTabLabel = tab.label;
+			<a
+				href="#/{tab.label}"
+				onclick={(e) => {
+					e.preventDefault();
+					import('$app/navigation').then(({ goto }) => {
+						goto('#/' + tab.label, { noScroll: true, keepFocus: true });
+					});
 				}}
+				data-sveltekit-noscroll
 				style={appState.isOverloaded
 					? `
                     --hang-angle: ${5 + ((i * 6) % 15)}deg;
@@ -53,7 +63,7 @@
                     --swing-delay: ${i * 0.15}s;
                 `
 					: ''}
-				class="min-w-[60px] md:min-w-[70px] px-2 py-2 md:px-3 md:py-1.5 font-black uppercase tracking-widest text-[9px] md:text-[8.5px] transition-all duration-300 relative active:bg-slate-900
+				class="min-w-[60px] md:min-w-[70px] px-2 py-2 md:px-3 md:py-1.5 font-black uppercase tracking-widest text-[9px] md:text-[8.5px] transition-all duration-300 relative active:bg-slate-900 flex items-center justify-center
                 {appState.activeTabLabel === tab.label
 					? 'text-white'
 					: 'text-slate-400 hover:text-slate-200'}
@@ -68,7 +78,7 @@
 						in:fade={{ duration: 200 }}
 					></div>
 				{/if}
-			</button>
+			</a>
 		{/each}
 	</nav>
 </div>

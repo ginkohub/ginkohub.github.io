@@ -13,7 +13,8 @@
 			"preview": "Preview",
 			"game": "Arcade",
 			"market": "Market",
-			"stock": "Stock"
+			"stock": "Stock",
+			"quran": "Quran"
 		},
 		"intro": {
 			"title": "Welcome,",
@@ -69,7 +70,8 @@
 			"preview": "Pratinjau",
 			"game": "Arkade",
 			"market": "Pasar",
-			"stock": "Saham"
+			"stock": "Saham",
+			"quran": "Quran"
 		},
 		"intro": {
 			"title": "Selamat Datang,",

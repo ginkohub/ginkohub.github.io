@@ -1,6 +1,8 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import FooterMetrics from '$lib/components/FooterMetrics.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import MainHeader from '$lib/components/ui/MainHeader.svelte';
@@ -32,7 +34,8 @@
 		humor: 'Jokes and memes for a laugh',
 		words: 'Word finder and dictionary tool',
 		preview: 'Social media link previewer',
-		game: 'Retro arcade games collection'
+		game: 'Retro arcade games collection',
+		quran: 'Explore the verses of the Holy Quran'
 	};
 
 	const tabs = Object.entries(tabModules)
@@ -48,17 +51,18 @@
 			const order = {
 				intro: 0,
 				about: 1,
-				news: 2,
-				market: 3,
-				stock: 4,
-				humor: 5,
-				wisdom: 6,
-				github: 7,
-				tools: 8,
-				ai: 9,
-				words: 10,
-				preview: 11,
-				game: 12
+				quran: 2,
+				news: 3,
+				market: 4,
+				stock: 5,
+				humor: 6,
+				wisdom: 7,
+				github: 8,
+				tools: 9,
+				ai: 10,
+				words: 11,
+				preview: 12,
+				game: 13
 			};
 			return (order[a.label] ?? 99) - (order[b.label] ?? 99);
 		});
@@ -85,13 +89,18 @@
 		};
 	}
 
-	// Load active tab from localStorage on mount
+	// Load active tab from URL Hash or localStorage on mount
 	onMount(() => {
 		initWatchdog();
+		const hash = page.url.hash.replace(/^#\/?/, '');
 		const savedTab = localStorage.getItem('ginkohub_active_tab');
-		if (savedTab && tabs.some((t) => t.label === savedTab)) {
+
+		if (hash && tabs.some((t) => t.label === hash)) {
+			appState.activeTabLabel = hash;
+		} else if (savedTab && tabs.some((t) => t.label === savedTab)) {
 			appState.activeTabLabel = savedTab;
 		}
+
 		appState.init();
 		wisdomState.init(data.quotes);
 
@@ -111,10 +120,23 @@
 		};
 	});
 
-	// Persist active tab
+	// Sync active tab state FROM URL Hash (Source of Truth)
 	$effect(() => {
-		if (typeof window !== 'undefined') {
-			localStorage.setItem('ginkohub_active_tab', appState.activeTabLabel);
+		const hash = page.url.hash.replace(/^#\/?/, '');
+		const savedTab = localStorage.getItem('ginkohub_active_tab') || 'about';
+
+		if (hash && tabs.some((t) => t.label === hash)) {
+			// Valid hash in URL - update state and persistence
+			if (appState.activeTabLabel !== hash) {
+				appState.activeTabLabel = hash;
+				localStorage.setItem('ginkohub_active_tab', hash);
+			}
+		} else if (!hash) {
+			// No hash - redirect to saved tab or default
+			untrack(() => {
+				const target = tabs.some((t) => t.label === savedTab) ? savedTab : 'about';
+				goto('#/' + target, { replaceState: true, noScroll: true, keepFocus: true });
+			});
 		}
 	});
 
@@ -156,7 +178,7 @@
 
 	async function handleAiCommand(name, args) {
 		const handlers = getHandlers({
-			setTab: (t) => (appState.activeTabLabel = t),
+			setTab: (t) => goto('#/' + t, { noScroll: true, keepFocus: true }),
 			setAccent: (a) => appState.setAccent(a),
 			accents: appState.accents,
 			fireworks: fireworksSystem,
@@ -168,6 +190,11 @@
 </script>
 
 <KeyboardManager />
+
+<svelte:head>
+	<title>GinkoHub • {appState.persona} | {appState.activeTabLabel.charAt(0).toUpperCase() + appState.activeTabLabel.slice(1)}</title>
+	<meta name="description" content={tabs.find(t => t.label === appState.activeTabLabel)?.description || 'Digital sanctuary and developer playground'} />
+</svelte:head>
 
 <div
 	class="min-h-screen bg-black text-slate-100 font-inter p-0 selection:bg-white selection:text-black relative overflow-x-hidden transition-colors duration-500 {appState.isOverloaded
