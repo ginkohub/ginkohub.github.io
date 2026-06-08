@@ -2,24 +2,31 @@ import { wisdomState } from '$lib/features/wisdom/wisdomState.svelte';
 import type { ToolConfig } from '$lib/types';
 
 export interface WisdomArgs {
-	action: 'next' | 'prev' | 'set_style' | 'set_font' | 'set_align' | 'toggle_grayscale';
+	action:
+		| 'next'
+		| 'prev'
+		| 'set_style'
+		| 'set_font'
+		| 'set_align'
+		| 'toggle_grayscale'
+		| 'search';
 	data?: string;
 }
 
 export const config: ToolConfig = {
 	name: 'wisdom_skills',
-	description: 'Navigate and style poetic wisdom quotes.',
+	description: 'Navigate, search, and style poetic wisdom quotes.',
 	parameters: {
 		type: 'object',
 		properties: {
 			action: {
 				type: 'string',
-				enum: ['next', 'prev', 'set_style', 'set_font', 'set_align', 'toggle_grayscale'],
-				description: 'Navigasi atau pengaturan style quote.'
+				enum: ['next', 'prev', 'set_style', 'set_font', 'set_align', 'toggle_grayscale', 'search'],
+				description: 'Navigasi, pencarian, atau pengaturan style quote.'
 			},
 			data: {
 				type: 'string',
-				description: 'Style/Font/Align name atau "true"/"false" untuk grayscale.'
+				description: 'Style/Font/Align name, search query, atau "true"/"false" untuk grayscale.'
 			}
 		},
 		required: ['action']
@@ -38,6 +45,9 @@ export const handler =
 			case 'prev':
 				wisdomState.prev();
 				return 'Previous quote triggered.';
+			case 'search':
+				if (data) wisdomState.setSearchQuery(data);
+				return `Searching wisdom for: ${data}. Found ${wisdomState.filteredQuotes.length} matches.`;
 			case 'set_style':
 				if (data) wisdomState.setStyle(data);
 				return `Style set to ${data}.`;

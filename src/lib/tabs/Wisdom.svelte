@@ -16,9 +16,10 @@
 	let previewUrl = $state('');
 	let showPreview = $state(false);
 	let isGenerating = $state(false);
-	let canShare = $state(false);
 	let customBg = $state(null);
 	let customColor = $state('#ffffff');
+	let quoteElement = $state(null);
+	let exportContainer = $state(null);
 
 	// Modular Style Settings
 	let styleSettings = $state({});
@@ -94,6 +95,31 @@
 		}
 	}
 
+	function copyLink() {
+		const url = window.location.href;
+		navigator.clipboard.writeText(url);
+		const btn = document.getElementById('copy-link-btn');
+		if (btn) {
+			const originalText = btn.innerText;
+			btn.innerText = 'LINK COPIED!';
+			setTimeout(() => (btn.innerText = originalText), 2000);
+		}
+	}
+
+	function shareToWeb(platform) {
+		const text = `"${wisdomState.quote.text}" — ${wisdomState.quote.author}`;
+		const url = window.location.href;
+		let shareUrl = '';
+
+		if (platform === 'twitter') {
+			shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+		} else if (platform === 'whatsapp') {
+			shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`;
+		}
+
+		if (shareUrl) window.open(shareUrl, '_blank');
+	}
+
 	function handleFileUpload(e) {
 		const target = e.target;
 		if (!target || !target.files) return;
@@ -148,8 +174,29 @@
 	}
 
 	async function shareImage() {
+		isGenerating = true;
 		try {
-			const response = await fetch(previewUrl);
+			const dataUrl = await generateQuoteImage({
+				quote: wisdomState.quote,
+				accentColor,
+				bgImage,
+				customBg,
+				selectedStyle: wisdomState.selectedStyle,
+				selectedFont: wisdomState.selectedFont,
+				selectedAlign: wisdomState.selectedAlign,
+				selectedAuthorFont: 'sans',
+				selectedAuthorAlign: 'right',
+				bgOpacity: 20,
+				manualFontSize: 48,
+				textOffsetX: 0,
+				textOffsetY: 0,
+				grayscaleMode: wisdomState.grayscaleMode,
+				customColor: '#ffffff',
+				customAuthorColor: '#ffffff',
+				styleSettings: $state.snapshot(styleSettings)
+			});
+
+			const response = await fetch(dataUrl);
 			const blob = await response.blob();
 			const file = new File([blob], 'ginkohub-wisdom.png', { type: 'image/png' });
 
@@ -157,11 +204,19 @@
 				await navigator.share({
 					files: [file],
 					title: 'GinkoHub Wisdom',
-					text: `"${wisdomState.quote.text}" — ${wisdomState.quote.author}`
+					text: `"${wisdomState.quote.text}" — ${wisdomState.quote.author}`,
+					url: window.location.href
 				});
+			} else {
+				const link = document.createElement('a');
+				link.download = `ginkohub-wisdom-${Date.now()}.png`;
+				link.href = dataUrl;
+				link.click();
 			}
 		} catch (err) {
 			console.error('Sharing failed', err);
+		} finally {
+			isGenerating = false;
 		}
 	}
 
@@ -173,13 +228,29 @@
 		wisdomState.quote;
 
 		if (showPreview) generateImage(false);
-		if (typeof navigator !== 'undefined') {
-			canShare = !!navigator.share;
-		}
 	});
 </script>
 
 <div id="section-wisdom" class="relative group/quote text-right border-b border-slate-800/50">
+	<!-- Search Bar -->
+	<div class="mb-4 relative">
+		<input
+			type="text"
+			placeholder="SEARCH WISDOM..."
+			value={wisdomState.searchQuery}
+			oninput={(e) => wisdomState.setSearchQuery(e.currentTarget.value)}
+			class="w-full bg-slate-900/50 border border-slate-800 text-[9px] font-black uppercase tracking-widest px-4 py-3 focus:outline-none focus:border-white/20 transition-all text-slate-300 placeholder:text-slate-600"
+		/>
+		{#if wisdomState.searchQuery}
+			<button
+				onclick={() => wisdomState.setSearchQuery('')}
+				class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 hover:text-white transition-colors"
+			>
+				✕
+			</button>
+		{/if}
+	</div>
+
 	<!-- Navigation Header -->
 	<div class="flex justify-end items-center gap-2 mb-2">
 		<button
@@ -189,7 +260,7 @@
 			title="View previous quote">← Prev</button
 		>
 		<span class="text-[7px] text-slate-300 font-bold uppercase tracking-widest px-2"
-			>{wisdomState.currentQuoteIndex + 1} / {scrapedQuotes.length}</span
+			>{wisdomState.filteredQuotes.length > 0 ? wisdomState.currentQuoteIndex + 1 : 0} / {wisdomState.filteredQuotes.length}</span
 		>
 		<button
 			onclick={() => wisdomState.next()}
@@ -248,15 +319,46 @@
 
 	<!-- Action Footer -->
 	<div
-		class="flex gap-3 justify-end opacity-80 transition-opacity mb-4 border-b border-slate-800/50 pb-4"
+		class="flex flex-wrap gap-2 justify-end opacity-80 transition-opacity mb-4 border-b border-slate-800/50 pb-4"
 	>
 		{#if !showPreview}
-			<button
-				id="copy-btn"
-				onclick={copyQuote}
-				class="text-[8px] font-black uppercase border border-slate-700 px-3 py-2 hover:bg-white hover:text-black transition-all text-slate-300"
-				>Copy Text</button
-			>
+			<div class="flex flex-wrap gap-2 justify-end items-center">
+				<button
+					id="copy-btn"
+					onclick={copyQuote}
+					class="text-[8px] font-black uppercase border border-slate-700 px-3 py-2 hover:bg-white hover:text-black transition-all text-slate-300"
+					title="Copy quote text to clipboard"
+					>Copy Text</button
+				>
+				<button
+					id="copy-link-btn"
+					onclick={copyLink}
+					class="text-[8px] font-black uppercase border border-slate-700 px-3 py-2 hover:bg-white hover:text-black transition-all text-slate-300"
+					title="Copy unique link to this quote"
+					>Copy Link</button
+				>
+				<div class="w-px h-4 bg-slate-800 mx-1 hidden sm:block"></div>
+				<button
+					onclick={() => shareToWeb('twitter')}
+					class="text-[8px] font-black uppercase border border-slate-700 px-3 py-2 hover:bg-white hover:text-black transition-all text-slate-300"
+					title="Share on Twitter"
+					>Twitter</button
+				>
+				<button
+					onclick={() => shareToWeb('whatsapp')}
+					class="text-[8px] font-black uppercase border border-slate-700 px-3 py-2 hover:bg-white hover:text-black transition-all text-slate-300"
+					title="Share on WhatsApp"
+					>WhatsApp</button
+				>
+				<button
+					onclick={shareImage}
+					class="text-[8px] font-black uppercase border border-white bg-white text-black px-3 py-2 hover:bg-transparent hover:text-white transition-all disabled:opacity-50"
+					disabled={isGenerating}
+					title="Share quote as a high-quality glass image"
+				>
+					{isGenerating ? 'WAIT...' : (typeof navigator !== 'undefined' && navigator.share ? 'Share' : 'Export Image')}
+				</button>
+			</div>
 		{/if}
 		<button
 			onclick={() => (showPreview = !showPreview)}

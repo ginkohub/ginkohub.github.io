@@ -7,7 +7,7 @@ export interface GlassSettings {
 export const config = {
 	defaults: {
 		bgOpacity: 25,
-		glassBlur: 10,
+		glassBlur: 20,
 		glassRound: 24
 	},
 	controls: [

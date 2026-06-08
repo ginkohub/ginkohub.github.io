@@ -92,11 +92,18 @@
 	// Load active tab from URL Hash or localStorage on mount
 	onMount(() => {
 		initWatchdog();
-		const hash = page.url.hash.replace(/^#\/?/, '');
+		const fullHash = page.url.hash.replace(/^#\/?/, '');
+		const parts = fullHash.split('/');
+		const hash = parts[0];
+		const subPath = parts[1];
+
 		const savedTab = localStorage.getItem('ginkohub_active_tab');
 
 		if (hash && tabs.some((t) => t.label === hash)) {
 			appState.activeTabLabel = hash;
+			if (hash === 'wisdom' && subPath) {
+				wisdomState.setQuoteById(subPath);
+			}
 		} else if (savedTab && tabs.some((t) => t.label === savedTab)) {
 			appState.activeTabLabel = savedTab;
 		}
@@ -122,7 +129,11 @@
 
 	// Sync active tab state FROM URL Hash (Source of Truth)
 	$effect(() => {
-		const hash = page.url.hash.replace(/^#\/?/, '');
+		const fullHash = page.url.hash.replace(/^#\/?/, '');
+		const parts = fullHash.split('/');
+		const hash = parts[0];
+		const subPath = parts[1];
+
 		const savedTab = localStorage.getItem('ginkohub_active_tab') || 'about';
 
 		if (hash && tabs.some((t) => t.label === hash)) {
@@ -131,12 +142,36 @@
 				appState.activeTabLabel = hash;
 				localStorage.setItem('ginkohub_active_tab', hash);
 			}
+
+			// Handle sub-paths (e.g., #/wisdom/123)
+			if (hash === 'wisdom' && subPath) {
+				untrack(() => wisdomState.setQuoteById(subPath));
+			}
 		} else if (!hash) {
 			// No hash - redirect to saved tab or default
 			untrack(() => {
 				const target = tabs.some((t) => t.label === savedTab) ? savedTab : 'about';
 				goto('#/' + target, { replaceState: true, noScroll: true, keepFocus: true });
 			});
+		}
+	});
+
+	// Update URL when wisdom quote changes (Sync state TO Hash)
+	$effect(() => {
+		if (appState.activeTabLabel === 'wisdom' && wisdomState.currentQuoteId !== '0') {
+			const currentId = wisdomState.currentQuoteId;
+			const hash = page.url.hash.replace(/^#\/?/, '');
+			const [activeTab, existingId] = hash.split('/');
+
+			if (activeTab === 'wisdom' && existingId !== currentId) {
+				untrack(() => {
+					goto(`#/wisdom/${currentId}`, {
+						replaceState: true,
+						noScroll: true,
+						keepFocus: true
+					});
+				});
+			}
 		}
 	});
 

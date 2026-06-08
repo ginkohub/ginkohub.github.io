@@ -131,7 +131,7 @@ export async function generateQuoteImage({
 				ctx.filter = `${filterGray} brightness(${bgOpacity}%)`;
 
 				// Handle dynamic blur from style settings if applicable
-				const blur = styleSettings.glassBlur ?? 10;
+				const blur = styleSettings.glassBlur ?? 20;
 				if (selectedStyle === 'glass')
 					ctx.filter = `${filterGray} brightness(${bgOpacity + 15}%) blur(${blur}px)`;
 
