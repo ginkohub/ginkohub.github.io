@@ -23,33 +23,14 @@
 				commandBuffer = '';
 			} else if (commandBuffer.endsWith('purge')) {
 				if (typeof window !== 'undefined') {
-					// 1. Storage
-					Object.keys(localStorage).forEach((k) => {
-						if (k.includes('puter')) localStorage.removeItem(k);
-					});
-					Object.keys(sessionStorage).forEach((k) => {
-						if (k.includes('puter')) sessionStorage.removeItem(k);
-					});
-
-					// 2. Cookies
+					Object.keys(localStorage).forEach((k) => localStorage.removeItem(k));
+					Object.keys(sessionStorage).forEach((k) => sessionStorage.removeItem(k));
 					document.cookie.split(';').forEach((c) => {
 						document.cookie = c
 							.replace(/^ +/, '')
 							.replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
 					});
-
-					// 3. IndexedDB
-					if (window.indexedDB.databases) {
-						window.indexedDB.databases().then((dbs) => {
-							dbs.forEach((db) => {
-								if (db.name.toLowerCase().includes('puter')) {
-									window.indexedDB.deleteDatabase(db.name);
-								}
-							});
-						});
-					}
-
-					alert('NEURAL FINGERPRINT PURGED. REBOOTING...');
+					alert('SESSION PURGED. REBOOTING...');
 					setTimeout(() => window.location.reload(), 500);
 				}
 				commandBuffer = '';

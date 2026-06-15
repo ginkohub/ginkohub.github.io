@@ -9,7 +9,7 @@
 
 <FeatureLoader
 	modules={featureModules}
-	order={['Connect', 'GitHub', 'Comments']}
+	order={['Connect', 'GitHub', 'Comments', 'Credits']}
 	{data}
 	{contacts}
 	{accentColor}

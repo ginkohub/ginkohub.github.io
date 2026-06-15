@@ -3,6 +3,7 @@ import type { ToolConfig } from '$lib/types';
 
 export interface WisdomArgs {
 	action:
+		| 'get_quote'
 		| 'next'
 		| 'prev'
 		| 'set_style'
@@ -21,7 +22,7 @@ export const config: ToolConfig = {
 		properties: {
 			action: {
 				type: 'string',
-				enum: ['next', 'prev', 'set_style', 'set_font', 'set_align', 'toggle_grayscale', 'search'],
+				enum: ['get_quote', 'next', 'prev', 'set_style', 'set_font', 'set_align', 'toggle_grayscale', 'search'],
 				description: 'Navigasi, pencarian, atau pengaturan style quote.'
 			},
 			data: {
@@ -39,6 +40,8 @@ export const handler =
 		if (state.setTab) state.setTab('wisdom');
 
 		switch (action) {
+			case 'get_quote':
+				return 'Showing a random wisdom quote.';
 			case 'next':
 				wisdomState.next();
 				return 'Next quote triggered.';

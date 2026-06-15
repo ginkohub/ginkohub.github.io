@@ -5,7 +5,6 @@
 
 	let uptime = $state('00:00:00');
 	let hitCounterSvg = $state('');
-	let puterUser = $state('');
 
 	function updateUptime() {
 		const diff = Date.now() - sessionStartTime;
@@ -30,22 +29,10 @@
 		}
 	}
 
-	async function fetchPuterUser() {
-		if (typeof window !== 'undefined' && window.puter) {
-			try {
-				const user = await window.puter.auth.getUser();
-				if (user) puterUser = user.username;
-			} catch (e) {
-				// Ignore errors
-			}
-		}
-	}
-
 	onMount(() => {
 		updateUptime();
 		const interval = setInterval(updateUptime, 1000);
 		fetchHitCounter();
-		fetchPuterUser();
 		return () => clearInterval(interval);
 	});
 
@@ -73,15 +60,6 @@
 			{/if}
 		</div>
 	</div>
-
-	{#if puterUser}
-		<div class="flex flex-col space-y-1 items-center">
-			<span class="text-[7px] font-black uppercase tracking-[0.2em] text-slate-600"
-				>Neural Identity</span
-			>
-			<span class="text-[10px] font-bold text-white tracking-wide">{puterUser}</span>
-		</div>
-	{/if}
 
 	<div class="flex flex-col space-y-1 items-end md:items-start">
 		<span class="text-[7px] font-black uppercase tracking-[0.2em] text-slate-600"

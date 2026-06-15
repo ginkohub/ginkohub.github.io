@@ -2,12 +2,9 @@
 	import { onMount, tick } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 	import { marked } from 'marked';
-	import { tools } from '$lib/ai/tools.js';
 	import { DEFAULT_SYSTEM_PROMPT } from '$lib/ai/prompts.js';
 	import { aiMemory } from '$lib/ai/memory.svelte';
 	import { i18n } from '$lib/state/i18n.svelte';
-	import { purgePuterSession, softPurgePuterSession } from '$lib/services/watchdog.js';
-
 	let { accentColor, onCommand, context = {} } = $props();
 
 	// Logic State
@@ -17,7 +14,6 @@
 	let statusMessage = $state(''); // For tool calls
 	let userMessage = $state(''); // The last message sent by user
 	let notification = $state(null); // The final AI response
-	let selectedModel = $state('gpt-4o');
 	let inputElement = $state(null);
 	let messages = $state([]);
 	let abortController = $state(null); // Controller for interruption
@@ -80,16 +76,79 @@
 		}, 15000); // 15s for better readability
 	}
 
+	const SIPUTZX_BASE = 'https://api.siputzx.my.id/api/ai/gptoss120b';
+	const SYS_MAX = 1900;
+	const PROMPT_MAX = 3900;
+
+	function buildSystem() {
+		const memInfo = aiMemory.getAll() || 'None';
+
+		let ctx = `[LONG-TERM MEMORY]\n- Saved Info: ${memInfo}`;
+		ctx += `\n\n[SYSTEM] Time: ${context.time || ''}, Tab: ${context.activeTab || ''}, Accent: ${context.accent || ''}`;
+
+		if (context.overloaded) ctx += ', Overload: YES';
+
+		const addCtx = (label, val) => {
+			if (!val) return;
+			const extra = `\n- ${label}: ${String(val).slice(0, 300)}`;
+			if (ctx.length + extra.length < 1200) ctx += extra;
+		};
+
+		if (context.news) addCtx(`NEWS (${context.news.feed})`, context.news.headlines?.slice(0, 3).join(' | '));
+		if (context.github) addCtx(`GITHUB (${context.github.mode}/${context.github.language})`, context.github.items?.slice(0, 3).join(' | '));
+		if (context.humor) {
+			addCtx('JOKE', context.humor.joke);
+			addCtx('MEME', context.humor.meme);
+		}
+		if (context.words) addCtx(`WORD (${context.words.query})`, context.words.results?.slice(0, 3).join(', '));
+		if (context.about) addCtx('STATS', context.about.stats);
+		if (context.game) addCtx('PLAYING', context.game.playing);
+		if (context.preview) addCtx('PREVIEW', context.preview.title);
+
+		const system = `${systemContent}\n${ctx}`;
+		return system.length > SYS_MAX ? system.slice(0, SYS_MAX) : system;
+	}
+
+	function buildPrompt(convLines) {
+		const userLine = `User: ${userMessage}`;
+		if (!convLines) return userLine.slice(0, PROMPT_MAX);
+
+		const full = `${convLines}\n\n${userLine}`;
+		if (full.length <= PROMPT_MAX) return full;
+
+		const budget = PROMPT_MAX - userLine.length - 2;
+		if (budget <= 0) return userLine.slice(0, PROMPT_MAX);
+
+		let truncated = '';
+		const lines = convLines.split('\n');
+		for (let i = lines.length - 1; i >= 0; i--) {
+			const next = truncated ? `${lines[i]}\n${truncated}` : lines[i];
+			if (next.length > budget) break;
+			truncated = next;
+		}
+		return `${truncated}\n\n${userLine}`;
+	}
+
+	function parseToolCalls(text) {
+		const regex = /\[TOOL:(\w+):(\{.*?\})\]/g;
+		const calls = [];
+		let match;
+		while ((match = regex.exec(text)) !== null) {
+			try {
+				calls.push({ name: match[1], args: JSON.parse(match[2]) });
+			} catch { }
+		}
+		return calls;
+	}
+
+	function stripToolMarkers(text) {
+		return text.replace(/\[TOOL:\w+:\{.*?\}\]/g, '').trim();
+	}
+
 	async function sendMessage() {
 		if (!input.trim() || isLoading) return;
 
-		// Initialize new AbortController
 		abortController = new AbortController();
-
-		if (typeof window === 'undefined' || !window.puter) {
-			notification = { text: 'Puter SDK not loaded.', type: 'error' };
-			return;
-		}
 
 		userMessage = input.trim();
 		const userMsg = { role: 'user', content: userMessage };
@@ -98,145 +157,78 @@
 		const currentInput = input;
 		input = '';
 		isLoading = true;
-		isInputVisible = false; // HIDE IMMEDIATELY
-		statusMessage = 'SYNCHRONIZING...';
+		isInputVisible = false;
+		statusMessage = 'PROCESSING...';
 		notification = null;
 
 		try {
-			const dynamicContext = `
-[LONG-TERM MEMORY]
-- Saved Info: ${aiMemory.getAll() || 'None'}
+			const fullSystem = buildSystem();
+			const convLines = messages
+				.filter((m) => m.role !== 'protocol')
+				.slice(-6, -1)
+				.map((m) => `${m.role === 'user' ? 'User' : 'AI'}: ${m.content}`)
+				.join('\n');
+			const prompt = buildPrompt(convLines);
 
-[SYSTEM] Time: ${context.time}, Tab: ${context.activeTab}, Accent: ${context.accent}, Overload: ${context.overloaded ? 'YES' : 'NO'}
-${context.news ? `- NEWS: ${context.news.feed}\n- HEADLINES: ${context.news.headlines.join(' | ')}` : ''}
-${context.github ? `- GITHUB TRENDS (${context.github.mode} / ${context.github.language}): ${context.github.items.join(' | ')}` : ''}
-${context.words ? `- WORD SEARCH (${context.words.query}): ${context.words.results.join(', ')}` : ''}
-${context.humor ? `- JOKE: ${context.humor.joke}\n- MEME: ${context.humor.meme}` : ''}
-${context.about ? `- STATS: ${context.about.stats}\n- CONTACTS: ${context.about.contacts.join(', ')}` : ''}
-${context.game ? `- PLAYING: ${context.game.playing}` : ''}
-${context.preview ? `- PREVIEWING: ${context.preview.url} (${context.preview.title})` : ''}
-`;
-			const systemMsg = { role: 'system', content: systemContent + dynamicContext };
-			let currentMessages = [systemMsg, ...messages.filter((m) => m.role !== 'protocol')];
+			statusMessage = 'CONTACTING AI...';
 
-			// Note: Puter SDK currently might not support signal directly in all methods,
-			// but we handle the logic flow interruption here.
-			// If the SDK supports fetch options, we would pass { signal: abortController.signal }
+			if (abortController.signal.aborted) throw new Error('Aborted');
 
-			while (true) {
-				// Check interrupt before next step
-				if (abortController.signal.aborted) throw new Error('Aborted');
+			const res = await fetch(SIPUTZX_BASE, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					prompt,
+					system: fullSystem,
+					temperature: 0.7
+				}),
+				signal: abortController.signal
+			});
 
-				const response = await window.puter.ai.chat(currentMessages, {
-					model: selectedModel,
-					tools: tools,
-					stream: false
-				});
+			if (!res.ok) throw new Error(`API Error: ${res.status}`);
 
-				if (abortController.signal.aborted) throw new Error('Aborted');
+			const data = await res.json();
 
-				const message = response.message;
-				currentMessages.push(message);
+			if (abortController.signal.aborted) throw new Error('Aborted');
 
-				if (message.tool_calls) {
-					for (const toolCall of message.tool_calls) {
-						if (abortController.signal.aborted) throw new Error('Aborted');
+			if (!data.status) throw new Error(data.error || 'Unknown API error');
 
-						const functionName = toolCall.function.name;
-						const args = JSON.parse(toolCall.function.arguments);
+			const rawText = data.data.response || '';
+			const toolCalls = parseToolCalls(rawText);
+			const cleanText = stripToolMarkers(rawText);
 
-						statusMessage = `INVOKING: ${functionName.toUpperCase()}`;
+			const assistantMsg = { role: 'assistant', content: cleanText || rawText };
+			messages = [...messages, assistantMsg];
 
-						let result = 'Success';
-						if (onCommand) {
-							const cmdResult = await onCommand(functionName, args);
-							if (cmdResult) result = cmdResult;
-						}
-
-						currentMessages.push({
-							role: 'tool',
-							tool_call_id: toolCall.id,
-							content: result
-						});
-					}
-					continue;
+			if (toolCalls.length > 0 && onCommand) {
+				for (const tc of toolCalls) {
+					if (abortController.signal.aborted) throw new Error('Aborted');
+					statusMessage = `INVOKING: ${tc.name.toUpperCase()}`;
+					await onCommand(tc.name, tc.args);
 				}
-
-				const assistantMsg = { role: 'assistant', content: message.content || '' };
-				messages = [...messages, assistantMsg];
-				notification = { text: message.content };
-				startCleanup();
-				break;
 			}
+
+			notification = { text: cleanText || rawText };
+			startCleanup();
 		} catch (e) {
-			console.error('[Puter AI Error]:', e);
-			let errorMsg = e.message || 'Unknown Error';
-			let isUnverified =
-				errorMsg.includes('account_is_not_verified') ||
-				errorMsg.includes('Email must be confirmed');
-
-			let isUsageLimit =
-				errorMsg.includes('insufficient_funds') ||
-				(e.error && e.error.code === 'insufficient_funds');
-
-			if (isUsageLimit) {
-				// 1. Clear local data first
-
-				softPurgePuterSession();
-
-				// 2. Set special message
-
-				errorMsg =
-					'**QUOTA EXCEEDED**: Your local session has been cleared. To fully reset your identity, please open **puter.com** in a new window to refresh their server-side cookies, then reload this page.';
-
-				notification = {
-					text: errorMsg,
-
-					type: 'error',
-
-					action: {
-						label: 'RESET PUTER.COM',
-
-						callback: () => {
-							window.open('https://puter.com', '_blank');
-
-							setTimeout(() => window.location.reload(), 1000);
-						}
-					}
-				};
-
-				startCleanup();
-
-				return;
-			} else if (isUnverified) {
-				errorMsg =
-					'**ACCESS DENIED**: Puter requires a verified account. Click below to verify or login.';
-			}
-
-			// Only show error if not aborted manually
-
+			console.error('[AI Error]:', e);
 			if (e.message !== 'Aborted') {
 				notification = {
-					text: errorMsg,
-
+					text: `**ERROR**: ${e.message || 'Failed to contact AI server.'}`,
 					type: 'error',
-
 					action: null
 				};
-
 				startCleanup();
 			}
 		} finally {
 			isLoading = false;
 			statusMessage = '';
-
-			// Critical Re-focus Logic
 			setTimeout(async () => {
 				isInputVisible = true;
 				await tick();
 				if (inputElement) {
 					inputElement.focus();
-					inputElement.select(); // Select all text for easy overwrite
+					inputElement.select();
 				}
 			}, 200);
 		}

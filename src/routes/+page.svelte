@@ -11,7 +11,6 @@
 	import DeferredLoader from '$lib/components/DeferredLoader.svelte';
 
 	import { getHandlers } from '$lib/ai/tools.js';
-	import { initWatchdog } from '$lib/services/watchdog.js';
 	import { appState } from '$lib/state/appState.svelte';
 	import { contextManager } from '$lib/state/context.svelte';
 	import { wisdomState } from '$lib/features/wisdom/wisdomState.svelte';
@@ -91,7 +90,6 @@
 
 	// Load active tab from URL Hash or localStorage on mount
 	onMount(() => {
-		initWatchdog();
 		const fullHash = page.url.hash.replace(/^#\/?/, '');
 		const parts = fullHash.split('/');
 		const hash = parts[0];
