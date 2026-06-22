@@ -17,11 +17,6 @@
 		/>
 	{/if}
 
-	<!-- Scanline Effect -->
-	<div
-		class="absolute inset-0 z-10 pointer-events-none opacity-[0.03] bg-scanline hidden md:block"
-	></div>
-
 	<!-- Interactive Grid -->
 	<div
 		class="absolute inset-0 z-0 opacity-[0.15] pointer-events-none transition-opacity duration-300 hidden md:block"
@@ -49,26 +44,6 @@
 </div>
 
 <style>
-	@keyframes scanline {
-		0% {
-			transform: translateY(-100%);
-		}
-		100% {
-			transform: translateY(100%);
-		}
-	}
-
-	.bg-scanline {
-		background: linear-gradient(
-			to bottom,
-			transparent 50%,
-			rgba(255, 255, 255, 0.5) 51%,
-			transparent 55%
-		);
-		background-size: 100% 8px;
-		animation: scanline 8s linear infinite;
-	}
-
 	@keyframes float {
 		0% {
 			transform: translate(0, 0);
